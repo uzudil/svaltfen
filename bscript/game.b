@@ -57,6 +57,7 @@ def initGame() {
             "monster": {},
             "party": [],
             "partyIndex": 0,
+            "loot": {},
         };    
 
         gameMessage("You awake underground surrounded by damp earth and old bones. Press H any time for help.", COLOR_YELLOW);
@@ -88,6 +89,9 @@ def initGame() {
 def gameLoadMap(name) {
     loadMap(name);    
     applyGameBlocks(name);
+    if(player.loot[name] = null) {
+        player.loot[name] := {};
+    }
     array_foreach(map.monster, (i, e) => {
         e["image"] := img[blocks[e.block].img];
         e["start"] := [e.pos[0], e.pos[1]];
@@ -385,6 +389,19 @@ def gameSearch() {
             gameMessage("Found a secret door!", COLOR_MID_GRAY);
             return 1;
         } else {
+            lootIndex := array_find_index(map.loot, e => e.pos[0] = x && e.pos[1] = y);
+            if(lootIndex > -1) {
+                # make sure we have not seen this before
+                key := "" + x + "," + y;
+                if(player.loot[mapName][key] = null) {
+                    getLoot(map.loot[lootIndex].level);
+                    amount := roll(5, 10) * map.loot[lootIndex].level;
+                    player.coins := player.coins + amount;
+                    gameMessage("You find " + amount + " coins!", COLOR_GREEN);
+                    player.loot[mapName][key] := lootIndex;
+                    saveGame();
+                }
+            }
             return null;
         }
     });
@@ -522,22 +539,24 @@ def gameInput() {
         apUsed := 0;
         ox := player.x;
         oy := player.y;
-        if(isKeyDown(KeyEnter)) {
-            while(isKeyDown(KeySpace)) {
+        if(viewMode = null) {
+            if(isKeyDown(KeyEnter)) {
+                while(isKeyDown(KeyEnter)) {
+                }
+                gameEnterMap();
             }
-            gameEnterMap();
-        }
-        if(isKeyDown(KeyT)) {
-            while(isKeyDown(KeySpace)) {
+            if(isKeyDown(KeyT)) {
+                while(isKeyDown(KeyT)) {
+                }
+                gameConvo();
             }
-            gameConvo();
-        }
-        if(isKeyDown(KeySpace)) {
-            while(isKeyDown(KeySpace)) {
+            if(isKeyDown(KeySpace)) {
+                while(isKeyDown(KeySpace)) {
+                }
+                gameUseDoor();
+                gameSearch();
+                apUsed := apUsed + 1;
             }
-            gameUseDoor();
-            gameSearch();
-            apUsed := apUsed + 1;
         }
         if(isKeyDown(KeyC)) {
             while(isKeyDown(KeyC)) {

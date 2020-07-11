@@ -55,6 +55,17 @@ def addMonster() {
     saveMap();
 }
 
+def addLoot() {
+    if(map["loot"] = null) {
+        map["loot"] := [];
+    }
+    setVideoMode(0);
+    level := input("Loot level (1-15):");
+    map.loot[len(map.loot)] := { "level": int(level), "pos": [ editor.x, editor.y ] };
+    saveMap();
+    setVideoMode(1);
+}
+
 def addLink() {
     if(links[mapName] = null) {
         links[mapName] := {};
@@ -103,6 +114,10 @@ def delLink() {
     monsterIndex := array_find_index(map.monster, e => e.pos[0] = editor.x && e.pos[1] = editor.y);
     if(monsterIndex > -1) {
         del map.monster[monsterIndex];
+    }
+    lootIndex := array_find_index(map.loot, e => e.pos[0] = editor.x && e.pos[1] = editor.y);
+    if(lootIndex > -1) {
+        del map.loot[lootIndex];
     }
 }
 
@@ -189,6 +204,11 @@ def editorDrawViewAt(x, y, mx, my, onScreen) {
             drawImage(x, y, img[blocks[e.block].img], 0);
         }
     });
+    array_foreach(map.loot, (i, e) => {
+        if(e.pos[0] = mx && e.pos[1] = my) {
+            drawRect(x + 1, y + 1, x + TILE_W - 2, y + TILE_H - 2, COLOR_GREEN);
+        }
+    });
 }
 
 def handleEditorInput() {
@@ -221,6 +241,11 @@ def handleEditorInput() {
         while(isKeyDown(KeyZ)) {
         }
         addMonster();
+    }
+    if(isKeyDown(KeyL)) {
+        while(isKeyDown(KeyL)) {
+        }
+        addLoot();
     }
     if(isKeyDown(KeyM)) {
         while(isKeyDown(KeyM)) {
@@ -314,6 +339,7 @@ def handleEditorInput() {
         print("M - toggle map");
         print("N - add NPC");
         print("Z - add monster");
+        print("L - add loot");
         print("Press any key");
         while(anyKeyDown() = false) {
         }

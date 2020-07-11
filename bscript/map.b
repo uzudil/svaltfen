@@ -6,6 +6,7 @@ def newMap(name, w, h) {
         "height": h,
         "npc": [],
         "monster": [],
+        "loot": [],
         "secrets": {},
     };
     spaceIndex := getBlockIndexByName("space");
@@ -51,6 +52,9 @@ def loadMap(name) {
         }
         if(map["monster"] = null) {
             map["monster"] := [];
+        }
+        if(map["loot"] = null) {
+            map["loot"] := [];
         }
         trace("Loaded map " + name);
     }

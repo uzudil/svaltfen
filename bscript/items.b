@@ -42,24 +42,24 @@ const ITEMS = [
     { "name": "Green wine", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
     { "name": "Water", "price": 1, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
 
-    { "name": "Leather gloves", "price": 3, "type": OBJECT_ARMOR, "slot": SLOT_GLOVE, "ac": 1, },
-    { "name": "Leather boots", "price": 4, "type": OBJECT_ARMOR, "slot": SLOT_BOOTS, "ac": 2, },
-    { "name": "Leather armor", "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 4, },
-    { "name": "Traveling cape", "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
-    { "name": "Leather helm", "price": 7, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 2, },
+    { "name": "Leather gloves", "level": 1, "price": 3, "type": OBJECT_ARMOR, "slot": SLOT_GLOVE, "ac": 1, },
+    { "name": "Leather boots", "level": 2, "price": 4, "type": OBJECT_ARMOR, "slot": SLOT_BOOTS, "ac": 2, },
+    { "name": "Leather armor", "level": 3, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 4, },
+    { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
+    { "name": "Leather helm", "level": 1, "price": 7, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 2, },
 
-    { "name": "Dagger", "price": 7, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 2, 4 ] },
-    { "name": "Small sword", "price": 8, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 3, 5 ] },
-    { "name": "Soldier's sword", "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 8 ] },
-    { "name": "Battle Axe", "price": 16, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ] },
-    { "name": "Warhammer", "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ] },
+    { "name": "Dagger", "level": 1, "price": 7, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 2, 4 ] },
+    { "name": "Small sword", "level": 2, "price": 8, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 3, 5 ] },
+    { "name": "Soldier's sword", "level": 3, "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 8 ] },
+    { "name": "Battle Axe", "level": 3, "price": 16, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ] },
+    { "name": "Warhammer", "level": 4, "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ] },
 
-    { "name": "Torch", "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ] },
-    { "name": "Lockpick", "price": 3, "type": OBJECT_SUPPLIES },
-    { "name": "Rope", "price": 4, "type": OBJECT_SUPPLIES },
+    { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ] },
+    { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },
+    { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES },
 
-    { "name": "Small round potion", "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
-    { "name": "Large round potion", "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
+    { "name": "Small round potion", "level": 1, "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
+    { "name": "Large round potion", "level": 2, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
 ];
 
 ITEMS_BY_TYPE := {};
@@ -77,4 +77,22 @@ def getRandomItem(types) {
 
 def itemInstance(item) {
     return { "name": item.name, "quality": 100, "uses": 0 };
+}
+
+def getLoot(level) {
+    items := array_filter(ITEMS, item => {
+        if(item["level"] != null) {
+            return item.level <= level;
+        }
+        return false;
+    });
+    n := roll(0, 3);
+    if(n > 0) {
+        while(n >= 0) {
+            item := choose(items);
+            gameMessage("You find " + item.name + "!", COLOR_GREEN);
+            player.inventory[len(player.inventory)] := itemInstance(item);
+            n := n - 1;
+        }
+    }
 }
