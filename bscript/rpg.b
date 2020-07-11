@@ -9,6 +9,8 @@ def newChar(name, imgName) {
         "hp": 10,
         "startHp": 10,
         "image": img[imgName],
+        "hunger": 0,
+        "thirst": 0,
         "exp": 0,
         "level": 1,
         "attack": [],
@@ -46,7 +48,47 @@ def gainExp(pc, amount) {
 }
 
 def gainHp(pc, amount) {
+    old := pc.hp;
     pc.hp := min(pc.hp + amount, pc.startHp * pc.level);
+    if(pc.hp > old) {
+        gameMessage(pc.name + " gains " + (pc.hp - old) + " health points.", COLOR_GREEN);
+    } else {
+        gameMessage("Nothing happens.", COLOR_MID_GRAY);
+    }
+}
+
+def eat(pc, amount) {
+    pc.hunger := max(0, pc.hunger - amount);    
+}
+
+def describeHunger(pc) {
+    if(pc.hunger < 5) {
+        return "Not hungry";
+    }
+    if(pc.hunger < 10) {
+        return "Hungry";
+    }
+    if(pc.hunger < 15) {
+        return "Ravenous";
+    }
+    return "Starving";
+}
+
+def describeThirst(pc) {
+    if(pc.hunger < 5) {
+        return "Not thirsty";
+    }
+    if(pc.hunger < 10) {
+        return "Thirsty";
+    }
+    if(pc.hunger < 15) {
+        return "Parched";
+    }
+    return "Dehydrated";
+}
+
+def drink(pc, amount) {
+    pc.thirst := max(0, pc.thirst - amount);    
 }
 
 def calculateArmor(pc) {

@@ -123,20 +123,24 @@ def drawCharSheet() {
         return a;
     }), ","));
     drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
+    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, describeHunger(pc));
+    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, describeThirst(pc));
 
-    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex);
-    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed + " INT:" + pc.int);
-    drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "WIS:" + pc.wis + " CHR:" + pc.cha);
-    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "LUCK:" + pc.luck);
+    drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex);
+    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed + " INT:" + pc.int);
+    drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "WIS:" + pc.wis + " CHR:" + pc.cha);
+    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "LUCK:" + pc.luck);
 
-    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
+    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
 }
 
 def drawPartyInventory() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Party Inventory");
     drawListUi(10, 30);
     drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "D to drop item");
+    drawText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Enter to use item");
 }
 
 def drawCharEquipment() {
@@ -230,7 +234,6 @@ def showGameHelp() {
     gameMessage("_1_Arrows: movement/attack", COLOR_MID_GRAY);
     gameMessage("_1_H: help", COLOR_MID_GRAY);
     gameMessage("_1_C: show character sheet", COLOR_MID_GRAY);
-    gameMessage("_1_U: use item", COLOR_MID_GRAY);
     gameMessage("_1_E: change equipment", COLOR_MID_GRAY);
     gameMessage("_1_I: party inventory", COLOR_MID_GRAY);
     gameMessage("_1_T: talk", COLOR_MID_GRAY);

@@ -31,16 +31,16 @@ const OBJECT_WEAPON = "weapon";
 const OBJECT_SUPPLIES = "supplies";
 
 const ITEMS = [
-    { "name": "Moldy cheese", "price": 2, "type": OBJECT_FOOD },
-    { "name": "Loaf of bread", "price": 3, "type": OBJECT_FOOD },
-    { "name": "Roast chicken", "price": 5, "type": OBJECT_FOOD },
-    { "name": "Rare steak", "price": 7, "type": OBJECT_FOOD },
-    { "name": "Chocolate", "price": 3, "type": OBJECT_FOOD },    
+    { "name": "Moldy cheese", "price": 2, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 2), },
+    { "name": "Loaf of bread", "price": 3, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 2) },
+    { "name": "Roast chicken", "price": 5, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 4) },
+    { "name": "Rare steak", "price": 7, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 5) },
+    { "name": "Chocolate", "price": 3, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 1) },    
 
-    { "name": "Watery beer", "price": 1, "type": OBJECT_DRINK },
-    { "name": "Ogrebreath Ale", "price": 3, "type": OBJECT_DRINK },
-    { "name": "Green wine", "price": 3, "type": OBJECT_DRINK },
-    { "name": "Water", "price": 1, "type": OBJECT_DRINK },
+    { "name": "Watery beer", "price": 1, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 1) },
+    { "name": "Ogrebreath Ale", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Green wine", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Water", "price": 1, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
 
     { "name": "Leather gloves", "price": 3, "type": OBJECT_ARMOR, "slot": SLOT_GLOVE, "ac": 1, },
     { "name": "Leather boots", "price": 4, "type": OBJECT_ARMOR, "slot": SLOT_BOOTS, "ac": 2, },
@@ -58,8 +58,8 @@ const ITEMS = [
     { "name": "Lockpick", "price": 3, "type": OBJECT_SUPPLIES },
     { "name": "Rope", "price": 4, "type": OBJECT_SUPPLIES },
 
-    { "name": "Small round potion", "price": 3, "type": OBJECT_POTION, "onAction": (self, pc) => gainHp(pc, 10) },
-    { "name": "Large round potion", "price": 12, "type": OBJECT_POTION, "onAction": (self, pc) => gainHp(pc, 35) },
+    { "name": "Small round potion", "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
+    { "name": "Large round potion", "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
 ];
 
 ITEMS_BY_TYPE := {};

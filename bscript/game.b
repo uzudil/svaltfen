@@ -544,11 +544,6 @@ def gameInput() {
             }
             viewMode := CHAR_SHEET;
         }        
-        if(isKeyDown(KeyU)) {
-            while(isKeyDown(KeyU)) {
-            }
-            trace("Use item (like a potion)");
-        }
         if(isKeyDown(KeyE)) {
             while(isKeyDown(KeyE)) {
             }
@@ -559,8 +554,7 @@ def gameInput() {
             while(isKeyDown(KeyI)) {
             }
             viewMode := INVENTORY;
-            list := array_map(player.inventory, item => item.name);
-            setListUi(list, [], "Inventory is empty");
+            initPartyInventoryList();
         }
         if(gameMode != COMBAT) {
             oldPartyIndex := player.partyIndex;
@@ -881,4 +875,29 @@ def drawEffect(x, y, mx, my, effect) {
     } else {
         trace("Don't know how to draw effect: " + effect.effect);
     }
+}
+
+def useItem(index, selection) {
+    invItem := player.inventory[index];
+    item := ITEMS_BY_NAME[invItem.name];
+    if(item["use"] != null) {
+        pc := player.party[player.partyIndex];
+        gameMessage(pc.name + " uses " + item.name, COLOR_MID_GRAY);
+        item.use(pc);
+        del player.inventory[index];
+        initPartyInventoryList();
+    } else {
+        gameMessage("You cannot use that item.", COLOR_MID_GRAY);
+    }
+}
+
+def dropItem(index, selection) {
+    gameMessage("You throw away " + player.inventory[index].name, COLOR_MID_GRAY);
+    del player.inventory[index];
+    initPartyInventoryList();
+}
+
+def initPartyInventoryList() {
+    list := array_map(player.inventory, item => item.name);
+    setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "Inventory is empty");
 }
