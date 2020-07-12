@@ -237,7 +237,7 @@ def combatTurnEnd() {
 
 def getLiveMonsters(pc) {
     return array_filter(map.monster, m => { 
-        if(m.visible && m.hp > 0) {
+        if(m.visible && m.hp > 0 && abs(m.pos[0] - player.x) < 6 && abs(m.pos[1] - player.y) < 6) {
             #trace("live? finding path to " + pc.index + " pos=" + pc.pos);
             m["path"] := findPath(m, pc);
             return len(m.path) > 0;

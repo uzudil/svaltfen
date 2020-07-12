@@ -19,12 +19,13 @@ const events_redclaw2 = {
                 "library": "What a fantashtic conflagration that wash! Ah good timesh. Too bad $Aiden got sho mad.",
                 "Aiden": "Aiden the shage, yesh. He ish the one holding my leash unfortunatelly. He ish the one who bid me to tell you hish $meshage... Opps. I guesh now I musht tell you.",
                 "meshage": "Are you making $fun|abstain of how I shpeak? Very brave for one sho reshently $shummoned|beyond. I will accept your $apology.",
-                "apology": "Fine. The meshage is thish: 'Do not lose hope shtranger. Follow the $shecret|secret way through Bonefell dungeon and sheek me out in $Midgreen Foresht.'",
-                "Midgreen": "A small foresht northwesht of here. After the deshtruction of hish library, $Aiden moved there.",
-                "secret": "Oh I shupposhe $he|Aiden ish referring to the hidden $shtairs|stairs to Bonefell.",
+                "apology": "Fine. The meshage is thish: 'Do not lose hope shtranger. All will be revealed. Follow the $shecret|secret way through Bonefell dungeon, pash between two $candolabras, and sheek me out in $Midgreen Foresht.'",
+                "candolabras": "I am at a losh to exshplain what that meansh. Would you like to hear the $meshage|apology again?",
+                "Midgreen": "A small foresht northwesht of here. After the deshtruction of hish library, $Aiden moved there. Would you like to hear the $meshage|apology again?",
+                "secret": "Oh I shupposhe $he|Aiden ish referring to the hidden $shtairs|stairs to Bonefell. Would you like to hear the $meshage|apology again?",
                 "stairs": () => {
                     setGameState("aiden_secret", true);
-                    return "You can't find it? And you call yourshelf and adventurer?! I guesh I musht shpell it out for you: the shtairsh are on the lower level in the room with Armel. On the wesht wall.";
+                    return "You can't find it? And you call yourshelf and adventurer?! I guesh I musht shpell it out for you: the shtairsh are on the lower level in the room with Armel. On the wesht wall. Would you like to hear the $meshage|apology again?";
                 },
             };
         }
