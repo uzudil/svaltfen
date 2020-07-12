@@ -37,6 +37,7 @@ def initGame() {
     events["almoc"] := events_almoc;
     events["bonefell"] := events_bonefell;
     events["redclaw"] := events_redclaw;
+    events["redclaw2"] := events_redclaw2;
     events["world1"] := events_world1;
 
     initItems();
@@ -66,14 +67,14 @@ def initGame() {
         player.party[0] := c;
 
         # for combat testing
-        i := 1;
-        while(i < 4) {
-            name := choose(["fighter1", "robes2", "robes", "man1", "man2", "woman1", "woman2"]);
-            c := newChar(name, name);
-            c["index"] := i;
-            player.party[len(player.party)] := c;
-            i := i + 1;
-        }      
+        #i := 1;
+        #while(i < 4) {
+        #    name := choose(["fighter1", "robes2", "robes", "man1", "man2", "woman1", "woman2"]);
+        #    c := newChar(name, name);
+        #    c["index"] := i;
+        #    player.party[len(player.party)] := c;
+        #    i := i + 1;
+        #}      
     } else {
         player := savegame;
         player.partyIndex := array_find_index(player.party, p => p.hp > 0);
@@ -384,6 +385,11 @@ def gameSearch() {
         space := getBlockIndexByName("space");
         block := getBlock(x, y).block;
         if(map.secrets["" + x + "," + y] = 1 && block != space) {
+            if(events[mapName]["onSecret"] != null) {
+                if(events[mapName].onSecret(x, y) = false) {
+                    return 1;
+                }
+            }
             setBlock(x, y, space, 0);
             setGameBlock(x, y, space);
             gameMessage("Found a secret door!", COLOR_MID_GRAY);
