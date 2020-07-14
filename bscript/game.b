@@ -117,6 +117,7 @@ def gameLoadMap(name) {
         e["start"] := [e.pos[0], e.pos[1]];
 
         # init trade
+        # todo: refresh this from calendar every so often
         if(player.traders[name] = null) {
             player.traders[name] := {};
         }
@@ -127,8 +128,14 @@ def gameLoadMap(name) {
                     player.traders[name][e.name] := [];
                 }
                 inv := player.traders[name][e.name];
-                while(len(inv) < 5) {
-                    inv[len(inv)] := itemInstance(getRandomItem(trade));
+                # get 8 first-level items (basic potions, etc)
+                while(len(inv) < 8) {
+                    inv[len(inv)] := itemInstance(getRandomItem(trade, 1));
+                }
+                # get 8 player level items
+                avgLevel := int(array_reduce(player.party, 0, (sum, pc) => sum + pc.level) / len(player.party));
+                while(len(inv) < 16) {
+                    inv[len(inv)] := itemInstance(getRandomItem(trade, avgLevel + 3));
                 }
             }
         }
@@ -368,14 +375,14 @@ def aroundPlayer(fx) {
 }
 
 def gameUseDoor() {
-    aroundPlayer((x, y) => {
+    return aroundPlayer((x, y) => {
         block := blocks[getBlock(x, y).block];
         if(block["nextState"] != null) {
             index := getBlockIndexByName(block.nextState);
             setBlock(x, y, index, 0);
             setGameBlock(x, y, index);
             gameMessage("Use a door.", COLOR_MID_GRAY);
-            return 1;
+            return true;
         } else {
             return null;
         }
@@ -383,19 +390,20 @@ def gameUseDoor() {
 }
 
 def gameSearch() {
-    aroundPlayer((x, y) => {
+    gameMessage("Searching...", COLOR_MID_GRAY);
+    return aroundPlayer((x, y) => {
         space := getBlockIndexByName("space");
         block := getBlock(x, y).block;
         if(map.secrets["" + x + "," + y] = 1 && block != space) {
             if(events[mapName]["onSecret"] != null) {
                 if(events[mapName].onSecret(x, y) = false) {
-                    return 1;
+                    return null;
                 }
             }
             setBlock(x, y, space, 0);
             setGameBlock(x, y, space);
             gameMessage("Found a secret door!", COLOR_MID_GRAY);
-            return 1;
+            return true;
         } else {
             lootIndex := array_find_index(map.loot, e => e.pos[0] = x && e.pos[1] = y);
             if(lootIndex > -1) {
@@ -561,8 +569,11 @@ def gameInput() {
             if(isKeyDown(KeySpace)) {
                 while(isKeyDown(KeySpace)) {
                 }
-                gameUseDoor();
-                gameSearch();
+                if(gameUseDoor() = null) {
+                    if(gameSearch() = null) {
+                        gameMessage("You find nothing.", COLOR_MID_GRAY);
+                    }
+                }
                 apUsed := apUsed + 1;
             }
         }

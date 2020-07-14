@@ -98,29 +98,32 @@ def calculateArmor(pc) {
     });
 
     attackBonus := int(pc.level / 3) + max(0, pc.str - 18) + max(0, pc.dex - 18);
-    invWeapons := getWeapons(pc);
-    pc.attack := array_map(invWeapons, invItem => {
+    weaponSlots := getWeaponSlots(pc);
+    pc.attack := array_map(weaponSlots, slot => {
+        invItem := pc.equipment[slot];
         dam := ITEMS_BY_NAME[invItem.name].dam;
         return {
             "dam": [dam[0] + attackBonus, dam[1] + attackBonus],
             "weapon": invItem.name,
+            "slot": slot,
         };
     });
-    if(len(invWeapons) = 0) {
+    if(len(weaponSlots) = 0) {
         pc.attack := [ {
             "dam": [attackBonus, attackBonus + 2],
             "weapon": "Bare hands",
+            "slot": null,
         } ];
     }
 }
 
-def getWeapons(pc) {
-    return array_map(array_filter(SLOTS, slot => {
+def getWeaponSlots(pc) {
+    return array_filter(SLOTS, slot => {
         if(pc.equipment[slot] != null) {
             return ITEMS_BY_NAME[pc.equipment[slot].name]["dam"] != null;
         }
         return false;
-    }), slot => pc.equipment[slot]);
+    });
 }
 
 def getToHitBonus(pc) {
@@ -129,4 +132,18 @@ def getToHitBonus(pc) {
         tohit := tohit + 2;
     }
     return tohit;
+}
+
+def decItemLife(pc, slot) {
+    invItem := pc.equipment[slot];
+    invItem.life := invItem.life - 1;
+    if(invItem.life <= 0) {
+        gameMessage(invItem.name + " breaks!", COLOR_RED);
+        pc.equipment[slot] := null;
+        return true;
+    }
+    if(invItem.life < 4) {
+        gameMessage(invItem.name + " cracks!", COLOR_RED);
+    }
+    return false;
 }

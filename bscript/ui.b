@@ -20,7 +20,6 @@ def listUiInput() {
     }
 
     if(isKeyDown(KeyDown) && listUi.index + listUi.page < len(listUi.list) - 1) {
-        while(isKeyDown(KeyDown)) {}
         listUi.index := listUi.index + 1;
         if(listUi.index >= 10) {
             listUi.index := 0;
@@ -28,7 +27,6 @@ def listUiInput() {
         }
     }
     if(isKeyDown(KeyUp) && listUi.index + listUi.page > 0) {
-        while(isKeyDown(KeyUp)) {}
         listUi.index := listUi.index - 1;
         if(listUi.index < 0) {
             listUi.index := 9;
@@ -61,6 +59,14 @@ def drawListUi(x, y) {
             }
             drawColoredText(x, y + i * 10, fg, bg, listUi.list[listUi.page + i]);
             i := i + 1;
+        }
+        if(listUi.page > 0) {
+            drawLine(x, y - 4, x + 2, y - 6, COLOR_GREEN);
+            drawLine(x + 2, y - 6, x + 4, y - 4, COLOR_GREEN);
+        }
+        if(listUi.page + 9 < len(listUi.list)) {
+            drawLine(x, y + 102, x + 2, y + 104, COLOR_GREEN);
+            drawLine(x + 2, y + 104, x + 4, y + 102, COLOR_GREEN);
         }
     }
 }

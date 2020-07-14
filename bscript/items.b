@@ -109,26 +109,30 @@ ITEMS_BY_TYPE := {};
 ITEMS_BY_NAME := {};
 
 def initItems() {
-    array_foreach(ITEMS, (index, item) => { item["sellPrice"] := max(int(item.price * 0.75), 1); if(ITEMS_BY_TYPE[item.type] = null) {     ITEMS_BY_TYPE[item.type] := []; } ITEMS_BY_TYPE[item.type][len(ITEMS_BY_TYPE[item.type])] := item; ITEMS_BY_NAME[item.name] := item;
+    array_foreach(ITEMS, (index, item) => { 
+        item["sellPrice"] := max(int(item.price * 0.75), 1); 
+        if(item["level"] = null) {
+            item["level"] := 1;
+        }
+        if(ITEMS_BY_TYPE[item.type] = null) {     
+            ITEMS_BY_TYPE[item.type] := []; 
+        } 
+        ITEMS_BY_TYPE[item.type][len(ITEMS_BY_TYPE[item.type])] := item; 
+        ITEMS_BY_NAME[item.name] := item;
     });
 }
 
-def getRandomItem(types) {
+def getRandomItem(types, level) {
     type := choose(types);
-    return choose(ITEMS_BY_TYPE[type]);
+    return choose(array_filter(ITEMS_BY_TYPE[type], item => item.level <= level));
 }
 
 def itemInstance(item) {
-    return { "name": item.name, "quality": 100, "uses": 0 };
+    return { "name": item.name, "life": 10 + item.level * 12 };
 }
 
 def getLoot(level) {
-    items := array_filter(ITEMS, item => {
-        if(item["level"] != null) {
-            return item.level <= level;
-        }
-        return true;
-    });
+    items := array_filter(ITEMS, item => item.level <= level);
     n := roll(0, 3);
     if(n > 0) {
         while(n >= 0) {

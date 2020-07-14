@@ -343,10 +343,18 @@ def attackMonster(targetPc) {
 
 def playerAttacks(monster) {
     combatRound := combat.round[combat.roundIndex];
+    res := { "attackChanged": false };
     array_foreach(combatRound.pc.attack, (i, attack) => {
         gameMessage(combatRound.pc.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
-        playerAttacksDam(monster, attack.dam);
+        if(playerAttacksDam(monster, attack.dam) && attack.slot != null) {
+            if(decItemLife(combatRound.pc, attack.slot)) {
+                res.attackChanged := true;
+            }
+        }
     });
+    if(res.attackChanged) {
+        calculateArmor(combatRound.pc);
+    }
     return 3;
 }
 
@@ -357,7 +365,7 @@ def playerAttacksDam(monster, damage) {
     toHit := roll(0, 20) + getToHitBonus(combatRound.pc);
     if(toHit <= monster.monsterTemplate.armor) {
         gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
-        return 1;
+        return false;
     }
 
     # roll damage
@@ -386,6 +394,7 @@ def playerAttacksDam(monster, damage) {
     } else {
         gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
     }
+    return true;
 }
 
 def findPath(monster, target) {
