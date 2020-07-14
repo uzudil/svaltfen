@@ -116,23 +116,32 @@ def drawCharSheet() {
     pc := player.party[player.partyIndex];
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, pc.name);
 
-    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level + " Exp:" + pc.exp);
+    drawColoredText(10, 20, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level);
+    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp + " Nxt Lvl:" + getNextLevelExp(pc));
     drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "HP:" + pc.hp + "/" + (pc.startHp * pc.level));
-    drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Attack:" + array_join(array_reduce(pc.attack, [], (a, p) => {
+    drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
+    drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Attack:" + array_join(array_reduce(pc.attack, [], (a, p) => {
         a[len(a)] := "" + p.dam[0] + "-" + p.dam[1];
         return a;
     }), ","));
-    drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
-    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, describeHunger(pc));
-    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, describeThirst(pc));
+    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
+    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, describeHunger(pc));
+    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, describeThirst(pc));
 
-    drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex);
-    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed + " INT:" + pc.int);
-    drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "WIS:" + pc.wis + " CHR:" + pc.cha);
-    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "LUCK:" + pc.luck);
+    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex);
+    drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed + " INT:" + pc.int);
+    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "WIS:" + pc.wis + " CHR:" + pc.cha);
+    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "LUCK:" + pc.luck);
 
+    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
+}
+
+def drawAccomplishments() {
+    pc := player.party[player.partyIndex];
+    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Awards/Skills");
+    drawListUi(10, 30);
     drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
 }
 
 def drawPartyInventory() {
@@ -226,6 +235,9 @@ def drawUI() {
     if(viewMode = EQUIPMENT) {
         drawCharEquipment();
     }
+    if(viewMode = ACCOMPLISHMENTS) {
+        drawAccomplishments();
+    }
 }
 
 def showGameHelp() {
@@ -233,7 +245,8 @@ def showGameHelp() {
     longMessage := true;
     gameMessage("_1_Arrows: movement/attack", COLOR_MID_GRAY);
     gameMessage("_1_H: help", COLOR_MID_GRAY);
-    gameMessage("_1_C: show character sheet", COLOR_MID_GRAY);
+    gameMessage("_1_C: character sheet", COLOR_MID_GRAY);
+    gameMessage("_1_A: awards and skills", COLOR_MID_GRAY);
     gameMessage("_1_E: change equipment", COLOR_MID_GRAY);
     gameMessage("_1_I: party inventory", COLOR_MID_GRAY);
     gameMessage("_1_T: talk", COLOR_MID_GRAY);

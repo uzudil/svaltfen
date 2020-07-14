@@ -29,20 +29,14 @@ def newChar(name, imgName) {
 }
 
 def getNextLevelExp(pc) {
-    nextLevel := 500;
-    i := 1;
-    while(i < pc.level + 1) {
-        nextLevel := nextLevel * 2;
-        i := i + 1;
-    }
-    trace("For level " + i + " " + pc.name + " needs " + nextLevel + " exp points. Has: " + pc.exp);
-    return nextLevel;
+    return 700 * pow(2, pc.level - 1);
 }
 
 def gainExp(pc, amount) {
     pc.exp := pc.exp + amount;    
     while(pc.exp >= getNextLevelExp(pc)) {
         pc.level := pc.level + 1;
+        pc.hp := pc.startHp * pc.level;
         gameMessage(pc.name + " is now level " + pc.level + "!", COLOR_GREEN);
     }
 }
@@ -92,7 +86,7 @@ def drink(pc, amount) {
 }
 
 def calculateArmor(pc) {
-    armorBonus := max(0, pc.dex - 15) + max(0, pc.speed - 17);
+    armorBonus := max(0, pc.dex - 15) + max(0, pc.speed - 18);
     invArmor := array_map(array_filter(SLOTS, slot => {
         if(pc.equipment[slot] != null) {
             return ITEMS_BY_NAME[pc.equipment[slot].name]["ac"] != null;
@@ -103,7 +97,7 @@ def calculateArmor(pc) {
         return value + ITEMS_BY_NAME[invItem.name].ac;
     });
 
-    attackBonus := int(pc.level / 2) + max(0, pc.str - 17) + max(0, pc.dex - 17);
+    attackBonus := int(pc.level / 3) + max(0, pc.str - 18) + max(0, pc.dex - 18);
     invWeapons := getWeapons(pc);
     pc.attack := array_map(invWeapons, invItem => {
         dam := ITEMS_BY_NAME[invItem.name].dam;
@@ -127,4 +121,12 @@ def getWeapons(pc) {
         }
         return false;
     }), slot => pc.equipment[slot]);
+}
+
+def getToHitBonus(pc) {
+    tohit := int(pc.level / 3) + max(0, pc.dex - 18) + max(0, pc.speed - 18);
+    if(getGameState("mark_of_fregnar") != null) {
+        tohit := tohit + 2;
+    }
+    return tohit;
 }

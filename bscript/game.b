@@ -15,6 +15,7 @@ const INVENTORY = 2;
 const EQUIPMENT = 3;
 const BUY = 4;
 const SELL = 5;
+const ACCOMPLISHMENTS = 6;
 viewMode := null;
 
 equipmentPc := null;
@@ -39,6 +40,7 @@ def initGame() {
     events["redclaw"] := events_redclaw;
     events["redclaw2"] := events_redclaw2;
     events["world1"] := events_world1;
+    events["beetlecave"] := events_beetlecave;
 
     initItems();
 
@@ -581,6 +583,12 @@ def gameInput() {
             viewMode := INVENTORY;
             initPartyInventoryList();
         }
+        if(isKeyDown(KeyA)) {
+            while(isKeyDown(KeyA)) {
+            }
+            viewMode := ACCOMPLISHMENTS;
+            initAccomplishmentsList();
+        }
         if(gameMode != COMBAT) {
             oldPartyIndex := player.partyIndex;
             if(isKeyDown(Key1)) {
@@ -925,4 +933,15 @@ def dropItem(index, selection) {
 def initPartyInventoryList() {
     list := array_map(player.inventory, item => item.name);
     setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "Inventory is empty");
+}
+
+def initAccomplishmentsList() {
+    list := [];
+    if(getGameState("mark_of_fregnar") != null) {
+        list[len(list)] := "- Mark of Fregnar";
+        list[len(list)] := "identifies you as";
+        list[len(list)] := "Fregnar, aids in";
+        list[len(list)] := "combat.";
+    }
+    setListUi(list, [], "No accomplishments so far");
 }

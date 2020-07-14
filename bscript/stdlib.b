@@ -121,3 +121,13 @@ def array_remove(array, fx) {
         }
     }
 }
+
+def pow(n, e) {
+    if(e = 0) {
+        return 1;
+    }
+    if(e = 1) {
+        return n;
+    }
+    return n * pow(n, e - 1);
+}

@@ -10,7 +10,7 @@ def startCombat() {
     if(gameMode = MOVE && mode != "death") {
         player.party[player.partyIndex].pos[0] := player.x;
         player.party[player.partyIndex].pos[1] := player.y;
-        monsters := getLiveMonsters(player.party[player.partyIndex]);
+        monsters := getLiveMonsters(map.monster, player.party[player.partyIndex]);
         if(len(monsters) > 0) {
             # position party
             array_foreach(player.party, (i, p) => {
@@ -30,6 +30,19 @@ def startCombat() {
 }
 
 def initCombatRound() {
+    if(combat.roundCount > 0) {
+        # find any extra monsters
+        new_monsters := getLiveMonsters(array_filter(map.monster, m => {
+            return array_find_index(combat.monsters, cm => cm.id = m.id) = -1;
+        }), player.party[player.partyIndex]);
+        if(len(new_monsters) > 0) {
+            trace("Added " + len(new_monsters) + " new monsters to combat.");
+        }
+        # add them
+        array_foreach(new_monsters, (i, nm) => {
+            combat.monsters[len(combat.monsters)] := nm;
+        });
+    }
     combat.round := [];
     combat.roundIndex := 0;
     combat.roundCount := combat.roundCount + 1;
@@ -75,7 +88,7 @@ def initCombatRound() {
     });
 
     clearGameMessages();
-    gameMessage("Beginning combat round " + combat.roundCount + "...", COLOR_RED);
+    gameMessage("Combat!", COLOR_RED);
 
     runCombatTurn();
 }
@@ -235,8 +248,8 @@ def combatTurnEnd() {
     }
 }
 
-def getLiveMonsters(pc) {
-    return array_filter(map.monster, m => { 
+def getLiveMonsters(monsters, pc) {
+    return array_filter(monsters, m => { 
         if(m.visible && m.hp > 0 && abs(m.pos[0] - player.x) < 6 && abs(m.pos[1] - player.y) < 6) {
             #trace("live? finding path to " + pc.index + " pos=" + pc.pos);
             m["path"] := findPath(m, pc);
@@ -332,16 +345,16 @@ def playerAttacks(monster) {
     combatRound := combat.round[combat.roundIndex];
     array_foreach(combatRound.pc.attack, (i, attack) => {
         gameMessage(combatRound.pc.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
-        playerAttachsDam(monster, attack.dam);
+        playerAttacksDam(monster, attack.dam);
     });
     return 3;
 }
 
-def playerAttachsDam(monster, damage) {
+def playerAttacksDam(monster, damage) {
     combatRound := combat.round[combat.roundIndex];
 
     # roll to-hit
-    toHit := roll(0, 20);
+    toHit := roll(0, 20) + getToHitBonus(combatRound.pc);
     if(toHit <= monster.monsterTemplate.armor) {
         gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
         return 1;
@@ -354,7 +367,7 @@ def playerAttachsDam(monster, damage) {
         monster.hp := max(monster.hp - dam, 0);
         setMapEffect(combatRound.pc.pos[0], combatRound.pc.pos[1], monster.pos, EFFECT_DAMAGE);
         if(monster.hp = 0) {
-            exp := monster.monsterTemplate.level * 100;
+            exp := monster.monsterTemplate.level * 50;
             gainExp(combatRound.pc, roll(int(exp * 0.7), exp));
             gameMessage(monster.monsterTemplate.name + " dies!", COLOR_RED);
             if(events[mapName]["onMonsterKilled"] != null) {

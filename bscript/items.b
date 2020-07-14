@@ -32,34 +32,77 @@ const OBJECT_SUPPLIES = "supplies";
 
 const ITEMS = [
     { "name": "Moldy cheese", "price": 2, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 2), },
+    { "name": "Hard cheese", "price": 3, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 3), },
     { "name": "Loaf of bread", "price": 3, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 2) },
+    { "name": "Hardtack", "price": 4, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 5) },
     { "name": "Roast chicken", "price": 5, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 4) },
+    { "name": "Roast duck", "price": 5, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 4) },
     { "name": "Rare steak", "price": 7, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 5) },
+    { "name": "Fried ribs", "price": 7, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 5) },
+    { "name": "Mutton", "price": 8, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 7) },
+    { "name": "Meat Pie", "price": 9, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 8) },
+    { "name": "Rice cakes", "price": 5, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 4) },
+    { "name": "Lentils", "price": 5, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 6) },
     { "name": "Chocolate", "price": 3, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 1) },    
+    { "name": "Smoked meat", "price": 6, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 6) },    
 
     { "name": "Watery beer", "price": 1, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 1) },
+    { "name": "Coffee", "price": 2, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 1) },
     { "name": "Ogrebreath Ale", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Sour Beer", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Strong Ale", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
     { "name": "Green wine", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Fragrant Wine", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Sour Wine", "price": 3, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 2) },
+    { "name": "Milk", "price": 2, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
+    { "name": "Yoghurt", "price": 2, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
+    { "name": "Kefir", "price": 2, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
+    { "name": "Mead", "price": 4, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 4) },
     { "name": "Water", "price": 1, "type": OBJECT_DRINK, "use": (self, pc) => drink(pc, 3) },
 
     { "name": "Leather gloves", "level": 1, "price": 3, "type": OBJECT_ARMOR, "slot": SLOT_GLOVE, "ac": 1, },
     { "name": "Leather boots", "level": 2, "price": 4, "type": OBJECT_ARMOR, "slot": SLOT_BOOTS, "ac": 2, },
     { "name": "Leather armor", "level": 3, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 4, },
-    { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Leather helm", "level": 1, "price": 7, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 2, },
+    { "name": "Chain gloves", "level": 2, "price": 10, "type": OBJECT_ARMOR, "slot": SLOT_GLOVE, "ac": 2, },
+    { "name": "Chain armor", "level": 4, "price": 18, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 5, },
+    { "name": "Steel boots", "level": 3, "price": 14, "type": OBJECT_ARMOR, "slot": SLOT_BOOTS, "ac": 3, },
+    { "name": "Steel helm", "level": 2, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 3, },
+    { "name": "Mail gloves", "level": 3, "price": 15, "type": OBJECT_ARMOR, "slot": SLOT_GLOVE, "ac": 3, },
+    { "name": "Mail armor", "level": 5, "price": 32, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 6, },    
+    { "name": "War helm", "level": 3, "price": 20, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 4, },    
+    { "name": "Platemail", "level": 6, "price": 50, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 7, },
+
+    { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
+    { "name": "Forest cape", "level": 2, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
+    { "name": "Cloud cape", "level": 3, "price": 22, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 2, },
 
     { "name": "Dagger", "level": 1, "price": 7, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 2, 4 ] },
     { "name": "Small sword", "level": 2, "price": 8, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 3, 5 ] },
     { "name": "Soldier's sword", "level": 3, "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 8 ] },
     { "name": "Battle Axe", "level": 3, "price": 16, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ] },
     { "name": "Warhammer", "level": 4, "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ] },
+    { "name": "Morningstar", "level": 4, "price": 14, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 7 ] },
+    { "name": "Rapier", "level": 5, "price": 20, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 6, 8 ] },
+    { "name": "Lance", "level": 3, "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 5 ] },
+    { "name": "Short Axe", "level": 3, "price": 16, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 2, 6 ] },
+    { "name": "Greatsword", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 6, 9 ] },
+    { "name": "Greatsaxe", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 10 ] },
 
-    { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ] },
+    { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 1, 2 ] },
     { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },
     { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES },
 
-    { "name": "Small round potion", "level": 1, "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
-    { "name": "Large round potion", "level": 2, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
+    { "name": "Round potion", "level": 1, "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
+    { "name": "Oval potion", "level": 1, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
+    { "name": "Hazy potion", "level": 1, "price": 6, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Cloudy potion", "level": 1, "price": 8, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Mirror potion", "level": 1, "price": 10, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Pooling potion", "level": 1, "price": 15, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Soft potion", "level": 1, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Hard potion", "level": 1, "price": 17, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Dusty potion", "level": 1, "price": 20, "type": OBJECT_POTION, "use": (self, pc) => {} },
+    { "name": "Transparent potion", "level": 1, "price": 20, "type": OBJECT_POTION, "use": (self, pc) => {} },
 ];
 
 ITEMS_BY_TYPE := {};
@@ -84,7 +127,7 @@ def getLoot(level) {
         if(item["level"] != null) {
             return item.level <= level;
         }
-        return false;
+        return true;
     });
     n := roll(0, 3);
     if(n > 0) {
