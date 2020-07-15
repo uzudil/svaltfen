@@ -33,6 +33,8 @@ convo := {
     "saleItems": [],
 };
 
+mapMutation := null;
+
 def initGame() {
     # init the maps
     events["almoc"] := events_almoc;
@@ -53,14 +55,10 @@ def initGame() {
             "blockIndex": 0,
             "messages": [],
             "gameState": {},
-            "blocks": {},
-            "traders": {},
             "inventory": [],
             "coins": 10,
-            "monster": {},
             "party": [],
             "partyIndex": 0,
-            "loot": {},
         };    
 
         gameMessage("You awake underground surrounded by damp earth and old bones. Press H any time for help.", COLOR_YELLOW);
@@ -90,11 +88,19 @@ def initGame() {
 }
 
 def gameLoadMap(name) {
-    loadMap(name);    
-    applyGameBlocks(name);
-    if(player.loot[name] = null) {
-        player.loot[name] := {};
+    loadMap(name);
+
+    mapMutation := load(name + ".mut");
+    if(mapMutation = null) {
+        mapMutation := {
+            "blocks": {},
+            "traders": {},
+            "monster": {},
+            "loot": {},
+        };
     }
+
+    applyGameBlocks(name);
     array_foreach(map.monster, (i, e) => {
         e["image"] := img[blocks[e.block].img];
         e["start"] := [e.pos[0], e.pos[1]];
@@ -102,12 +108,9 @@ def gameLoadMap(name) {
         e["visible"] := false;
         e["monsterTemplate"] := array_find(MONSTERS, m => m.block = blocks[e.block].img);
 
-        if(player.monster[name] = null) {
-            player.monster[name] := {};
-        }
-        if(player.monster[name][e.id] != null) {
-            e["hp"] := player.monster[name][e.id].hp;
-            e["pos"] := player.monster[name][e.id].pos;
+        if(mapMutation.monster[e.id] != null) {
+            e["hp"] := mapMutation.monster[e.id].hp;
+            e["pos"] := mapMutation.monster[e.id].pos;
         } else {
             e["hp"] := e.monsterTemplate.startHp;
         }
@@ -118,16 +121,13 @@ def gameLoadMap(name) {
 
         # init trade
         # todo: refresh this from calendar every so often
-        if(player.traders[name] = null) {
-            player.traders[name] := {};
-        }
         if(events[name]["onTrade"] != null) {
             trade := events[name].onTrade(e);
             if(trade != null) {
-                if(player.traders[name][e.name] = null) {
-                    player.traders[name][e.name] := [];
+                if(mapMutation.traders[e.name] = null) {
+                    mapMutation.traders[e.name] := [];
                 }
-                inv := player.traders[name][e.name];
+                inv := mapMutation.traders[e.name];
                 # get 8 first-level items (basic potions, etc)
                 while(len(inv) < 8) {
                     inv[len(inv)] := itemInstance(getRandomItem(trade, 1));
@@ -318,7 +318,7 @@ def getMapStartPos(nextMapName) {
 
 def applyGameBlocks(newMapName) {
     # apply map block changes (doors, secrets, etc)
-    m := player.blocks[newMapName];
+    m := mapMutation.blocks;
     if(m != null) {
         k := keys(m);
         i := 0;
@@ -335,6 +335,15 @@ def gameEnterMap() {
     if(links[mapName] != null) {
         s := links[mapName][key];
         if(s != null) {
+
+            if(events[mapName] != null) {
+                if(events[mapName]["onTravel"] != null) {
+                    if(events[mapName].onTravel(player.x, player.y) = false) {
+                        return false;
+                    }
+                }
+            }
+
             ss := split(s, ",");
             if(len(ss) > 1) {
                 gameLoadMap(ss[0]);
@@ -397,7 +406,7 @@ def gameSearch() {
         if(map.secrets["" + x + "," + y] = 1 && block != space) {
             if(events[mapName]["onSecret"] != null) {
                 if(events[mapName].onSecret(x, y) = false) {
-                    return null;
+                    return false;
                 }
             }
             setBlock(x, y, space, 0);
@@ -409,13 +418,14 @@ def gameSearch() {
             if(lootIndex > -1) {
                 # make sure we have not seen this before
                 key := "" + x + "," + y;
-                if(player.loot[mapName][key] = null) {
+                if(mapMutation.loot[key] = null) {
                     getLoot(map.loot[lootIndex].level);
                     amount := roll(5, 10) * map.loot[lootIndex].level;
                     player.coins := player.coins + amount;
                     gameMessage("You find " + amount + " coins!", COLOR_GREEN);
-                    player.loot[mapName][key] := lootIndex;
+                    mapMutation.loot[key] := lootIndex;
                     saveGame();
+                    return true;
                 }
             }
             return null;
@@ -513,21 +523,19 @@ def getGameState(name) {
 }
 
 def setGameBlock(x, y, index) {
-    if(player.blocks[player.map] = null) {
-        player.blocks[player.map] := {};
-    }
-    player.blocks[player.map]["" + x + "," + y] := index;
+    mapMutation.blocks["" + x + "," + y] := index;
     saveGame();
 }
 
 def saveGame() {
     array_foreach(map.monster, (i, m) => {
-        player.monster[mapName][m.id] := {
+        mapMutation.monster[m.id] := {
             "hp": m.hp,
             "pos": m.pos,
         };
     });
     save("savegame.dat", player);
+    save(mapName + ".mut", mapMutation);
 }
 
 def gameInput() {
@@ -570,7 +578,7 @@ def gameInput() {
                 while(isKeyDown(KeySpace)) {
                 }
                 if(gameUseDoor() = null) {
-                    if(gameSearch() = null) {
+                    if(gameSearch() != true) {
                         gameMessage("You find nothing.", COLOR_MID_GRAY);
                     }
                 }
@@ -728,12 +736,12 @@ def gameInput() {
 }
 
 def initBuyList() {
-    list := array_map(player.traders[mapName][convo.npc.name], item => item.name + " " + "$" + ITEMS_BY_NAME[item.name].price);
+    list := array_map(mapMutation.traders[convo.npc.name], item => item.name + " " + "$" + ITEMS_BY_NAME[item.name].price);
     setListUi(list, [ [ KeyEnter, buyItem ] ], "There is nothing to buy");
 }
 
 def buyItem(index, selection) {
-    inv := player.traders[mapName][convo.npc.name];
+    inv := mapMutation.traders[convo.npc.name];
     if(index < len(inv)) {
         item := ITEMS_BY_NAME[inv[index].name];
         if(player.coins >= item.price) {

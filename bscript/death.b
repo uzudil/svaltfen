@@ -13,6 +13,7 @@ def deathInput() {
         }
         mode := "title";
         erase("savegame.dat");
+        erase("*.mut");
     }
     if(mode != "death") {
         MODES[mode].init();

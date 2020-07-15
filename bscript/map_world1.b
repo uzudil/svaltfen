@@ -45,4 +45,15 @@ const events_world1 = {
         }
         return null;
     },
+    "onTravel": (self, x, y) => {
+        if(x = 26 && y = 26) {
+            if(getGameState("untervalt_password") = null) {
+                gameMessage("The iron gates won't budge!", COLOR_MID_GRAY);
+                return false;
+            } else {
+                gameMessage("You recite the password and the vast gates creak open!", COLOR_GREEN);
+            }
+        }
+        return true;
+    },
 };
