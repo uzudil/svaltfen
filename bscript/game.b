@@ -43,6 +43,7 @@ def initGame() {
     events["redclaw2"] := events_redclaw2;
     events["world1"] := events_world1;
     events["beetlecave"] := events_beetlecave;
+    events["fenvel"] := events_fenvel;
 
     initItems();
 
@@ -121,26 +122,28 @@ def gameLoadMap(name) {
 
         # init trade
         # todo: refresh this from calendar every so often
-        if(events[name]["onTrade"] != null) {
-            trade := events[name].onTrade(e);
-            if(trade != null) {
-                if(mapMutation.traders[e.name] = null) {
-                    mapMutation.traders[e.name] := [];
-                }
-                inv := mapMutation.traders[e.name];
-                # get 8 first-level items (basic potions, etc)
-                while(len(inv) < 8) {
-                    inv[len(inv)] := itemInstance(getRandomItem(trade, 1));
-                }
-                # get 8 player level items
-                avgLevel := int(array_reduce(player.party, 0, (sum, pc) => sum + pc.level) / len(player.party));
-                while(len(inv) < 16) {
-                    inv[len(inv)] := itemInstance(getRandomItem(trade, avgLevel + 3));
+        if(events[name] != null) {
+            if(events[name]["onTrade"] != null) {
+                trade := events[name].onTrade(e);
+                if(trade != null) {
+                    if(mapMutation.traders[e.name] = null) {
+                        mapMutation.traders[e.name] := [];
+                    }
+                    inv := mapMutation.traders[e.name];
+                    # get 8 first-level items (basic potions, etc)
+                    while(len(inv) < 8) {
+                        inv[len(inv)] := itemInstance(getRandomItem(trade, 1));
+                    }
+                    # get 8 player level items
+                    avgLevel := int(array_reduce(player.party, 0, (sum, pc) => sum + pc.level) / len(player.party));
+                    while(len(inv) < 16) {
+                        inv[len(inv)] := itemInstance(getRandomItem(trade, avgLevel + 3));
+                    }
                 }
             }
         }
-        saveGame();
     });
+    saveGame();
 }
 
 def renderGame() {

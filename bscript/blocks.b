@@ -34,7 +34,7 @@ def getBlockIndexByName(name) {
 }
 
 blocks := [
-    { "img": "water", "blocking": true, "color": COLOR_DARK_BLUE },
+    { "img": "water", "blocking": true, "color": COLOR_DARK_BLUE, "light": false },
     { "img": "grass", "color": COLOR_GREEN },
     { "img": "coast", "type": "edge", "isEdge": true, "color": COLOR_BROWN },
     { "img": "coastcorner", "type": "corner", "isEdge": true, "color": COLOR_BROWN }, 
@@ -109,4 +109,6 @@ blocks := [
     { "img": "books", "blocking": true, "light": false }, 
     { "img": "ghost" }, 
     { "img": "beetle" }, 
+    { "img": "fence", "blocking": true, "light": false }, 
+    { "img": "bridge" }, 
 ];
