@@ -26,7 +26,7 @@ const events_world1 = {
                 "problem": "I have not summoned you. Nor, to my knowledge, did any of the other sages. So the question, is: who is your master $Fregnar _name_?",
                 "Fregnar": "I believe the prudent thing to do would be for you travel to Ashnar, the library of sages, and consult the tomes of knowledge. Maybe someone there will know something $more.",
                 "more": () => {
-                    if(getGameState("mark_of_aiden") = null) {
+                    if(getGameState("mark_of_fregnar") = null) {
                         gameMessage("You receive the Mark of the Fregnar.", COLOR_GREEN);
                         setGameState("mark_of_fregnar", true);
                         return "To help you in your quest, I now mark you as Fregnar, sage-aide. This mark will be visible to your allies. I will see you again in $Ashnar.";

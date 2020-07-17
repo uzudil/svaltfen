@@ -1,4 +1,4 @@
-def newChar(name, imgName) {
+def newChar(name, imgName, level) {
     eq := {};
     array_foreach(SLOTS, (s, slot) => {
         eq[slot] := null;
@@ -6,13 +6,13 @@ def newChar(name, imgName) {
     pc := {
         "name": name,
         "pos": [0, 0],
-        "hp": 10,
+        "hp": 10 * level,
         "startHp": 10,
         "image": img[imgName],
         "hunger": 0,
         "thirst": 0,
-        "exp": 0,
-        "level": 1,
+        "exp": 700 * pow(2, level - 1),
+        "level": level,
         "attack": [],
         "armor": 0,
         "str": roll(15, 20),

@@ -63,7 +63,7 @@ def initGame() {
         };    
 
         gameMessage("You awake underground surrounded by damp earth and old bones. Press H any time for help.", COLOR_YELLOW);
-        c := newChar(playerName, "fighter1");
+        c := newChar(playerName, "fighter1", 1);
         c["index"] := 0;
         player.party[0] := c;
 
@@ -71,7 +71,7 @@ def initGame() {
         #i := 1;
         #while(i < 4) {
         #    name := choose(["fighter1", "robes2", "robes", "man1", "man2", "woman1", "woman2"]);
-        #    c := newChar(name, name);
+        #    c := newChar(name, name, 1);
         #    c["index"] := i;
         #    player.party[len(player.party)] := c;
         #    i := i + 1;
@@ -98,6 +98,7 @@ def gameLoadMap(name) {
             "traders": {},
             "monster": {},
             "loot": {},
+            "npcs": {},
         };
     }
 
@@ -116,6 +117,10 @@ def gameLoadMap(name) {
             e["hp"] := e.monsterTemplate.startHp;
         }
     });
+
+    # filter out npcs no longer present
+    map.npc := array_filter(map.npc, n => mapMutation.npcs[n.name] = null);
+
     array_foreach(map.npc, (i, e) => {
         e["image"] := img[blocks[e.block].img];
         e["start"] := [e.pos[0], e.pos[1]];
@@ -302,6 +307,13 @@ def moveNpcs() {
             }
         }
     });
+}
+
+def removeNpc(name) {
+    npc := array_find(map.npc, n => n.name = name);
+    npc.pos := [-1, -1];
+    # mark them as removed
+    mapMutation.npcs[name] := true;
 }
 
 def getMapStartPos(nextMapName) {
@@ -541,6 +553,13 @@ def saveGame() {
     save(mapName + ".mut", mapMutation);
 }
 
+def endConvo() {
+    viewMode := null;
+    if(gameMode = CONVO) {
+        gameMode := MOVE;
+    }
+}
+
 def gameInput() {
     if(isKeyDown(KeyH)) {
         while(anyKeyDown()) {}
@@ -556,10 +575,7 @@ def gameInput() {
             equipmentSlot := null;
             setEquipmentList();
         } else {
-            viewMode := null;
-            if(gameMode = CONVO) {
-                gameMode := MOVE;
-            }
+            endConvo();
         }
     }
     if(gameMode = MOVE || (gameMode = COMBAT && combat.playerControl)) {
