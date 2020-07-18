@@ -26,4 +26,8 @@ MONSTERS := [
         "drops": [ "Soldier's sword", "Small shield", "coins" ],
         "attack": [6,10], "range": 1, "attackAp": 3, "armor": 7, "startHp": 32, "level": 4, "speed": 8 
     },
+    { "name": "Specter", "block": "ghost", 
+        "drops": [ "coins" ],
+        "attack": [1,2], "range": 1, "attackAp": 2, "armor": 16, "startHp": 15, "level": 5, "speed": 16 
+    },
 ];

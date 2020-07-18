@@ -60,6 +60,7 @@ def initGame() {
     events["beetlecave"] := events_beetlecave;
     events["fenvel"] := events_fenvel;
     events["untervalt"] := events_untervalt;
+    events["ashnar"] := events_ashnar;
 
     initItems();
 

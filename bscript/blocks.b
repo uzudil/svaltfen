@@ -113,4 +113,7 @@ blocks := [
     { "img": "bridge" }, 
     { "img": "sign_heal", "blocking": true, "color": COLOR_BROWN, "light": false }, 
     { "img": "skeleton2" },     
+    { "img": "pedestal", "blocking": true, "light": false },
+    { "img": "pedestal-book", "blocking": true, "light": false },
+    { "img": "lava", "blocking": true, "light": false },
 ];
