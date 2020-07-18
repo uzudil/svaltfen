@@ -25,31 +25,28 @@ const events_fenvel = {
                 },
                 "mistake": "I thought I knew you, but upon closer inspection, I was mistaken.",
                 "sure": () => {
-                    if(getGameState("nixbeetle_trophy") = null) {                                                
+                    if(getGameState("nixbeetle_trophy") = null) {
                         return "Yes, the mark of Fregnar is present, but I need to know that you really are a mighty warrior. The $task I have in mind should cause you no trouble.";
                     } else {
-                        gameMessage("You should Morten the dead Nixbeetle carapace.", COLOR_GREEN);
+                        gameMessage("You show Morten the dead Nixbeetle carapace.", COLOR_GREEN);
                         return "I'm impressed and no longer doubt you worthy of the title Fregnar! If you don't $mind me tagging along, I'd like to $join you on your quest and aide you any way I can.";
                     }
                 },
-                "task": "A small deed of valor is all I require, to prove that you are this year's Fregnar. If you can defeat a $Nixbeetle, I will doubt your prowess no more.",
+                "task": () => {
+                    setGameState("nixbeetle_quest", true);
+                    return "A small deed of valor is all I require, to prove that you are this year's Fregnar. If you can defeat a $Nixbeetle, I will doubt your prowess no more.";
+                },
                 "Nixbeetle": "A fearsome giant vermin they be... Their bodies produce a caustic acid that can melt swords and armor. Bring me proof that you have slain one and prove worthy of being called Fregnar!",
                 "mind": "I understand Fregnar. I will be here ready to $join and help out if you should change your mind.",
                 "join": () => {
-                    gameMessage("Morten joins you as a companion!", COLOR_YELLOW);
-                    morten := newChar("Morten", "robes2", 3);
-                    # todo: add some equipment/spells/etc
-                    player.party[len(player.party)] := morten;
-                    removeNpc("Morten");
-                    endConvo();
-                    saveGame();
+                    joinParty(n, 3);
                     return "Onward, Fregnar!";
                 },
             };
         }
         if(n.name = "Asile") {
             return {
-                "": "Stay for a bit stranger. Let me know if my pub can $offer|_trade_ you any food or drink.",
+                "": "In the halls of resting all are welcome. Let me know if you need $healing|_heal_.",
             };
         }
         if(n.name = "Simone") {

@@ -87,7 +87,7 @@ def initCombatRound() {
         }
     });
 
-    clearGameMessages();
+    #clearGameMessages();
     gameMessage("Combat!", COLOR_RED);
 
     runCombatTurn();
@@ -308,7 +308,7 @@ def attackMonster(targetPc) {
     gameMessage(monster.monsterTemplate.name + " attacks " + targetPc.name + "!", COLOR_MID_GRAY);
 
     # roll to-hit
-    toHit := roll(0, 20);
+    toHit := roll(0, 20) + monster.monsterTemplate.armor;
     if(toHit <= targetPc.armor) {
         gameMessage(monster.monsterTemplate.name + " misses.", COLOR_MID_GRAY);
         return 1;
@@ -378,8 +378,23 @@ def playerAttacksDam(monster, damage) {
             exp := monster.monsterTemplate.level * 50;
             gainExp(combatRound.pc, roll(int(exp * 0.7), exp));
             gameMessage(monster.monsterTemplate.name + " dies!", COLOR_RED);
+            if(monster.monsterTemplate["onDeath"] != null) {
+                monster.monsterTemplate.onDeath();
+            }
             if(events[mapName]["onMonsterKilled"] != null) {
                 events[mapName].onMonsterKilled(monster);
+            }
+            if(monster.monsterTemplate["drops"] != null) {
+                array_foreach(monster.monsterTemplate.drops, (i, name) => {
+                    if(name = "coins") {
+                        amount := roll(7 * monster.monsterTemplate.level, 10 * monster.monsterTemplate.level);
+                        player.coins := player.coins + amount;
+                        gameMessage("You find " + amount + " coins!", COLOR_GREEN);
+                    } else {
+                        gameMessage("You find " + name + "!", COLOR_GREEN);
+                        player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME[name]);
+                    }
+                });
             }
         } else {
             percent := monster.hp / monster.monsterTemplate.startHp;

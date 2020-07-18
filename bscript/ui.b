@@ -104,6 +104,13 @@ def drawPcList(x, y, color) {
     });
 }
 
+def drawHeal() {
+    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Healing by " + convo.npc.name);
+    drawListUi(10, 30);
+    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to buy service");
+}
+
 def drawTradeBuy() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Inventory of " + convo.npc.name);
     drawListUi(10, 30);
@@ -226,6 +233,9 @@ def drawUI() {
     drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color); 
     drawGameMessages(x, message_y + 90);
 
+    if(viewMode = HEAL) {
+        drawHeal();
+    }
     if(viewMode = BUY) {
         drawTradeBuy();
     }

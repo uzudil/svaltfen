@@ -49,6 +49,18 @@ const events_world1 = {
         if(x = 26 && y = 26) {
             if(getGameState("untervalt_password") = null) {
                 gameMessage("The iron gates won't budge!", COLOR_MID_GRAY);
+                if(array_find_index(player.party, pc => pc.name = "Morten" && pc.hp > 0) > -1) {
+                    startConvo({ "name": "Morten" }, {
+                        "": "If you want to enter the Grunvalt $Passage, allow me to $help|historian.",
+                        "Passage": "Built long ago by the order of Sages, this passage leads to the heart of the Grunvalt mountains. In the distant past, ancient sages used it to reach the $library at Ashnar.",
+                        "library": "Nowadays the sages just teleport there using magic. No one knows how long the passage stood closed like this. But lucky for us, I'm a $historian!",
+                        "historian": "I studied the histort of Fregnar and the sages. During my studies I came across the $password which unlocks the gates of Grunvalt Passage.",
+                        "password": () => {
+                            setGameState("untervalt_password", true);
+                            return "Let's see now... I believe the phrase was: 'Open for rightous, Fregnar, Frehyen-bane!'. Hmmm, maybe you should try it.";
+                        },
+                    });
+                }
                 return false;
             } else {
                 gameMessage("You recite the password and the vast gates creak open!", COLOR_GREEN);

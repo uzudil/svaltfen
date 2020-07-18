@@ -3,6 +3,10 @@ def newChar(name, imgName, level) {
     array_foreach(SLOTS, (s, slot) => {
         eq[slot] := null;
     });
+    exp := 0;
+    if(level > 1) {
+        exp := 700 * pow(2, level - 1);
+    }
     pc := {
         "name": name,
         "pos": [0, 0],
@@ -11,7 +15,7 @@ def newChar(name, imgName, level) {
         "image": img[imgName],
         "hunger": 0,
         "thirst": 0,
-        "exp": 700 * pow(2, level - 1),
+        "exp": exp,
         "level": level,
         "attack": [],
         "armor": 0,
@@ -43,7 +47,10 @@ def gainExp(pc, amount) {
 
 def gainHp(pc, amount) {
     old := pc.hp;
-    pc.hp := min(pc.hp + amount, pc.startHp * pc.level);
+    # dead characters can't heal
+    if(pc.hp > 0) {    
+        pc.hp := min(pc.hp + amount, pc.startHp * pc.level);
+    }
     if(pc.hp > old) {
         gameMessage(pc.name + " gains " + (pc.hp - old) + " health points.", COLOR_GREEN);
     } else {
@@ -146,4 +153,15 @@ def decItemLife(pc, slot) {
         gameMessage(invItem.name + " cracks!", COLOR_RED);
     }
     return false;
+}
+
+def joinParty(npc, level) {
+    gameMessage(npc.name + " joins you as a companion!", COLOR_YELLOW);
+    ch := newChar(npc.name, blocks[npc.block].img, 3);
+    # todo: add some equipment/spells/etc
+    ch["index"] := len(player.party);
+    player.party[len(player.party)] := ch;
+    removeNpc(npc.name);
+    endConvo();
+    saveGame();
 }

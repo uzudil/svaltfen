@@ -29,6 +29,7 @@ const OBJECT_POTION = "potion";
 const OBJECT_ARMOR = "armor";
 const OBJECT_WEAPON = "weapon";
 const OBJECT_SUPPLIES = "supplies";
+const OBJECT_SPECIAL = "special";
 
 const ITEMS = [
     { "name": "Moldy cheese", "price": 2, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 2), },
@@ -76,6 +77,10 @@ const ITEMS = [
     { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Forest cape", "level": 2, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Cloud cape", "level": 3, "price": 22, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 2, },
+
+    { "name": "Small shield", "level": 1, "price": 15, "type": OBJECT_ARMOR, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "ac": 1, },
+    { "name": "Kite shield", "level": 2, "price": 32, "type": OBJECT_ARMOR, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "ac": 2, },
+    { "name": "Full shield", "level": 3, "price": 40, "type": OBJECT_ARMOR, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "ac": 3, },
 
     { "name": "Dagger", "level": 1, "price": 7, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 2, 4 ] },
     { "name": "Small sword", "level": 2, "price": 8, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 3, 5 ] },

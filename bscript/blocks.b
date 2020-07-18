@@ -111,4 +111,6 @@ blocks := [
     { "img": "beetle" }, 
     { "img": "fence", "blocking": true, "light": false }, 
     { "img": "bridge" }, 
+    { "img": "sign_heal", "blocking": true, "color": COLOR_BROWN, "light": false }, 
+    { "img": "skeleton2" },     
 ];

@@ -16,6 +16,7 @@ const EQUIPMENT = 3;
 const BUY = 4;
 const SELL = 5;
 const ACCOMPLISHMENTS = 6;
+const HEAL = 7;
 viewMode := null;
 
 equipmentPc := null;
@@ -35,6 +36,20 @@ convo := {
 
 mapMutation := null;
 
+const HEALING_LIST = [
+    { "name": "Minor healing", "price": 10, "action": (self, pc) => gainHp(pc, 10), },
+    { "name": "Major healing", "price": 32, "action": (self, pc) => gainHp(pc, 50), },
+    { "name": "Absolute healing", "price": 55, "action": (self, pc) => gainHp(pc, pc.level * pc.startHp), },
+    { 
+        "name": "Resurrection", "price": 128, 
+        "action": (self, pc) => { 
+            gameMessage(pc.name + " returns to life!", COLOR_GREEN);
+            pc.hp := 1; 
+            gainHp(pc, pc.level * pc.startHp); 
+        }, 
+    },
+];
+
 def initGame() {
     # init the maps
     events["almoc"] := events_almoc;
@@ -44,6 +59,7 @@ def initGame() {
     events["world1"] := events_world1;
     events["beetlecave"] := events_beetlecave;
     events["fenvel"] := events_fenvel;
+    events["untervalt"] := events_untervalt;
 
     initItems();
 
@@ -480,6 +496,11 @@ def showConvoText() {
     };
     text := null;
     viewMode := null;
+    if(convo.key = "_heal_") {
+        viewMode := HEAL;
+        text := "How can I help?";
+        initHealList();
+    }
     if(convo.key = "_trade_") {
         text := "Do you want to $sell|_sell_ or $buy|_buy_?";
         result.answers[0] := [ "Bye", "bye" ];
@@ -711,42 +732,63 @@ def gameInput() {
     }
 
     if(gameMode = CONVO) {
-        index := null;
-        if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
-            while(anyKeyDown()) {}
-            index := 0;
+        if(viewMode != null) {
+            if(isKeyDown(Key1)) {
+                while(anyKeyDown()) {}
+                player.partyIndex := 0;
+            }
+            if(isKeyDown(Key2) && len(player.party) > 1) {
+                while(anyKeyDown()) {}
+                player.partyIndex := 1;
+            }
+            if(isKeyDown(Key3) && len(player.party) > 2) {
+                while(anyKeyDown()) {}
+                player.partyIndex := 2;
+            }
+            if(isKeyDown(Key4) && len(player.party) > 3) {
+                while(anyKeyDown()) {}
+                player.partyIndex := 3;
+            }
         }
-        if(isKeyDown(Key2)) {
-            while(anyKeyDown()) {}
-            index := 1;
-        }
-        if(isKeyDown(Key3)) {
-            while(anyKeyDown()) {}
-            index := 2;
-        }
-        if(isKeyDown(Key4)) {
-            while(anyKeyDown()) {}
-            index := 3;
-        }
-        if(isKeyDown(Key5)) {
-            while(anyKeyDown()) {}
-            index := 4;
-        }
-        if(isKeyDown(Key6)) {
-            while(anyKeyDown()) {}
-            index := 5;
-        }
-        if(index != null) {
-            if(index = 0) {
-                gameMode := MOVE;
-                viewMode := null;
-                gameMessage("Bye.", COLOR_MID_GRAY);
-            } else {
-                if(viewMode = null) {
-                    if(len(convo.answers) > index) {
-                        convo.key := convo.answers[index][1];
-                        clearGameMessages();
-                        showConvoText();
+
+        if(viewMode = null && moreText = false) {
+            index := null;
+            if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
+                while(anyKeyDown()) {}
+                index := 0;
+            }
+            if(isKeyDown(Key2)) {
+                while(anyKeyDown()) {}
+                index := 1;
+            }
+            if(isKeyDown(Key3)) {
+                while(anyKeyDown()) {}
+                index := 2;
+            }
+            if(isKeyDown(Key4)) {
+                while(anyKeyDown()) {}
+                index := 3;
+            }
+            if(isKeyDown(Key5)) {
+                while(anyKeyDown()) {}
+                index := 4;
+            }
+            if(isKeyDown(Key6)) {
+                while(anyKeyDown()) {}
+                index := 5;
+            }
+            if(index != null) {
+                if(index = 0) {
+                    gameMode := MOVE;
+                    viewMode := null;
+                    gameMessage("Bye.", COLOR_MID_GRAY);
+                } else {
+                    if(viewMode = null) {
+                        if(len(convo.answers) > index) {
+                            convo.key := convo.answers[index][1];
+                            clearGameMessages();
+                            showConvoText();
+                        }
                     }
                 }
             }
@@ -757,6 +799,23 @@ def gameInput() {
 def initBuyList() {
     list := array_map(mapMutation.traders[convo.npc.name], item => item.name + " " + "$" + ITEMS_BY_NAME[item.name].price);
     setListUi(list, [ [ KeyEnter, buyItem ] ], "There is nothing to buy");
+}
+
+def initHealList() {
+    list := array_map(HEALING_LIST, item => item.name + " " + "$" + item.price);
+    setListUi(list, [ [ KeyEnter, healPc ] ], "");
+}
+
+def healPc(index, selection) {
+    spell := HEALING_LIST[index];
+    if(player.coins >= spell.price) {
+        gameMessage(spell.name + " is cast on " + player.party[player.partyIndex].name + ".", COLOR_MID_GRAY);
+        spell.action(player.party[player.partyIndex]);
+        player.coins := player.coins - spell.price;
+        saveGame();
+    } else {
+        gameMessage("You don't have enough money to buy that.", COLOR_RED);
+    }
 }
 
 def buyItem(index, selection) {
