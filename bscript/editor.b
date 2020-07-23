@@ -36,6 +36,15 @@ def addSecretDoor() {
     map.secrets["" + editor.x + "," + editor.y] := 1;
 }
 
+def loadMapByName() {
+    setVideoMode(0);
+    name := input("Map name:");
+    setVideoMode(1);
+    loadMap(name);
+    editor.x := int(map.width/2);
+    editor.y := int(map.height/2);
+}
+
 def addNpc() {
     if(map["npc"] = null) {
         map["npc"] := [];
@@ -212,6 +221,11 @@ def editorDrawViewAt(x, y, mx, my, onScreen) {
 }
 
 def handleEditorInput() {
+    if(isKeyDown(KeyJ)) {
+        while(isKeyDown(KeyJ)) {
+        }
+        loadMapByName();
+    }
     if(isKeyDown(KeyEnter)) {
         while(isKeyDown(KeyEnter)) {
         }
@@ -340,6 +354,7 @@ def handleEditorInput() {
         print("N - add NPC");
         print("Z - add monster");
         print("L - add loot");
+        print("J - load map by name");
         print("Press any key");
         while(anyKeyDown() = false) {
         }

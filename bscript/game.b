@@ -61,6 +61,7 @@ def initGame() {
     events["fenvel"] := events_fenvel;
     events["untervalt"] := events_untervalt;
     events["ashnar"] := events_ashnar;
+    events["ashnar2"] := events_ashnar2;
 
     initItems();
 
@@ -419,6 +420,11 @@ def gameUseDoor() {
     return aroundPlayer((x, y) => {
         block := blocks[getBlock(x, y).block];
         if(block["nextState"] != null) {
+            if(events[mapName]["onDoor"] != null) {
+                if(events[mapName].onDoor(x, y)) {
+                    return true;
+                }
+            }
             index := getBlockIndexByName(block.nextState);
             setBlock(x, y, index, 0);
             setGameBlock(x, y, index);
@@ -451,10 +457,20 @@ def gameSearch() {
                 # make sure we have not seen this before
                 key := "" + x + "," + y;
                 if(mapMutation.loot[key] = null) {
-                    getLoot(map.loot[lootIndex].level);
-                    amount := roll(5, 10) * map.loot[lootIndex].level;
-                    player.coins := player.coins + amount;
-                    gameMessage("You find " + amount + " coins!", COLOR_GREEN);
+
+                    handled := false;
+                    if(events[mapName]["onLoot"] != null) {
+                        if(events[mapName].onLoot(x, y)) {
+                            handled := true;
+                        }
+                    }
+
+                    if(handled = false) {
+                        getLoot(map.loot[lootIndex].level);
+                        amount := roll(5, 10) * map.loot[lootIndex].level;
+                        player.coins := player.coins + amount;
+                        gameMessage("You find " + amount + " coins!", COLOR_GREEN);
+                    }
                     mapMutation.loot[key] := lootIndex;
                     saveGame();
                     return true;
@@ -474,6 +490,9 @@ def gameConvo() {
                 startConvo(n, convo);
                 return 1;
             }
+        }
+        if(n != null) {
+            trace("No convo for " + n.name);
         }
         return null;
     });
@@ -1040,6 +1059,11 @@ def initAccomplishmentsList() {
         list[len(list)] := "identifies you as";
         list[len(list)] := "Fregnar, aids in";
         list[len(list)] := "combat.";
+    }
+    if(getGameState("enhanced_heal") != null) {
+        list[len(list)] := "- Enhanced Healing";
+        list[len(list)] := "your injuries heal";
+        list[len(list)] := "faster than normal.";
     }
     setListUi(list, [], "No accomplishments so far");
 }
