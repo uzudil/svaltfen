@@ -119,4 +119,7 @@ blocks := [
     { "img": "grate1", "type": "grateclosed1", "blocking": true, "light": false, "color": COLOR_BROWN, "nextState": "grate2" }, 
     { "img": "grate2", "type": "grateopen1", "blocking": false, "color": COLOR_BROWN, "nextState": "grate1" }, 
     { "img": "rocks", "blocking": true },
+    { "img": "shroom" },
+    { "img": "plant1" },
+    { "img": "plant2" },
 ];
