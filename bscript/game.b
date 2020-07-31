@@ -63,6 +63,7 @@ def initGame() {
     events["ashnar"] := events_ashnar;
     events["ashnar2"] := events_ashnar2;
     events["van"] := events_van;
+    events["skyforge"] := events_skyforge;
 
     initItems();
 

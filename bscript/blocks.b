@@ -122,4 +122,9 @@ blocks := [
     { "img": "shroom" },
     { "img": "plant1" },
     { "img": "plant2" },
+    { "img": "fence2", "blocking": true, "light": false },     
+    { "img": "candles" },
+    { "img": "tomb", "blocking": true },
+    { "img": "tomb2", "blocking": true },
+    { "img": "fountain", "blocking": true },
 ];
