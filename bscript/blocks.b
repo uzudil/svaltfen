@@ -127,4 +127,9 @@ blocks := [
     { "img": "tomb", "blocking": true },
     { "img": "tomb2", "blocking": true },
     { "img": "fountain", "blocking": true },
+    { "img": "roots", "blocking": true, "color": COLOR_TEAL },     
+    { "img": "vegwar" },
+    { "img": "xurcelt" },
+    { "img": "gnork" },
+    { "img": "slime1" },
 ];

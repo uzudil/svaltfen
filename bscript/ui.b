@@ -130,7 +130,7 @@ def drawCharSheet() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, pc.name);
 
     drawColoredText(10, 20, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level);
-    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp + " Nxt Lvl:" + getNextLevelExp(pc));
+    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp + " Nxt:" + getNextLevelExp(pc));
     drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "HP:" + pc.hp + "/" + (pc.startHp * pc.level));
     drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
     drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Attack:" + array_join(array_reduce(pc.attack, [], (a, p) => {

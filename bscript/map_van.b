@@ -59,10 +59,20 @@ const events_van = {
             };
         }
         if(n.name = "Mirgle") {
+            return {
+                "": "I brew $potions|_trade_ of all kinds here in $Van. Let me know if you need some.",
+                "Van": "Van is our hidden village in the $forest. Our $mayor Xennus runs the town.",
+                "forest": "The village is not easy to find, right? This is how we keep out of trouble. Also, $Xennus|mayor helps us all get along.",
+                "mayor": "Oh yeah you should go meet mayor Xennus. A wiser Mycoid has never lived than he! Although $lately he's been unusually gruff.",
+                "lately": "There must be a lot on his mind. Running a village like $Van is stressful work, I guess. Still, he used to be nicer. It's as if he's not himself these days!",
+            };
         }
         return null;
     },
     "onTrade": (self, n) => {
+        if(n.name = "Mirgle") {
+            return [ OBJECT_POTION, OBJECT_SUPPLIES ];
+        }
         return null;
     },
 };

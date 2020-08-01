@@ -81,6 +81,7 @@ const events_ashnar = {
                         gameMessage("You gain Enhanced Healing.", COLOR_GREEN);
                         setGameState("enhanced_heal", true);
                     }
+                    setGameState("quest_books", true);
                     return "On your journey, you will face many enemies. Using our skills, we can accelerate your natural ability to heal. Go forth now and return to us when you have found the four Tomes of Wisdom.";
                 },
             };

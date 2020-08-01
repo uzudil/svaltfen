@@ -64,6 +64,9 @@ def initGame() {
     events["ashnar2"] := events_ashnar2;
     events["van"] := events_van;
     events["skyforge"] := events_skyforge;
+    events["world2"] := events_world2;
+    events["xurcelt"] := events_xurcelt;
+    events["Ardor"] := events_ardor;
 
     initItems();
 
