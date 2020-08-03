@@ -18,6 +18,8 @@ const SELL = 5;
 const ACCOMPLISHMENTS = 6;
 const HEAL = 7;
 viewMode := null;
+invMode := null;
+invTypeList := [];
 
 equipmentPc := null;
 equipmentSlot := null;
@@ -607,13 +609,18 @@ def endConvo() {
 }
 
 def gameInput() {
+
+    if(moreText) {
+        if(isKeyDown(KeySpace)) {
+            while(anyKeyDown()) {}
+            pageGameMessages();
+        }
+        return 1;
+    }
+
     if(isKeyDown(KeyH)) {
         while(anyKeyDown()) {}
         showGameHelp();
-    }
-    if(moreText && isKeyDown(KeySpace)) {
-        while(anyKeyDown()) {}
-        pageGameMessages();
     }
     if(isKeyDown(KeyEscape)) {
         while(isKeyDown(KeyEscape)) {}
@@ -621,7 +628,12 @@ def gameInput() {
             equipmentSlot := null;
             setEquipmentList();
         } else {
-            endConvo();
+            if(viewMode = INVENTORY && invMode != null) {
+                invMode := null;
+                initPartyInventoryList();
+            } else {
+                endConvo();
+            }
         }
     }
     if(gameMode = MOVE || (gameMode = COMBAT && combat.playerControl)) {
@@ -664,6 +676,7 @@ def gameInput() {
         if(isKeyDown(KeyI)) {
             while(isKeyDown(KeyI)) {
             }
+            invMode := null;
             viewMode := INVENTORY;
             initPartyInventoryList();
         }
@@ -776,7 +789,7 @@ def gameInput() {
             }
         }
 
-        if(viewMode = null && moreText = false) {
+        if(viewMode = null) {
             index := null;
             if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
                 while(anyKeyDown()) {}
@@ -1033,28 +1046,41 @@ def drawEffect(x, y, mx, my, effect) {
 }
 
 def useItem(index, selection) {
-    invItem := player.inventory[index];
+    invIndex := invTypeList[index].index;
+    invItem := player.inventory[invIndex];
     item := ITEMS_BY_NAME[invItem.name];
     if(item["use"] != null) {
         pc := player.party[player.partyIndex];
         gameMessage(pc.name + " uses " + item.name, COLOR_MID_GRAY);
         item.use(pc);
-        del player.inventory[index];
-        initPartyInventoryList();
+        del player.inventory[invIndex];
+        initPartyInventoryType(invMode, "");
     } else {
         gameMessage("You cannot use that item.", COLOR_MID_GRAY);
     }
 }
 
 def dropItem(index, selection) {
-    gameMessage("You throw away " + player.inventory[index].name, COLOR_MID_GRAY);
-    del player.inventory[index];
-    initPartyInventoryList();
+    invIndex := invTypeList[index].index;
+    gameMessage("You throw away " + player.inventory[invIndex].name, COLOR_MID_GRAY);
+    del player.inventory[invIndex];
+    initPartyInventoryType(invMode, "");
+}
+
+def initPartyInventoryType(index, selection) {
+    invMode := index;
+    invTypeList := [];
+    array_foreach(player.inventory, (index, item) => {
+        if(ITEMS_BY_NAME[item.name].type = OBJECT_TYPES[invMode]) {
+            invTypeList[len(invTypeList)] := { "name": item.name, "index": index };
+        }
+    });
+    list := array_map(invTypeList, item => item.name);
+    setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "No items of type " + OBJECT_TYPES[invMode]);    
 }
 
 def initPartyInventoryList() {
-    list := array_map(player.inventory, item => item.name);
-    setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "Inventory is empty");
+    setListUi(OBJECT_TYPES, [ [ KeyEnter, initPartyInventoryType ] ], "");
 }
 
 def initAccomplishmentsList() {

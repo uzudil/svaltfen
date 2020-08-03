@@ -31,6 +31,8 @@ const OBJECT_WEAPON = "weapon";
 const OBJECT_SUPPLIES = "supplies";
 const OBJECT_SPECIAL = "special";
 
+const OBJECT_TYPES = [ OBJECT_POTION, OBJECT_FOOD, OBJECT_DRINK, OBJECT_SUPPLIES, OBJECT_ARMOR, OBJECT_WEAPON, OBJECT_SPECIAL ];
+
 const ITEMS = [
     { "name": "Moldy cheese", "price": 2, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 2), },
     { "name": "Hard cheese", "price": 3, "type": OBJECT_FOOD, "use": (self, pc) => eat(pc, 3), },

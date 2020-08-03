@@ -14,8 +14,12 @@ const events_van = {
                 "plants": "I guess us Mycoids are living a sheltered life, in a world that is stranger than we dreamt of in our philosophy. Maybe I'll pose this riddle to $Xurcelt when I see him next...",
                 "Xurcelt": "Oh you have not met him? He's the wisest being in all of the forest. If you're looking for answers, you should definitely $seek him out. Just be $careful when you approach - he does not like visitors.",
                 "seek": () => {
-                    setGameState("quest_xurcelt", true);
-                    return "How to find him? Well now... you simply, uh... hmm it's difficult to explain... Just follow the roots through the forest.";
+                    if(getGameState("xennus_weird") = true) {
+                        setGameState("quest_xurcelt", true);
+                        return "How to find him? Well now... you simply, uh... hmm it's difficult to explain... Just follow the roots through the forest.";
+                    } else {
+                        return "I can't remember the path to Xurcelt just now, but come back later and I'll tell you.";
+                    }
                 },
                 "careful": "$Xurcelt is a deep thinker who does not like intrusion. He barely tolerates us Mycoids and I really don't know how he will react to talking $food|meat.",
             };

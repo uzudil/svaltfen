@@ -36,10 +36,10 @@ MONSTERS := [
     },
     { "name": "Gnork", "block": "gnork", 
         "drops": [ "coins", "Warhammer", "Kite shield", "Oval potion" ],
-        "attack": [10,12], "range": 1, "attackAp": 4, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
+        "attack": [6,8], "range": 1, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
     },
     { "name": "Green Mold", "block": "slime1", 
         "drops": [ "coins" ],
-        "attack": [4,8], "range": 1, "attackAp": 2, "armor": 18, "startHp": 20, "level": 5, "speed": 3 
+        "attack": [4,5], "range": 1, "attackAp": 4, "armor": 18, "startHp": 20, "level": 6, "speed": 3 
     },
 ];
