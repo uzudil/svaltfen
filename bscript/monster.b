@@ -42,4 +42,12 @@ MONSTERS := [
         "drops": [ "coins" ],
         "attack": [4,5], "range": 1, "attackAp": 4, "armor": 18, "startHp": 20, "level": 6, "speed": 3 
     },
+    { "name": "Demon Grunt", "block": "demon", 
+        "drops": [ "coins", "Lance", "Oval potion" ],
+        "attack": [6,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8 
+    },
+    { "name": "Cult Fanatic", "block": "cultist", 
+        "drops": [ "coins", "Lance", "Oval potion" ],
+        "attack": [5,8], "range": 1, "attackAp": 3, "armor": 11, "startHp": 40, "level": 7, "speed": 8 
+    },
 ];

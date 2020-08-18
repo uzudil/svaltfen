@@ -104,3 +104,24 @@ def setBlockFlip(mx, my, blockIndex, rot, xflip, yflip) {
     }
     minimap[c.x][c.y] := blocks[map.blocks[c.x][c.y].block].color;
 }
+
+def initMaps() {
+    events["almoc"] := events_almoc;
+    events["bonefell"] := events_bonefell;
+    events["redclaw"] := events_redclaw;
+    events["redclaw2"] := events_redclaw2;
+    events["world1"] := events_world1;
+    events["beetlecave"] := events_beetlecave;
+    events["fenvel"] := events_fenvel;
+    events["untervalt"] := events_untervalt;
+    events["ashnar"] := events_ashnar;
+    events["ashnar2"] := events_ashnar2;
+    events["van"] := events_van;
+    events["skyforge"] := events_skyforge;
+    events["world2"] := events_world2;
+    events["xurcelt"] := events_xurcelt;
+    events["Ardor"] := events_ardor;
+    events["under1"] := events_under1;
+    events["vamir"] := events_vamir;
+    events["tristen"] := events_tristen;
+}

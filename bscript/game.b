@@ -54,22 +54,7 @@ const HEALING_LIST = [
 
 def initGame() {
     # init the maps
-    events["almoc"] := events_almoc;
-    events["bonefell"] := events_bonefell;
-    events["redclaw"] := events_redclaw;
-    events["redclaw2"] := events_redclaw2;
-    events["world1"] := events_world1;
-    events["beetlecave"] := events_beetlecave;
-    events["fenvel"] := events_fenvel;
-    events["untervalt"] := events_untervalt;
-    events["ashnar"] := events_ashnar;
-    events["ashnar2"] := events_ashnar2;
-    events["van"] := events_van;
-    events["skyforge"] := events_skyforge;
-    events["world2"] := events_world2;
-    events["xurcelt"] := events_xurcelt;
-    events["Ardor"] := events_ardor;
-
+    initMaps();
     initItems();
 
     savegame := load("savegame.dat");
@@ -111,6 +96,19 @@ def initGame() {
     player["image"] := img[blocks[player.blockIndex].img];
     mapName := player.map;
     gameLoadMap(mapName);
+}
+
+def addMonster(block, x, y) {
+    tmpl := array_find(MONSTERS, m => m.block = blocks[getBlockIndexByName(block)].img);
+    map.monster[len(map.monster)] := {
+        "image": img[blocks[getBlockIndexByName(block)].img],
+        "start": [x, y],
+        "pos": [x, y],
+        "id": "" + x + "," + y,
+        "visible": false,
+        "monsterTemplate": tmpl,
+        "hp": tmpl.startHp,
+    };
 }
 
 def gameLoadMap(name) {
@@ -317,14 +315,20 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
 def moveNpcs() {
     array_foreach(map.npc, (i, e) => {
         if(random() > 0.5) {
+
+            r := 5;
+            if(events[mapName]["getNpcRadius"] != null) {
+                r := events[mapName].getNpcRadius(e);
+            }
+
             dx := choose([ 1, -1 ]);
             dy := choose([ 1, -1 ]);
             e.pos[0] := e.pos[0] + dx;
             e.pos[1] := e.pos[1] + dy;
             block := blocks[getBlock(e.pos[0], e.pos[1]).block];
             if(block.blocking || 
-                abs(e.pos[0] - e.start[0]) > 5 || 
-                abs(e.pos[1] - e.start[1]) > 5 || 
+                abs(e.pos[0] - e.start[0]) > r || 
+                abs(e.pos[1] - e.start[1]) > r || 
                 (e.pos[0] = player.x && e.pos[1] = player.y)
             ) {
                 e.pos[0] := e.pos[0] - dx;
@@ -549,6 +553,14 @@ def showConvoText() {
     if(typeof(text) = "function") {
         text := text();
     }
+
+    # convo is over
+    if(text = null) {
+        gameMode := MOVE;
+        viewMode := null;
+        return true;
+    }
+
     array_foreach(split(text, " "), (i, s) => {
         if(len(result.words) > 0) {
             result.words := result.words + " ";

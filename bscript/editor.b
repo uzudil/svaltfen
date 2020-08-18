@@ -303,13 +303,21 @@ def handleEditorInput() {
         connectMine(editor.x, editor.y);
     }
     if(isKeyDown(KeyLeftBracket)) {
-        editor.blockIndex := editor.blockIndex - 1;
+        d := 1;
+            if(isKeyDown(KeyLeftControl) || isKeyDown(KeyRightControl)) {
+            d := 32;
+        }
+        editor.blockIndex := editor.blockIndex - d;
         if(editor.blockIndex < 0) {
             editor.blockIndex := len(blocks) - 1;
         }
     }
     if(isKeyDown(KeyRightBracket)) {
-        editor.blockIndex := editor.blockIndex + 1;
+        d := 1;
+        if(isKeyDown(KeyLeftControl) || isKeyDown(KeyRightControl)) {
+            d := 32;
+        }
+        editor.blockIndex := editor.blockIndex + d;
         if(editor.blockIndex >= len(blocks)) {
             editor.blockIndex := 0;
         }
@@ -350,6 +358,7 @@ def handleEditorInput() {
         print("D - Delete link/secret door/npc/etc");
         print("Enter - Load linked map");
         print("[,] - change tile");
+        print("ctrl [,] - page tile");
         print("M - toggle map");
         print("N - add NPC");
         print("Z - add monster");
@@ -397,12 +406,18 @@ def fillMap(x, y, blockIndex) {
     }
 }
 
-def isMineWall(mx, my) {
+def getMineWall(mx, my) {
     if(mx < 0 || my < 0 || mx >= map.width || my >= map.height) {
         return false;
     }
     s := blocks[getBlock(mx, my).block].img;
-    return s = "earth1" || s = "earth2" || s = "earth3";
+    if(s = "earth1" || s = "earth2" || s = "earth3") {
+        return "earth";
+    }
+    if(s = "red1" || s = "red2" || s = "red3") {
+        return "red";
+    }
+    return null;
 }
 
 def isMineFloor(mx, my) {
@@ -428,8 +443,13 @@ def connectMine(mx, my) {
     }
 }
 
+def getMineBlock(mineType, mineIndex) {
+    return getBlockIndexByName(mineType + mineIndex);
+}
+
 def connectMineWall(mx, my) {
-    if(isMineWall(mx, my)) {
+    mineType := getMineWall(mx, my);
+    if(mineType != null) {
         n := isMineFloor(mx, my - 1);
         s := isMineFloor(mx, my + 1);
         e := isMineFloor(mx + 1, my);
@@ -440,35 +460,35 @@ def connectMineWall(mx, my) {
             return 0;
         }
         if(n && e) {
-            setBlock(mx, my, getBlockIndexByName("earth3"), 0);
+            setBlock(mx, my, getMineBlock(mineType, 3), 0);
             return 0;
         }
         if(s && e) {
-            setBlock(mx, my, getBlockIndexByName("earth3"), 1);
+            setBlock(mx, my, getMineBlock(mineType, 3), 1);
             return 0;
         }
         if(s && w) {
-            setBlock(mx, my, getBlockIndexByName("earth3"), 2);
+            setBlock(mx, my, getMineBlock(mineType, 3), 2);
             return 0;
         }
         if(n && w) {
-            setBlock(mx, my, getBlockIndexByName("earth3"), 3);
+            setBlock(mx, my, getMineBlock(mineType, 3), 3);
             return 0;
         }
         if(n) {
-            setBlock(mx, my, getBlockIndexByName("earth2"), 0);
+            setBlock(mx, my, getMineBlock(mineType, 2), 0);
             return 0;
         }
         if(e) {
-            setBlock(mx, my, getBlockIndexByName("earth2"), 1);
+            setBlock(mx, my, getMineBlock(mineType, 2), 1);
             return 0;
         }
         if(s) {
-            setBlock(mx, my, getBlockIndexByName("earth2"), 2);
+            setBlock(mx, my, getMineBlock(mineType, 2), 2);
             return 0;
         }
         if(w) {
-            setBlock(mx, my, getBlockIndexByName("earth2"), 3);
+            setBlock(mx, my, getMineBlock(mineType, 2), 3);
             return 0;
         }
     }

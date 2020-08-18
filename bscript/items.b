@@ -112,6 +112,9 @@ const ITEMS = [
     { "name": "Transparent potion", "level": 1, "price": 20, "type": OBJECT_POTION, "use": (self, pc) => {} },
 
     { "name": "Brass key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
+    { "name": "Rusty key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
+    { "name": "Skeleton key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
+    { "name": "Cross key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
 ];
 
 ITEMS_BY_TYPE := {};
