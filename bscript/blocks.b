@@ -141,4 +141,5 @@ blocks := [
     { "img": "malleus" },
     { "img": "lab" },
     { "img": "robes3" },
+    { "img": "demon2" },
 ];

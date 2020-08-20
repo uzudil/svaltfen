@@ -50,4 +50,13 @@ MONSTERS := [
         "drops": [ "coins", "Lance", "Oval potion" ],
         "attack": [5,8], "range": 1, "attackAp": 3, "armor": 11, "startHp": 40, "level": 7, "speed": 8 
     },
+    { "name": "Demon Champion", "block": "demon2", 
+        "drops": [ "coins", "Greatsword", "Oval potion" ],
+        "attack": [10,12], "range": 1, "attackAp": 3, "armor": 12, "startHp": 64, "level": 8, "speed": 8 
+    },
+    { "name": "Malleus", "block": "malleus", 
+        "drops": [ "coins", "Warhammer", "Oval potion", "Tomes of Knowledge" ],
+        "attack": [10,15], "range": 1, "attackAp": 4, "armor": 13, "startHp": 100, "level": 9, "speed": 7
+    },
+
 ];

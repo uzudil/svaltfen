@@ -6,6 +6,11 @@ combat := {
     "playerControl": false,
 };
 
+# this is called infrequently from events
+def endCombat() {
+    gameMode := MOVE;
+}
+
 def startCombat() {
     if(gameMode = MOVE && mode != "death") {
         player.party[player.partyIndex].pos[0] := player.x;

@@ -37,6 +37,7 @@ convo := {
 };
 
 mapMutation := null;
+disabledMonsters := [];
 
 const HEALING_LIST = [
     { "name": "Minor healing", "price": 10, "action": (self, pc) => gainHp(pc, 10), },
@@ -96,23 +97,27 @@ def initGame() {
     player["image"] := img[blocks[player.blockIndex].img];
     mapName := player.map;
     gameLoadMap(mapName);
+    if(events[mapName] != null) {
+        events[mapName].onEnter();
+    }
 }
 
-def addMonster(block, x, y) {
-    tmpl := array_find(MONSTERS, m => m.block = blocks[getBlockIndexByName(block)].img);
-    map.monster[len(map.monster)] := {
-        "image": img[blocks[getBlockIndexByName(block)].img],
-        "start": [x, y],
-        "pos": [x, y],
-        "id": "" + x + "," + y,
-        "visible": false,
-        "monsterTemplate": tmpl,
-        "hp": tmpl.startHp,
-    };
+def setMonsterEnabled(x, y, enabled) {
+    if(enabled) {
+        idx := array_find_index(disabledMonsters, m => m.start[0] = x && m.start[1] = y);
+        map.monster[len(map.monster)] := disabledMonsters[idx];
+        del disabledMonsters[idx];
+    } else {
+        idx := array_find_index(map.monster, m => m.start[0] = x && m.start[1] = y);
+        disabledMonsters[len(disabledMonsters)] := map.monster[idx];
+        del map.monster[idx];
+    }
 }
 
 def gameLoadMap(name) {
     loadMap(name);
+
+    disabledMonsters := [];
 
     mapMutation := load(name + ".mut");
     if(mapMutation = null) {

@@ -1,5 +1,31 @@
+const HIDDEN_MALLEUS_HELP = [
+    [ 18, 52 ],
+    [ 18, 48 ],
+    [ 22, 48 ],
+    [ 22, 52 ],
+    [ 26, 52 ],
+    [ 26, 49 ],
+    [ 14, 49 ],
+    [ 14, 52 ],
+    [ 19, 44 ],
+    [ 21, 44 ],
+];
+
+const TOME_LOCATIONS = [
+    [ 25, 50 ],
+    [ 20, 53 ],
+    [ 15, 50 ],
+    [ 20, 45 ],
+];
+
 const events_under1 = {
     "onEnter": self => {
+        if(mapMutation.npcs["Malleus"] = null || getGameState("malleus_dead") = true) {
+            # hide malleus the monster
+            setMonsterEnabled(20, 50, false);
+            # hide his minions
+            array_foreach(HIDDEN_MALLEUS_HELP, (i, pos) => setMonsterEnabled(pos[0], pos[1], false));
+        }
         gameMessage("The red walls emanate heat. The air smells of sulphur and choking smoke.", COLOR_LIGHT_BLUE);
     },
     "onConvo": (self, n) => {
@@ -22,25 +48,35 @@ const events_under1 = {
                 "books": "Yes, these are the Tomes of Knowledge you, no doubt, have been sent here to retrieve. I'm afraid I'm going to have to hang on to them a bit longer. But instead of $wondering|wonder about the books, I would focus on what will happen to you now that you're no longer of any use to me.",
                 "task": "Oh yes, I'm afraid now that the Tomes of Knowledge are functional, I no longer require your services. Prepare to return to the $grave Fregnar!",
                 "grave": () => {
-                    # add some help
-                    addMonster("demon", 18, 53);
-                    addMonster("demon", 18, 48);
-                    addMonster("cultist", 22, 53);
-                    addMonster("demon", 22, 48);
-                    addMonster("cultist", 14, 52);
-                    addMonster("demon", 14, 49);
-                    addMonster("cultist", 26, 49);
-                    addMonster("demon", 26, 52);
-                    addMonster("cultist", 19, 44);
-                    addMonster("demon", 21, 44);
-                    # convert npc to a monster of same block
-                    #monsterify(n);
-                    gameMessage("Attack, my minions!", COLOR_RED);
+                    # add malleus's minions
+                    array_foreach(HIDDEN_MALLEUS_HELP, (i, pos) => setMonsterEnabled(pos[0], pos[1], true));
+
+                    # convert npc to monster
+                    removeNpc(n.name);
+                    setMonsterEnabled(20, 50, true);
+
+                    gameMessage("Malleus becomes enraged!", COLOR_YELLOW);
                     return null;
                 },
             };
         }
         return null;
+    },
+    "onMonsterKilled": (self, monster) => {
+        if(monster.monsterTemplate.block = "malleus") {
+            setGameState("malleus_dead", true);
+
+            # we don't have to do this... the combat could continue past malleus' end...
+            gameMessage("With their leader dead, the combat ends.", COLOR_GREEN);
+            array_foreach(HIDDEN_MALLEUS_HELP, (i, pos) => setMonsterEnabled(pos[0], pos[1], false));            
+            endCombat();
+
+            # the books are now in our inventory (malleus drops them when killed)
+            array_foreach(TOME_LOCATIONS, (i, pos) => {
+                setBlock(pos[0], pos[1], 79, 0);
+                setGameBlock(pos[0], pos[1], 79);
+            });
+        }
     },
     "onTrade": (self, n) => {
         return null;

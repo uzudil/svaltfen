@@ -8,7 +8,7 @@ const events_almoc = {
         }
     },
     "onConvo": (self, n) => {
-        if(n.name = "Arnel") {
+        if(n.name = "Artel") {
             return {
                 "": "Can I $help you stranger?",
                 "help": "You are in Almoc. We have a $supplies store, an $inn and an $armorer.",

@@ -1,3 +1,10 @@
+const TOMES_ASHNAR = [
+    [ 38, 63 ],
+    [ 38, 66 ], 
+    [ 42, 66 ],
+    [ 42, 63 ],
+];
+
 const events_ashnar = {
     "onEnter": self => {
         gameMessage("You arrive at the Library of Sages at Ashnar", COLOR_LIGHT_BLUE);
@@ -68,10 +75,28 @@ const events_ashnar = {
         }
         if(n.name = "Marta" || n.name = "Lynil" || n.name = "Zentus") {
             return {
-                "": "As Aiden says: the $Fregnar approaches and thus the $time to act is near. But, let us know if you require $healing|_heal_, Fregnar.",
-                "Fregnar": "Aiden says you are the Fregnar of this Cursed Year. And yes, we feel $this|time also. Someone else, we know not who, called you back to life. However, that mystery must wait as we have another $problem|see.",
+                "": "As Aiden says: the $Fregnar approaches and thus the time to act is near. But, let us know if you require $healing|_heal_, Fregnar.",
+                "Fregnar": () => {
+                    tomes := array_find_index(player.inventory, i => i.name = "Tomes of Knowledge");
+                    if(tomes = -1) {
+                        if(getGameState("tomes_returned") = true) {
+                            return "We have $consulted|consult the sacred tomes. Thank you again Fragnar for your valiant deed in returning our books!";
+                        } else {
+                            return "Aiden says you are the Fregnar of this Cursed Year. And yes, we feel $this|time also. Someone else, we know not who, called you back to life. However, that mystery must wait as we have another $problem|see.";
+                        }
+                    } else {
+                        del player.inventory[tomes];
+                        array_foreach(TOMES_ASHNAR, (i, pos) => {
+                            setBlock(pos[0], pos[1], 80, 0);
+                            setGameBlock(pos[0], pos[1], 80);
+                        });
+                        setGameState("tomes_returned", true);
+                        saveGame();
+                        return "I see you have succeeded and brought the Tomes of Knowledge back with you. Let us $consult the sacred books. You have done a great deed, Fregnar!";
+                    }
+                },
                 "time": "We are impressed by your progress Fregnar. You must indeed be a great warrior to have made it this far. However, as you can $see, there is more to be done.",
-                "see": "These empty plinths, that you see here, just last week supported the four Tomes of Wisdom. Without the $books we cannot know how to fight the Cursed Year.",
+                "see": "These empty plinths, that you see here, just last week supported the four Tomes of Knowledge. Without the $books we cannot know how to fight the Cursed Year.",
                 "books": "You see the tomes aren't ordinary books. Their magic comes directly from the power of Mittelurgald, the lord of Frehyen. The pages of these books are empty until the crisis of a Cursed Year, when they $reveal what is expected of us and you, the Fregnar.",
                 "reveal": "But this year, besides the unconventional summoning of the $Fregnar, the greater problem is that the books are gone! We cannot sense what became of them. Therefore, as your first task, you must $search all of Svaltfen until the tomes are found.",
                 "search": "Yes, your quest seems daunting, but you will not go alone. You already possess the Mark of Fregnar which lets our $agents know to aid you throught the land.",
@@ -82,8 +107,9 @@ const events_ashnar = {
                         setGameState("enhanced_heal", true);
                     }
                     setGameState("quest_books", true);
-                    return "On your journey, you will face many enemies. Using our skills, we can accelerate your natural ability to heal. Go forth now and return to us when you have found the four Tomes of Wisdom.";
+                    return "On your journey, you will face many enemies. Using our skills, we can accelerate your natural ability to heal. Go forth now and return to us when you have found the four Tomes of Knowledge.";
                 },
+                "consult": "blah",
             };
         }
         return null;
