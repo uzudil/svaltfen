@@ -80,7 +80,7 @@ const events_ashnar = {
                     tomes := array_find_index(player.inventory, i => i.name = "Tomes of Knowledge");
                     if(tomes = -1) {
                         if(getGameState("tomes_returned") = true) {
-                            return "We have $consulted|consult the sacred tomes. Thank you again Fragnar for your valiant deed in returning our books!";
+                            return "We have $consulted|consult the sacred tomes. Thank you again Fregnar for your valiant deed in returning our books!";
                         } else {
                             return "Aiden says you are the Fregnar of this Cursed Year. And yes, we feel $this|time also. Someone else, we know not who, called you back to life. However, that mystery must wait as we have another $problem|see.";
                         }
@@ -109,7 +109,13 @@ const events_ashnar = {
                     setGameState("quest_books", true);
                     return "On your journey, you will face many enemies. Using our skills, we can accelerate your natural ability to heal. Go forth now and return to us when you have found the four Tomes of Knowledge.";
                 },
-                "consult": "blah",
+                "consult": "Even after reading what the Tomes say much remains shrouded about the $future. We have learned about Malleus and his plans to use an alien weapon to enslave Svaltfen and the other realms.",
+                "future": "The books are vague about the weapon and its $location. We however, know now for certain that the danger posed by this weapon is reason for this Cursed Year. We are all in great danger as long as it remains in Svaltfen.",
+                "location": () => {
+                    setGameState("weapon_quest", true);
+                    return "For your final task Fregnar, we ask you to go forth and destroy the weapon the alien $visitors left behind. All the books say about its location is: '...on the shores of a dark river, the path lies among the stones...'.";
+                },
+                "visitors": "Not much is known about the aliens who landed in metal sky-pods so long ago. Legends say they were fierce and merciless. None know why they came and why they left. Today, only the ruins of their technology remains, $scattered|location about the land.",
             };
         }
         return null;

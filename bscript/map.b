@@ -124,4 +124,5 @@ def initMaps() {
     events["under1"] := events_under1;
     events["vamir"] := events_vamir;
     events["tristen"] := events_tristen;
+    events["weapon"] := events_weapon;
 }

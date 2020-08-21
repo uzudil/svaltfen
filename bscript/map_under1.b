@@ -44,7 +44,9 @@ const events_under1 = {
                 "": "I have been waiting for you Fregnar. I must say it took you much less time to get here than I imagined. But it is good to see that events are unfolding according to $plan.",
                 "plan": "The Sages of Ashnar had no clue how you were summonned, did they? Small wonder since it was I who called you $back from the dead. You were nothing but a puppet then and so are you a puppet even now.",
                 "back": "Oh yes, I animated your sorry remains using the $books you see around you. Why would I do that you may $wonder?",
-                "wonder": "Well Fregnar, wonder no more. I summoned you myself because that is what it takes to power up the $tomes|books. Now, thanks to you the power of the Tomes of Knowledge is at my disposal. And speaking of disposal, there is but one small $task that needs completing...",
+                "wonder": "Well Fregnar, wonder no more. I summoned you myself because that is what it takes to activate the $tomes|books. Now, thanks to you the $power of the Tomes of Knowledge is at my disposal. And speaking of disposal, there is but one small $task that needs completing...",
+                "power": "The arcane energies stored in these $books will help me control some alien $weaponry I recently acquired. Thanks to $you|back I will soon dominate all Frehyen! All of Svaltfen will heel and serve me!",
+                "weaponry": "No need to concern $yourself|back with these details... In fact, you do not need to concern yourself with much, very $soon|task!",
                 "books": "Yes, these are the Tomes of Knowledge you, no doubt, have been sent here to retrieve. I'm afraid I'm going to have to hang on to them a bit longer. But instead of $wondering|wonder about the books, I would focus on what will happen to you now that you're no longer of any use to me.",
                 "task": "Oh yes, I'm afraid now that the Tomes of Knowledge are functional, I no longer require your services. Prepare to return to the $grave Fregnar!",
                 "grave": () => {

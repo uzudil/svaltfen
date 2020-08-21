@@ -58,5 +58,8 @@ MONSTERS := [
         "drops": [ "coins", "Warhammer", "Oval potion", "Tomes of Knowledge" ],
         "attack": [10,15], "range": 1, "attackAp": 4, "armor": 13, "startHp": 100, "level": 9, "speed": 7
     },
-
+    { "name": "Demon Prince", "block": "demon3", 
+        "drops": [ "coins", "Lance", "Oval potion" ],
+        "attack": [11,14], "range": 1, "attackAp": 3, "armor": 14, "startHp": 80, "level": 9, "speed": 8 
+    },
 ];

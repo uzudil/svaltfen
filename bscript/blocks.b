@@ -142,4 +142,8 @@ blocks := [
     { "img": "lab" },
     { "img": "robes3" },
     { "img": "demon2" },
+    { "img": "switch1", "blocking": true, "color": COLOR_YELLOW, "nextState": "switch2" }, 
+    { "img": "switch2", "blocking": true, "color": COLOR_YELLOW, "nextState": "switch1" },     
+    { "img": "redgate", "color": COLOR_BROWN }, 
+    { "img": "demon3" },    
 ];
