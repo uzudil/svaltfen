@@ -144,7 +144,7 @@ def editorUI() {
     blockPalette(x, y);
 
     drawText(x + 5, 80, COLOR_WHITE, COLOR_BLACK, "Map:" + mapName);
-    drawText(x + 5, 90, COLOR_WHITE, COLOR_BLACK, "Pos:" + editor.x + "," + editor.y);
+    drawText(x + 5, 90, COLOR_WHITE, COLOR_BLACK, "Pos:" + editor.x + "," + editor.y + "(" + editor.blockIndex + ")");
     drawText(5, 190, COLOR_MID_GRAY, COLOR_BLACK, "Press H for help");
 
     # the map

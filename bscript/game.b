@@ -379,7 +379,29 @@ def applyGameBlocks(newMapName) {
     }
 }
 
+def teleport(x, y) {
+    player.x := x;
+    player.y := y;
+    gameMessage("You find yourself transported to another location!", COLOR_GREEN);
+}
+
 def gameEnterMap() {
+
+    if(events[mapName] != null) {
+        if(events[mapName]["onTeleport"] != null) {
+            teleports := events[mapName].onTeleport();
+            index := array_find_index(teleports, t => (t[0] = player.x && t[1] = player.y) || (t[2] = player.x && t[3] = player.y));
+            if(index > -1) {
+                tel := teleports[index];
+                if(tel[0] = player.x && tel[1] = player.y) {
+                    teleport(tel[2], tel[3]);
+                } else {
+                    teleport(tel[0], tel[1]);
+                }
+            }
+        }
+    }
+
     key := "" + player.x + "," + player.y;
     if(links[mapName] != null) {
         s := links[mapName][key];
@@ -444,7 +466,7 @@ def gameUseDoor() {
             index := getBlockIndexByName(block.nextState);
             setBlock(x, y, index, 0);
             setGameBlock(x, y, index);
-            gameMessage("Use a door.", COLOR_MID_GRAY);
+            #gameMessage("Use a door.", COLOR_MID_GRAY);
             return true;
         } else {
             return null;
@@ -1114,4 +1136,17 @@ def initAccomplishmentsList() {
         list[len(list)] := "faster than normal.";
     }
     setListUi(list, [], "No accomplishments so far");
+}
+
+def operateSwitch(x, y, switchX, switchY, dstX, dstY, dstClosed, dstOpen) {
+    if(x = switchX && y = switchY) {
+        b := dstClosed;
+        if(getBlock(switchX, switchY).block = 108) {
+            b := dstOpen;
+        }
+        setBlock(dstX, dstY, b, 0);
+        setGameBlock(dstX, dstY, b);
+        return true;
+    }
+    return false;
 }

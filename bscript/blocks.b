@@ -146,4 +146,12 @@ blocks := [
     { "img": "switch2", "blocking": true, "color": COLOR_YELLOW, "nextState": "switch1" },     
     { "img": "redgate", "color": COLOR_BROWN }, 
     { "img": "demon3" },    
+    { "img": "teleporter", "color": COLOR_LIGHT_BLUE }, 
+    { "img": "ruin1", "blocking": true, "light": false },
+    { "img": "ruin2", "blocking": true, "light": false },
+    { "img": "gun1", "blocking": true, "light": false },
+    { "img": "gun2", "blocking": true, "light": false },
+    { "img": "gun3", "blocking": true, "light": false },
+    { "img": "ctrl1", "blocking": true, "light": false },
+    { "img": "alien1" },
 ];

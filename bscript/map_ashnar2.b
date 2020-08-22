@@ -25,14 +25,7 @@ const events_ashnar2 = {
             return true;
         }
 
-        # the switch operates the grate
-        if(x = 34 && y = 76) {
-            b := 88;
-            if(getBlock(34, 76).block = 108) {
-                b := 43;
-            }
-            setBlock(42, 70, b, 0);
-            setGameBlock(42, 70, b);
+        if(operateSwitch(x, y, 34, 76, 42, 70, 88, 43)) {
             gameMessage("You hear the sound of metal scraping on stone, nearby.", COLOR_GREEN);
         }
         return false;

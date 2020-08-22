@@ -62,4 +62,8 @@ MONSTERS := [
         "drops": [ "coins", "Lance", "Oval potion" ],
         "attack": [11,14], "range": 1, "attackAp": 3, "armor": 14, "startHp": 80, "level": 9, "speed": 8 
     },
+    { "name": "Xurtang", "block": "alien1", 
+        "drops": [ "coins", "Lance", "Oval potion" ],
+        "attack": [12,16], "range": 1, "attackAp": 2, "armor": 6, "startHp": 100, "level": 10, "speed": 8 
+    },
 ];
