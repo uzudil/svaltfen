@@ -116,6 +116,7 @@ const ITEMS = [
     { "name": "Skeleton key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
     { "name": "Cross key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
     { "name": "Tomes of Knowledge", "level": 1, "price": 1, "type": OBJECT_SPECIAL },
+    { "name": "Swirl Key", "level": 1, "price": 1, "type": OBJECT_SPECIAL },
 ];
 
 ITEMS_BY_TYPE := {};

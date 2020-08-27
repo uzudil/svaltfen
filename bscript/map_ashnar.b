@@ -77,22 +77,26 @@ const events_ashnar = {
             return {
                 "": "As Aiden says: the $Fregnar approaches and thus the time to act is near. But, let us know if you require $healing|_heal_, Fregnar.",
                 "Fregnar": () => {
-                    tomes := array_find_index(player.inventory, i => i.name = "Tomes of Knowledge");
-                    if(tomes = -1) {
-                        if(getGameState("tomes_returned") = true) {
-                            return "We have $consulted|consult the sacred tomes. Thank you again Fregnar for your valiant deed in returning our books!";
-                        } else {
-                            return "Aiden says you are the Fregnar of this Cursed Year. And yes, we feel $this|time also. Someone else, we know not who, called you back to life. However, that mystery must wait as we have another $problem|see.";
-                        }
+                    if(getGameState("ectalius_off") = true) {
+                        return "With the destruction of the aliens' weapon, you have ensured the $safety of Svaltfen for now. You have done well Fregnar.";
                     } else {
-                        del player.inventory[tomes];
-                        array_foreach(TOMES_ASHNAR, (i, pos) => {
-                            setBlock(pos[0], pos[1], 80, 0);
-                            setGameBlock(pos[0], pos[1], 80);
-                        });
-                        setGameState("tomes_returned", true);
-                        saveGame();
-                        return "I see you have succeeded and brought the Tomes of Knowledge back with you. Let us $consult the sacred books. You have done a great deed, Fregnar!";
+                        tomes := array_find_index(player.inventory, i => i.name = "Tomes of Knowledge");
+                        if(tomes = -1) {
+                            if(getGameState("tomes_returned") = true) {
+                                return "We have $consulted|consult the sacred tomes. Thank you again Fregnar for your valiant deed in returning our books!";
+                            } else {
+                                return "Aiden says you are the Fregnar of this Cursed Year. And yes, we feel $this|time also. Someone else, we know not who, called you back to life. However, that mystery must wait as we have another $problem|see.";
+                            }
+                        } else {
+                            del player.inventory[tomes];
+                            array_foreach(TOMES_ASHNAR, (i, pos) => {
+                                setBlock(pos[0], pos[1], 80, 0);
+                                setGameBlock(pos[0], pos[1], 80);
+                            });
+                            setGameState("tomes_returned", true);
+                            saveGame();
+                            return "I see you have succeeded and brought the Tomes of Knowledge back with you. Let us $consult the sacred books. You have done a great deed, Fregnar!";
+                        }
                     }
                 },
                 "time": "We are impressed by your progress Fregnar. You must indeed be a great warrior to have made it this far. However, as you can $see, there is more to be done.",
@@ -116,6 +120,20 @@ const events_ashnar = {
                     return "For your final task Fregnar, we ask you to go forth and destroy the weapon the alien $visitors left behind. All the books say about its location is: '...on the shores of a dark river, the path lies among the stones...'.";
                 },
                 "visitors": "Not much is known about the aliens who landed in metal sky-pods so long ago. Legends say they were fierce and merciless. None know why they came and why they left. Today, only the ruins of their technology remains, $scattered|location about the land.",
+                "safety": "Thanks to your heroic actions, this Cursed Year has come to an end. As a reward, take your time Fregnar to wrap up your affairs. Explore the far reaches of Svaltfen and come back to us when you are $ready to return to rest again.",
+                "ready": "You may not be aware but Fregnar heroes who thwart a Cursed Year are elevated to the status of Frehyen where they live ever on. The choice of $sky or $earth Frehyen is open to you.",
+                "sky": "So be it. Are you sure you $wish|wish_sky to end your adventures in Svaltfen and ascend to become one of the Frehyen of the Skies? You may also still $change|ready your mind.",
+                "earth": "So be it. Are you sure you $wish|wish_earth to end your adventures in Svaltfen and descend to become one of the Frehyen of the Underworld? You may also still $change|ready your mind.",
+                "wish_sky": () => {
+                    setGameState("game_win", "sky");
+                    mode := "win";
+                    return null;
+                },
+                "wish_earth": () => {
+                    setGameState("game_win", "earth");
+                    mode := "win";
+                    return null;
+                },
             };
         }
         return null;

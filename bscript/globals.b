@@ -46,6 +46,13 @@ const MODES = {
         "handleInput": self => deathInput(),
         "isBlockVisible": (self, mx, my) => 0,
         "drawViewAt": (self, x, y, mx, my, onScreen) => 0,
+    },
+    "win": {
+        "init": self => initWin(),
+        "render": self => renderWin(),
+        "handleInput": self => winInput(),
+        "isBlockVisible": (self, mx, my) => 0,
+        "drawViewAt": (self, x, y, mx, my, onScreen) => 0,
     }
 };
 

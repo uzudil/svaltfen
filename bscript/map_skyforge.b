@@ -21,7 +21,7 @@ const events_skyforge = {
                 "recognize": "That was written by Alterolan of house Tristen! In fact I remember a little $story she told me about it.",
                 "story": () => {
                     setGameState("alterolan_sygil", true);
-                    return "She said that I was to remind her, in case she forgot, that to open the grate to the backyard, one must utter the words 'Xragane' and wave both hands across ones front. I'm not sure what this means, but I hope you find it useful.";
+                    return "She said that I was to remind her, in case she forgot, that to open the grate to the backyard, one must utter the words 'Xragane' and wave both hands across one's front. I'm not sure what this means, but I hope you find it useful.";
                 }
             };
         }
@@ -29,9 +29,9 @@ const events_skyforge = {
             return {
                 "": "Welcome to $Skyforge stranger. Let me know if you require $healing|_heal_.",
                 "Skyforge": "Talk to the Lady Ylonda about the castle's history. I've only been here since the recent $troubles began.",
-                "troubles": "We had to lock the doors of the $cellars, on account of the $creatures that came forth from it!",
+                "troubles": "We had to block the doors of the $cellars, on account of the $creatures that came forth from it! There used to be a door leading to the outside from the north guest-room, but the masons filled it in.",
                 "cellars": "Aye the cellars can be accessed from a garden to the north of here. Or, I should say could, because they've been walled off due to the $troubles.",
-                "creatures": "Strange moving slimes and small humanoids with clubs crawled forth at night from the $cellars, so we had it $locked|troubles.",
+                "creatures": "Strange moving slimes and small humanoids with clubs crawled forth at night from the $cellars, so we had it $blocked|troubles.",
             };
         }
         if(n.name = "Meggar") {
