@@ -1111,8 +1111,12 @@ def useItem(index, selection) {
 
 def dropItem(index, selection) {
     invIndex := invTypeList[index].index;
-    gameMessage("You throw away " + player.inventory[invIndex].name, COLOR_MID_GRAY);
-    del player.inventory[invIndex];
+    if(ITEMS_BY_NAME[player.inventory[invIndex].name].type = OBJECT_SPECIAL) {
+        gameMessage("You should not throw that away.", COLOR_MID_GRAY);
+    } else {
+        gameMessage("You throw away " + player.inventory[invIndex].name, COLOR_MID_GRAY);
+        del player.inventory[invIndex];
+    }
     initPartyInventoryType(invMode, "");
 }
 
