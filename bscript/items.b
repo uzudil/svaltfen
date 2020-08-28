@@ -146,7 +146,7 @@ def itemInstance(item) {
 }
 
 def getLoot(level) {
-    items := array_filter(ITEMS, item => item.level <= level);
+    items := array_filter(ITEMS, item => item.level <= level && item.type != OBJECT_SPECIAL);
     n := roll(0, 3);
     if(n > 0) {
         while(n >= 0) {
