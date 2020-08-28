@@ -11,7 +11,7 @@ func main() {
 	nosound := flag.Bool("nosound", false, "Run without sound")
 
 	var scale int
-	flag.IntVar(&scale, "scale", 2, "Image scale factor")
+	flag.IntVar(&scale, "scale", 3, "Image scale factor")
 	flag.Parse()
 
 	showAst := false

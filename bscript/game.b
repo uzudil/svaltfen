@@ -683,12 +683,20 @@ def gameInput() {
             if(isKeyDown(KeyEnter)) {
                 while(isKeyDown(KeyEnter)) {
                 }
-                gameEnterMap();
+                if(gameMode = COMBAT) {
+                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                } else {
+                    gameEnterMap();
+                }
             }
             if(isKeyDown(KeyT)) {
                 while(isKeyDown(KeyT)) {
                 }
-                gameConvo();
+                if(gameMode = COMBAT) {
+                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                } else {                
+                    gameConvo();
+                }
             }
             if(isKeyDown(KeySpace)) {
                 while(isKeyDown(KeySpace)) {
@@ -747,54 +755,56 @@ def gameInput() {
                 setEquipmentList();
             }
         }
-        if(isKeyDown(KeyUp)) {
-            player.y := player.y - 1;
-        }
-        if(isKeyDown(KeyDown)) {
-            player.y := player.y + 1;
-        }
-        if(isKeyDown(KeyLeft)) {
-            player.x := player.x - 1;
-        }
-        if(isKeyDown(KeyRight)) {
-            player.x := player.x + 1;
-        }
-
-        blocked := player.x < 0 || player.y < 0 || player.x >= map.width || player.y >= map.height;
-        if(blocked = false) {
-            m := array_find(map.monster, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0);
-            blocked := m != null;
-            if(m != null && gameMode = COMBAT) {
-                apUsed := apUsed + playerAttacks(m);
+        if(viewMode = null) {
+            if(isKeyDown(KeyUp)) {
+                player.y := player.y - 1;
             }
-        }
-        if(blocked = false) {
-            block := blocks[getBlock(player.x, player.y).block];
-            blocked := block.blocking;
-        }
-        if(blocked) {
-            player.x := ox;
-            player.y := oy;
-        } else {
-            # if stepping on an npc, swap places
-            n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
-            if(n != null) {
-                n.pos[0] := ox;
-                n.pos[1] := oy;
+            if(isKeyDown(KeyDown)) {
+                player.y := player.y + 1;
+            }
+            if(isKeyDown(KeyLeft)) {
+                player.x := player.x - 1;
+            }
+            if(isKeyDown(KeyRight)) {
+                player.x := player.x + 1;
             }
 
-            if(gameMode = COMBAT) {
-                # if stepping on another player, swap places
-                pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
-                if(pc != null) {
-                    pc.pos[0] := ox;
-                    pc.pos[1] := oy;
+            blocked := player.x < 0 || player.y < 0 || player.x >= map.width || player.y >= map.height;
+            if(blocked = false) {
+                m := array_find(map.monster, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0);
+                blocked := m != null;
+                if(m != null && gameMode = COMBAT) {
+                    apUsed := apUsed + playerAttacks(m);
+                }
+            }
+            if(blocked = false) {
+                block := blocks[getBlock(player.x, player.y).block];
+                blocked := block.blocking;
+            }
+            if(blocked) {
+                player.x := ox;
+                player.y := oy;
+            } else {
+                # if stepping on an npc, swap places
+                n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
+                if(n != null) {
+                    n.pos[0] := ox;
+                    n.pos[1] := oy;
                 }
 
-                # trace("SAVING POS of " + player.partyIndex);
-                player.party[player.partyIndex].pos[0] := player.x;
-                player.party[player.partyIndex].pos[1] := player.y;
-                apUsed := apUsed + 1;
+                if(gameMode = COMBAT) {
+                    # if stepping on another player, swap places
+                    pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
+                    if(pc != null) {
+                        pc.pos[0] := ox;
+                        pc.pos[1] := oy;
+                    }
+
+                    # trace("SAVING POS of " + player.partyIndex);
+                    player.party[player.partyIndex].pos[0] := player.x;
+                    player.party[player.partyIndex].pos[1] := player.y;
+                    apUsed := apUsed + 1;
+                }
             }
         }
 
