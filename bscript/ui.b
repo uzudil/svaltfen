@@ -64,7 +64,7 @@ def drawListUi(x, y) {
             drawLine(x, y - 4, x + 2, y - 6, COLOR_GREEN);
             drawLine(x + 2, y - 6, x + 4, y - 4, COLOR_GREEN);
         }
-        if(listUi.page + 9 < len(listUi.list)) {
+        if(listUi.page + 10 < len(listUi.list)) {
             drawLine(x, y + 102, x + 2, y + 104, COLOR_GREEN);
             drawLine(x + 2, y + 104, x + 4, y + 102, COLOR_GREEN);
         }
@@ -227,6 +227,7 @@ def drawUI() {
     message_y := 81;
     drawRect(x, y, x + (320 - x - 5), message_y - 5, color); 
     drawColoredText(x + 5, y + 5, COLOR_MID_GRAY, COLOR_BLACK, "Coins _1_$" + player.coins);
+    drawColoredText(x + 5, y + 15, COLOR_MID_GRAY, COLOR_BLACK, calendarString());
 
     # messages
     y := message_y;

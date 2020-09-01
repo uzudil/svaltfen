@@ -126,3 +126,25 @@ def initMaps() {
     events["tristen"] := events_tristen;
     events["weapon"] := events_weapon;
 }
+
+const OVERLAND_MAPS = [
+    "world1", "world2"
+];
+const OUTDOOR_MAPS = [
+    "almoc", "world1", "fenvel", "van", "world2", "xurcelt", "vamir", "tristen"
+];
+const DARK_MAPS = [
+    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon"
+];
+
+def isOutdoors() {
+    return array_find_index(OUTDOOR_MAPS, m => m = mapName) > -1;
+}
+
+def isDarkMap() {
+    return array_find_index(DARK_MAPS, m => m = mapName) > -1;
+}
+
+def isOverlandMap() {
+    return array_find_index(OVERLAND_MAPS, m => m = mapName) > -1;
+}

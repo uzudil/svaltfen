@@ -56,7 +56,7 @@ const HEALING_LIST = [
 def initGame() {
     # init the maps
     initMaps();
-    initItems();
+    initItems();    
 
     savegame := load("savegame.dat");
     if(savegame = null) {
@@ -71,6 +71,7 @@ def initGame() {
             "coins": 10,
             "party": [],
             "partyIndex": 0,
+            "light": 1,
         };    
 
         gameMessage("You awake underground surrounded by damp earth and old bones. Press H any time for help.", COLOR_YELLOW);
@@ -91,8 +92,13 @@ def initGame() {
         player := savegame;
         player.partyIndex := array_find_index(player.party, p => p.hp > 0);
         player.messages := [];
+        if(player["light"] = null) {
+            player["light"] := 1;
+            calculateTorchLight();
+        }
         gameMessage("You continue on your adventure.", COLOR_WHITE);
     }
+    initCalendar();
     player.blockIndex := getBlockIndexByName("fighter1");
     player["image"] := img[blocks[player.blockIndex].img];
     mapName := player.map;
@@ -116,6 +122,7 @@ def setMonsterEnabled(x, y, enabled) {
 
 def gameLoadMap(name) {
     loadMap(name);
+    calendarStep();
 
     disabledMonsters := [];
 
@@ -176,6 +183,7 @@ def gameLoadMap(name) {
             }
         }
     });
+
     saveGame();
 }
 
@@ -186,6 +194,7 @@ def renderGame() {
         moveNpcs();
     }
     if(viewMode = null) {
+        calendarStep();
         mx := player.x;
         my := player.y;
         if(gameMode = COMBAT) {
@@ -263,6 +272,20 @@ def gameIsBlockVisible(mx, my) {
     return block["light"] = 1;
 }
 
+def darkenTile(xx, yy) {
+    x := 0;
+    while(x < TILE_W) {
+        y := 0;
+        while(y < TILE_H) {
+            if(x % 2 = 0 || y % 2 = 0) {
+                setPixel(x + xx, y + yy, COLOR_BLACK);
+            }
+            y := y + 1;
+        }
+        x := x + 1;
+    }
+}
+
 def gameDrawViewAt(x, y, mx, my, onScreen) {
     if(onScreen) {
         if(gameMode = COMBAT) {
@@ -313,6 +336,22 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
     if(onScreen && effect != null) {
         if(mx = effect.pos[0] && my = effect.pos[1]) {
             drawEffect(x, y, mx, my, effect);
+        }
+    }
+    if(onScreen) {
+        d := int(distance(player.x, player.y, mx, my));
+        dd := 0;
+        if(isOutdoors()) {            
+            dd := d - max(player.calendar.light, player.light);
+        }
+        if(isDarkMap()) {
+            dd := d - player.light;
+        }
+        if(dd = 1) {
+            darkenTile(x, y);
+        }
+        if(dd > 1) {
+            fillRect(x, y, x + TILE_W, y + TILE_H, COLOR_BLACK);
         }
     }
 }
@@ -1025,6 +1064,7 @@ def doffEquipment(index, selection) {
         player.inventory[len(player.inventory)] := pc.equipment[slot];
         pc.equipment[slot] := null;
         calculateArmor(pc);
+        calculateTorchLight();
         saveGame();
         setEquipmentList();
     }
@@ -1055,6 +1095,7 @@ def donItem(index, selection) {
     inventoryIndex := array_find_index(player.inventory, invItem => invItem.name = equipmentSlotItems[index].name);
     del player.inventory[inventoryIndex];
     calculateArmor(equipmentPc);
+    calculateTorchLight();
     saveGame();
     setEquipmentList();    
 }

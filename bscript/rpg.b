@@ -92,6 +92,26 @@ def drink(pc, amount) {
     pc.thirst := max(0, pc.thirst - amount);    
 }
 
+def calculateTorchLight() {
+    player.light := 1;
+    i := 0;
+    while(i < len(player.party)) {
+        pc := player.party[i];
+        array_foreach(SLOTS, (t, slot) => {
+            eq := pc.equipment[slot];
+            if(eq != null) {
+                item := ITEMS_BY_NAME[eq.name];
+                if(item["light"] != null) {
+                    if(item.light > player.light) {
+                        player.light := item.light;
+                    }
+                }
+            }
+        });
+        i := i + 1;
+    }
+}
+
 def calculateArmor(pc) {
     armorBonus := max(0, pc.dex - 15) + max(0, pc.speed - 18);
     invArmor := array_map(array_filter(SLOTS, slot => {

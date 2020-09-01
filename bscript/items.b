@@ -1,5 +1,4 @@
 const SLOT_HEAD = "head";
-const SLOT_NECK = "neck";
 const SLOT_ARMOR = "armor";
 const SLOT_GLOVE = "glove";
 const SLOT_BOOTS = "boots";
@@ -11,7 +10,6 @@ const SLOT_RANGED = "ranged";
 const SLOT_CAPE = "cape";
 const SLOTS = [
     SLOT_HEAD, 
-    SLOT_NECK,
     SLOT_ARMOR,
     SLOT_GLOVE,
     SLOT_LEFT_HAND,
@@ -96,7 +94,7 @@ const ITEMS = [
     { "name": "Greatsword", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 6, 9 ] },
     { "name": "Greatsaxe", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 10 ] },
 
-    { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 1, 2 ] },
+    { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "light": 3, "dam": [ 1, 2 ] },
     { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },
     { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES },
 
