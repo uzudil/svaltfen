@@ -167,6 +167,7 @@ def decItemLife(pc, slot) {
     if(invItem.life <= 0) {
         gameMessage(invItem.name + " breaks!", COLOR_RED);
         pc.equipment[slot] := null;
+        calculateTorchLight();
         return true;
     }
     if(invItem.life < 4) {

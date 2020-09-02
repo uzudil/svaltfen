@@ -134,7 +134,7 @@ const OUTDOOR_MAPS = [
     "almoc", "world1", "fenvel", "van", "world2", "xurcelt", "vamir", "tristen"
 ];
 const DARK_MAPS = [
-    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon"
+    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon", "ashnar2"
 ];
 
 def isOutdoors() {

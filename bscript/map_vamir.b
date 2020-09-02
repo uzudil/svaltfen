@@ -14,7 +14,7 @@ const events_vamir = {
                     }
                 },
                 "drink": "I'm no common drunk, no sire! I'll have you know I was a master swordsman in my day and I can still show you a trick or two given the right cause.",
-                "assist": "I you are $willing to journey with a master swordsman with a slight drinking problem, I'm an your man! But I understand if it's too $much to ask.",
+                "assist": "If you are $willing to journey with a master swordsman with a slight drinking problem, I'm your man! But I understand if it's too $much to ask.",
                 "much": "No problem Fregnar. If you ever change your mind, you know where to find me.",
                 "willing": () => {
                     joinParty(n, 6);

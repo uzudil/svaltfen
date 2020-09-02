@@ -195,6 +195,7 @@ def renderGame() {
     }
     if(viewMode = null) {
         calendarStep();
+        ageEqipment();
         mx := player.x;
         my := player.y;
         if(gameMode = COMBAT) {
@@ -1040,6 +1041,24 @@ def findSpaceAround(mx, my) {
     }
     # give up
     return [mx, my];
+}
+
+def ageEqipment() {
+    array_foreach(player.party, (pcIdx, pc) => {
+        array_foreach(SLOTS, (slotIdx, slot) => {
+            item := pc.equipment[slot];
+            if(item != null) {
+                if(ITEMS_BY_NAME[item.name]["light"] != null) {
+                    item.lightLife := item.lightLife - getStepDelta();
+                    if(item.lightLife <= 0) {
+                        gameMessage(item.name + " held by " + pc.name + " burns out.", COLOR_YELLOW);
+                        pc.equipment[slot] := null;
+                        calculateTorchLight();
+                    }
+                }
+            }
+        });
+    });
 }
 
 def setEquipmentList() {
