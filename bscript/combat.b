@@ -351,7 +351,7 @@ def playerAttacks(monster) {
     res := { "attackChanged": false };
     array_foreach(combatRound.pc.attack, (i, attack) => {
         gameMessage(combatRound.pc.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
-        if(playerAttacksDam(monster, attack.dam) && attack.slot != null) {
+        if(playerAttacksDam(monster, attack.dam, attack.bonus) && attack.slot != null) {
             if(decItemLife(combatRound.pc, attack.slot)) {
                 res.attackChanged := true;
             }
@@ -363,18 +363,18 @@ def playerAttacks(monster) {
     return 3;
 }
 
-def playerAttacksDam(monster, damage) {
+def playerAttacksDam(monster, damage, bonus) {
     combatRound := combat.round[combat.roundIndex];
 
     # roll to-hit
-    toHit := roll(0, 20) + getToHitBonus(combatRound.pc);
+    toHit := roll(0, 20) + getToHitBonus(combatRound.pc) + bonus;
     if(toHit <= monster.monsterTemplate.armor) {
         gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
         return false;
     }
 
     # roll damage
-    dam := roll(damage[0], damage[1]);
+    dam := roll(damage[0], damage[1]) + bonus;
     if(dam > 0) {
         gameMessage(monster.monsterTemplate.name + " takes " + dam + " damage!", COLOR_RED);
         monster.hp := max(monster.hp - dam, 0);

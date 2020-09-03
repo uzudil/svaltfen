@@ -121,17 +121,20 @@ def calculateArmor(pc) {
         return false;
     }), slot => pc.equipment[slot]);
     pc.armor := array_reduce(invArmor, armorBonus, (value, invItem) => {
-        return value + ITEMS_BY_NAME[invItem.name].ac;
+        invItem := ITEMS_BY_NAME[invItem.name];
+        return value + invItem.ac + invItem.bonus;
     });
 
     attackBonus := int(pc.level / 3) + max(0, pc.str - 18) + max(0, pc.dex - 18);
     weaponSlots := getWeaponSlots(pc);
     pc.attack := array_map(weaponSlots, slot => {
         invItem := pc.equipment[slot];
-        dam := ITEMS_BY_NAME[invItem.name].dam;
+        realItem := ITEMS_BY_NAME[invItem.name];
+        dam := realItem.dam;
         return {
             "dam": [dam[0] + attackBonus, dam[1] + attackBonus],
             "weapon": invItem.name,
+            "bonus": realItem.bonus,
             "slot": slot,
         };
     });
@@ -139,6 +142,7 @@ def calculateArmor(pc) {
         pc.attack := [ {
             "dam": [attackBonus, attackBonus + 2],
             "weapon": "Bare hands",
+            "bonus": 0,
             "slot": null,
         } ];
     }

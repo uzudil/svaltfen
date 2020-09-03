@@ -69,7 +69,7 @@ const events_weapon = {
         return true;
     },
     "onMonsterKilled": (self, monster) => {
-        trace("monster killed=" + monster.monsterTemplate.name + " id=" + monster.id);
+        #trace("monster killed=" + monster.monsterTemplate.name + " id=" + monster.id);
         if(monster.monsterTemplate.name = "Xurtang Thrall" && monster.id = "6,27") {
             gameMessage("You find a small key, shaped like a mess of tentacles.", COLOR_YELLOW);
             player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME["Swirl Key"]);
@@ -111,7 +111,7 @@ const events_weapon = {
                     v := 0;
                 }
                 v := v + d;
-                trace("weapon_switches=" + v);
+                #trace("weapon_switches=" + v);
                 setGameState("weapon_switches", v);
                 if(v = 5) {
                     gameMessage("A tremor shakes the earth!", COLOR_YELLOW);

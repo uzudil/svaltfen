@@ -92,6 +92,22 @@ def sort(array, fx) {
     }
 }
 
+def basic_sort(array) {
+    sort(array, (a,b) => {
+        if(a < b) {
+            return -1;
+        } else {
+            return 1;
+        }
+    });
+}
+
+def basic_sort_copy(array) {
+    a := copy_array(array);
+    basic_sort(a);
+    return a;
+}
+
 def array_reverse(array) {
     ret := [];
     i := len(array) - 1;
@@ -130,4 +146,14 @@ def pow(n, e) {
         return n;
     }
     return n * pow(n, e - 1);
+}
+
+# shallow-copy a map object
+def copy_map(m) {
+    return array_reduce(keys(m), {}, (d, k) => { d[k] := m[k]; return d; });
+}
+
+# shallow-copy a map object
+def copy_array(m) {
+    return array_reduce(m, [], (d, e) => { d[len(d)] := e; return d; });
 }

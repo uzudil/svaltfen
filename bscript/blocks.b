@@ -156,4 +156,5 @@ blocks := [
     { "img": "alien1" },
     { "img": "earthfl2", "color": COLOR_BLACK },    
     { "img": "ctrl2", "blocking": true, "light": false },
+    { "img": "caravan" },
 ];

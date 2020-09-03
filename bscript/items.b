@@ -73,6 +73,10 @@ const ITEMS = [
     { "name": "Mail armor", "level": 5, "price": 32, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 6, },    
     { "name": "War helm", "level": 3, "price": 20, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 4, },    
     { "name": "Platemail", "level": 6, "price": 50, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 7, },
+    { "name": "+1 Ring of Protection", "level": 5, "price": 75, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "ac": 1, },
+    { "name": "+2 Ring of Protection", "level": 7, "price": 150, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "ac": 2, },
+    { "name": "Ring of Light", "level": 1, "price": 45, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "light": 3, },
+    { "name": "Sun ring", "level": 6, "price": 250, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "light": 3, "lightLife": -1 },
 
     { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Forest cape", "level": 2, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
@@ -119,18 +123,36 @@ const ITEMS = [
 
 ITEMS_BY_TYPE := {};
 ITEMS_BY_NAME := {};
+ALL_ITEMS := [];
+
+def initItem(item, bonus) {
+    d := copy_map(item);
+    if(d["level"] = null) {
+        d["level"] := 1;
+    }
+    d["bonus"] := bonus;
+    if(bonus > 0) {
+        d["name"] := "+" + bonus + " " + d["name"];
+        d["level"] := d["level"] + 2 * bonus;
+        d["price"] := d["price"] * (1 + bonus);
+    }
+    d["sellPrice"] := max(int(d.price * 0.75), 1); 
+    if(ITEMS_BY_TYPE[d.type] = null) {     
+        ITEMS_BY_TYPE[d.type] := []; 
+    } 
+    ITEMS_BY_TYPE[d.type][len(ITEMS_BY_TYPE[d.type])] := d; 
+    ITEMS_BY_NAME[d.name] := d;
+    ALL_ITEMS[len(ALL_ITEMS)] := d;
+}
 
 def initItems() {
     array_foreach(ITEMS, (index, item) => { 
-        item["sellPrice"] := max(int(item.price * 0.75), 1); 
-        if(item["level"] = null) {
-            item["level"] := 1;
+        initItem(item, 0);
+        if(item["bonus"] = null && (item.type = OBJECT_ARMOR || item.type = OBJECT_WEAPON)) {
+            # create +1, +2 magic versions also
+            initItem(item, 1);
+            initItem(item, 2);
         }
-        if(ITEMS_BY_TYPE[item.type] = null) {     
-            ITEMS_BY_TYPE[item.type] := []; 
-        } 
-        ITEMS_BY_TYPE[item.type][len(ITEMS_BY_TYPE[item.type])] := item; 
-        ITEMS_BY_NAME[item.name] := item;
     });
 }
 
@@ -140,11 +162,15 @@ def getRandomItem(types, level) {
 }
 
 def itemInstance(item) {
-    return { "name": item.name, "life": 10 + item.level * 12, "lightLife": STEPS_PER_HOUR * 4 };
+    lightLife := STEPS_PER_HOUR * 4;
+    if(item["lightLife"]) {
+        lightLife := item.lightLife;
+    }
+    return { "name": item.name, "life": 10 + item.level * 12, "lightLife":  lightLife };
 }
 
 def getLoot(level) {
-    items := array_filter(ITEMS, item => item.level <= level && item.type != OBJECT_SPECIAL);
+    items := array_filter(ALL_ITEMS, item => item.level <= level && item.type != OBJECT_SPECIAL);
     n := roll(0, 3);
     if(n > 0) {
         while(n >= 0) {

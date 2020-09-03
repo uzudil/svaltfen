@@ -9,7 +9,6 @@ const events_bonefell = {
                 c := 0;
             }
             setGameState("almoc_rats", c + 1);
-            trace("almoc rats killed=" + getGameState("almoc_rats"));
         }
     },
 };

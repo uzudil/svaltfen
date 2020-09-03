@@ -96,6 +96,7 @@ def initGame() {
             player["light"] := 1;
             calculateTorchLight();
         }
+        array_foreach(player.party, (i, pc) => calculateArmor(pc));
         gameMessage("You continue on your adventure.", COLOR_WHITE);
     }
     initCalendar();
@@ -965,40 +966,27 @@ def buyItem(index, selection) {
 }
 
 def initSellList() {
-    # only show items the trader is interested in
-    convo.saleItems := player.inventory;
-    trace("inventory=" + player.inventory);
-    if(events[mapName]["onTrade"] != null) {
-        trade := events[mapName].onTrade(convo.npc);
-        trace("trade=" + trade);
-        if(trade != null) {
-            convo.saleItems := array_filter(convo.saleItems, item => {
-                itemTemplate := ITEMS_BY_NAME[item.name];
-                trace("item=" + itemTemplate.name + " type=" + itemTemplate.type);
-                return array_find(trade, t => t = itemTemplate.type) != null;
-            });            
-        }
+    names := [];
+    convo.saleItems := [];
+    trade := events[mapName].onTrade(convo.npc);
+    if(trade != null) {
+        initStackedItemList(invItem => {
+            item := ITEMS_BY_NAME[invItem.name];
+            return array_find(trade, t => t = item.type) != null;
+        }, names, convo.saleItems, item => " $" + item.sellPrice);
     }
-    trace("items for sale=" + convo.saleItems);
-    list := array_map(convo.saleItems, item => item.name + " " + "$" + ITEMS_BY_NAME[item.name].sellPrice);
-    setListUi(list, [ [ KeyEnter, sellItem ] ], "You have nothing to sell");
+    setListUi(names, [ [ KeyEnter, sellItem ] ], "You have nothing to sell");
 }
 
 def sellItem(index, selection) {
-    if(index < len(convo.saleItems)) {
-        item := ITEMS_BY_NAME[convo.saleItems[index].name];
-        gameMessage("You sold " + item.name + " for $" + item.sellPrice + ".", COLOR_GREEN);
-        player.coins := player.coins + item.sellPrice;
-        invIndex := array_find_index(player.inventory, inv => inv.name = item.name);
-        del player.inventory[invIndex];
-        del convo.saleItems[index];
-        saveGame();
-        initSellList();
-    } else {
-        gameMessage("Invalid choice.", COLOR_MID_GRAY);
-    }
+    invIndex := convo.saleItems[index][0];
+    item := ITEMS_BY_NAME[player.inventory[invIndex].name];
+    gameMessage("You sold " + item.name + " for $" + item.sellPrice + ".", COLOR_GREEN);
+    player.coins := player.coins + item.sellPrice;
+    del player.inventory[invIndex];
+    saveGame();
+    initSellList();
 }
-
 
 def findSpaceAround(mx, my) {
     r := 1;
@@ -1048,7 +1036,7 @@ def ageEqipment() {
         array_foreach(SLOTS, (slotIdx, slot) => {
             item := pc.equipment[slot];
             if(item != null) {
-                if(ITEMS_BY_NAME[item.name]["light"] != null) {
+                if(ITEMS_BY_NAME[item.name]["light"] != null && item.lightLife >= 0) {
                     item.lightLife := item.lightLife - getStepDelta();
                     if(item.lightLife <= 0) {
                         gameMessage(item.name + " held by " + pc.name + " burns out.", COLOR_YELLOW);
@@ -1092,8 +1080,11 @@ def doffEquipment(index, selection) {
 def donEquipment(index, selection) {
     equipmentPc := player.party[player.partyIndex];
     equipmentSlot := SLOTS[index];
-    equipmentSlotItems := array_filter(player.inventory, i => {
-        item := ITEMS_BY_NAME[i.name];
+
+    names := [];
+    equipmentSlotItems := [];
+    initStackedItemList(invItem => {
+        item := ITEMS_BY_NAME[invItem.name];
         if(item["slot"] = null) {
             return false;
         }
@@ -1102,16 +1093,17 @@ def donEquipment(index, selection) {
         } else {
             return equipmentSlot = item.slot;
         }
-    });
-    setListUi(array_map(equipmentSlotItems, item => item.name), [ [ KeyEnter, donItem ] ], "No items for _7_" + equipmentSlot);
+    }, names, equipmentSlotItems, null);
+
+    setListUi(names, [ [ KeyEnter, donItem ] ], "No items for _7_" + equipmentSlot);
 }
 
 def donItem(index, selection) {
     if(equipmentPc.equipment[equipmentSlot] != null) {
         player.inventory[len(player.inventory)] := equipmentPc.equipment[equipmentSlot];
     }
-    equipmentPc.equipment[equipmentSlot] := equipmentSlotItems[index];
-    inventoryIndex := array_find_index(player.inventory, invItem => invItem.name = equipmentSlotItems[index].name);
+    inventoryIndex := equipmentSlotItems[index][0];
+    equipmentPc.equipment[equipmentSlot] := player.inventory[inventoryIndex];
     del player.inventory[inventoryIndex];
     calculateArmor(equipmentPc);
     calculateTorchLight();
@@ -1155,7 +1147,7 @@ def drawEffect(x, y, mx, my, effect) {
 }
 
 def useItem(index, selection) {
-    invIndex := invTypeList[index].index;
+    invIndex := invTypeList[index][0];
     invItem := player.inventory[invIndex];
     item := ITEMS_BY_NAME[invItem.name];
     if(item["use"] != null) {
@@ -1170,7 +1162,7 @@ def useItem(index, selection) {
 }
 
 def dropItem(index, selection) {
-    invIndex := invTypeList[index].index;
+    invIndex := invTypeList[index][0];
     if(ITEMS_BY_NAME[player.inventory[invIndex].name].type = OBJECT_SPECIAL) {
         gameMessage("You should not throw that away.", COLOR_MID_GRAY);
     } else {
@@ -1182,14 +1174,47 @@ def dropItem(index, selection) {
 
 def initPartyInventoryType(index, selection) {
     invMode := index;
+
+    list := [];
     invTypeList := [];
-    array_foreach(player.inventory, (index, item) => {
-        if(ITEMS_BY_NAME[item.name].type = OBJECT_TYPES[invMode]) {
-            invTypeList[len(invTypeList)] := { "name": item.name, "index": index };
+    initStackedItemList(invItem => {
+        item := ITEMS_BY_NAME[invItem.name];
+        return item.type = OBJECT_TYPES[invMode];
+    }, list, invTypeList, null);
+
+    setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "No items of type " + OBJECT_TYPES[invMode]);    
+}
+
+def initStackedItemList(itemFilterFx, names, indexes, nameSuffixFx) {
+    stacked := {};
+    array_foreach(player.inventory, (index, invItem) => {
+        item := ITEMS_BY_NAME[invItem.name];
+        if(itemFilterFx(invItem)) {
+            key := item.name;
+            if(invItem.life < 4 || invItem.lightLife < 60) {
+                key := key + "*";
+            }
+            if(nameSuffixFx != null) {
+                key := key + nameSuffixFx(item);
+            }
+            if(stacked[key] = null) {
+                stacked[key] := [ index ];
+            } else {
+                a := stacked[key];
+                a[len(a)] := index;
+            }
         }
     });
-    list := array_map(invTypeList, item => item.name);
-    setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "No items of type " + OBJECT_TYPES[invMode]);    
+    
+    array_foreach(basic_sort_copy(keys(stacked)), (i, k) => {
+        name := k;
+        l := len(stacked[k]);
+        if(l > 1) {
+            name := name + " x" + l;
+        }
+        names[len(names)] := name;
+        indexes[len(indexes)] := stacked[k];
+    });
 }
 
 def initPartyInventoryList() {

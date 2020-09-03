@@ -125,13 +125,14 @@ def initMaps() {
     events["vamir"] := events_vamir;
     events["tristen"] := events_tristen;
     events["weapon"] := events_weapon;
+    events["market"] := events_market;
 }
 
 const OVERLAND_MAPS = [
     "world1", "world2"
 ];
 const OUTDOOR_MAPS = [
-    "almoc", "world1", "fenvel", "van", "world2", "xurcelt", "vamir", "tristen"
+    "almoc", "world1", "fenvel", "van", "world2", "xurcelt", "vamir", "tristen", "market"
 ];
 const DARK_MAPS = [
     "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon", "ashnar2"
