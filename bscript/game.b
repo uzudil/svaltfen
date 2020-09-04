@@ -1109,8 +1109,14 @@ def ageEqipment() {
 
 def inventoryItemName(invItem) {
     name := invItem.name;
-    if(invItem.life < 4 || invItem.lightLife < 60) {
+    if(invItem.life < 4) {
         name := name + "*";
+    } else {
+        if(invItem["lightLife"] != null) {
+            if(invItem.lightLife < 60) {
+                name := name + "*";
+            }
+        }
     }
     return name;
 }
