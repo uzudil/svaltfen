@@ -391,13 +391,15 @@ def playerAttacksDam(monster, damage, bonus) {
             }
             if(monster.monsterTemplate["drops"] != null) {
                 array_foreach(monster.monsterTemplate.drops, (i, name) => {
-                    if(name = "coins") {
-                        amount := roll(7 * monster.monsterTemplate.level, 10 * monster.monsterTemplate.level);
-                        player.coins := player.coins + amount;
-                        gameMessage("You find " + amount + " coins!", COLOR_GREEN);
-                    } else {
-                        gameMessage("You find " + name + "!", COLOR_GREEN);
-                        player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME[name]);
+                    if(random() < 0.3) {
+                        if(name = "coins") {
+                            amount := roll(7 * monster.monsterTemplate.level, 10 * monster.monsterTemplate.level);
+                            player.coins := player.coins + amount;
+                            gameMessage("You find " + amount + " coins!", COLOR_GREEN);
+                        } else {
+                            gameMessage("You find " + name + "!", COLOR_GREEN);
+                            player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME[name]);
+                        }
                     }
                 });
             }

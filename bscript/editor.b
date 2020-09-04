@@ -86,18 +86,22 @@ def addLink() {
     links[mapName][key] := name + "," + pos;
     save("links", links);
     saveMap();
-    loadMap(name);
-    if(map = null) {
-        w := int(input("Width:"));
-        h := int(input("Height:"));
+    if(name = "return") {
         setVideoMode(1);
-        newMap(name, w, h);
-        saveMap();
     } else {
-        setVideoMode(1);
+        loadMap(name);
+        if(map = null) {
+            w := int(input("Width:"));
+            h := int(input("Height:"));
+            setVideoMode(1);
+            newMap(name, w, h);
+            saveMap();
+        } else {
+            setVideoMode(1);
+        }
+        editor.x := int(map.width/2);
+        editor.y := int(map.height/2);
     }
-    editor.x := int(map.width/2);
-    editor.y := int(map.height/2);
 }
 
 def delLink() {

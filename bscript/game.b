@@ -157,17 +157,22 @@ def gameLoadMap(name) {
     # filter out npcs no longer present
     map.npc := array_filter(map.npc, n => mapMutation.npcs[n.name] = null);
 
+    dumpTraderInventory := false;
+    if(mapMutation["visitAt"] != null) {
+        dumpTraderInventory := player.calendar.day - mapMutation.visitAt >= 2;
+    }
+    mapMutation["visitAt"] := player.calendar.day;
+
     array_foreach(map.npc, (i, e) => {
         e["image"] := img[blocks[e.block].img];
         e["start"] := [e.pos[0], e.pos[1]];
 
         # init trade
-        # todo: refresh this from calendar every so often
         if(events[name] != null) {
             if(events[name]["onTrade"] != null) {
                 trade := events[name].onTrade(e);
                 if(trade != null) {
-                    if(mapMutation.traders[e.name] = null) {
+                    if(mapMutation.traders[e.name] = null || dumpTraderInventory) {
                         mapMutation.traders[e.name] := [];
                     }
                     inv := mapMutation.traders[e.name];
@@ -439,6 +444,7 @@ def gameEnterMap() {
                 } else {
                     teleport(tel[0], tel[1]);
                 }
+                saveGame();
             }
         }
     }
@@ -456,19 +462,32 @@ def gameEnterMap() {
                 }
             }
 
+            lastMap := mapName;
+            lastMapX := player.x;
+            lastMapY := player.y;
             ss := split(s, ",");
             if(len(ss) > 1) {
-                gameLoadMap(ss[0]);
-                player.map := ss[0];
-                player.x := int(ss[1]);
-                player.y := int(ss[2]);
+                if(ss[0] = "return") {
+                    gameLoadMap(player["lastMap"]);
+                    player.map := player["lastMap"];
+                    player.x := player["lastMapX"];
+                    player.y := player["lastMapY"];
+                } else {
+                    gameLoadMap(ss[0]);
+                    player.map := ss[0];
+                    player.x := int(ss[1]);
+                    player.y := int(ss[2]);
+                }
             } else {
                 pos := getMapStartPos(s);
                 gameLoadMap(s);
                 player.x := pos[0];
                 player.y := pos[1];
                 player.map := s;
-            }            
+            }
+            player["lastMap"] := lastMap;
+            player["lastMapX"] := lastMapX;
+            player["lastMapY"] := lastMapY;
             saveGame();
             if(events[mapName] != null) {
                 events[mapName].onEnter();
@@ -702,6 +721,8 @@ def gameInput() {
         while(anyKeyDown()) {}
         showGameHelp();
     }
+
+    apUsed := 0;
     if(isKeyDown(KeyEscape)) {
         while(isKeyDown(KeyEscape)) {}
         if(equipmentSlot != null) {
@@ -712,12 +733,14 @@ def gameInput() {
                 invMode := null;
                 initPartyInventoryList();
             } else {
+                if(viewMode = null && gameMode = COMBAT && combat.playerControl) {
+                    apUsed := 10;
+                }
                 endConvo();
             }
-        }
+        }        
     }
     if(gameMode = MOVE || (gameMode = COMBAT && combat.playerControl)) {
-        apUsed := 0;
         ox := player.x;
         oy := player.y;
         if(viewMode = null) {
@@ -774,6 +797,11 @@ def gameInput() {
             viewMode := ACCOMPLISHMENTS;
             initAccomplishmentsList();
         }
+        if(isKeyDown(KeyW)) {
+            while(isKeyDown(KeyW)) {
+            }
+            player.calendar.day := player.calendar.day + 1;
+        }        
         if(gameMode != COMBAT) {
             oldPartyIndex := player.partyIndex;
             if(isKeyDown(Key1)) {
@@ -1036,17 +1064,27 @@ def ageEqipment() {
         array_foreach(SLOTS, (slotIdx, slot) => {
             item := pc.equipment[slot];
             if(item != null) {
-                if(ITEMS_BY_NAME[item.name]["light"] != null && item.lightLife >= 0) {
-                    item.lightLife := item.lightLife - getStepDelta();
-                    if(item.lightLife <= 0) {
-                        gameMessage(item.name + " held by " + pc.name + " burns out.", COLOR_YELLOW);
-                        pc.equipment[slot] := null;
-                        calculateTorchLight();
+                if(ITEMS_BY_NAME[item.name]["light"] != null && item["lightLife"] != null) {
+                    if(item.lightLife >= 0) {
+                        item.lightLife := item.lightLife - getStepDelta();
+                        if(item.lightLife <= 0) {
+                            gameMessage(item.name + " held by " + pc.name + " burns out.", COLOR_YELLOW);
+                            pc.equipment[slot] := null;
+                            calculateTorchLight();
+                        }
                     }
                 }
             }
         });
     });
+}
+
+def inventoryItemName(invItem) {
+    name := invItem.name;
+    if(invItem.life < 4 || invItem.lightLife < 60) {
+        name := name + "*";
+    }
+    return name;
 }
 
 def setEquipmentList() {
@@ -1057,7 +1095,7 @@ def setEquipmentList() {
         if(pc.equipment[slot] = null) {
             name := "";
         } else {
-            name := pc.equipment[slot].name;
+            name := inventoryItemName(pc.equipment[slot]);
         }
         return slot + ": " + name;
     });
@@ -1190,10 +1228,7 @@ def initStackedItemList(itemFilterFx, names, indexes, nameSuffixFx) {
     array_foreach(player.inventory, (index, invItem) => {
         item := ITEMS_BY_NAME[invItem.name];
         if(itemFilterFx(invItem)) {
-            key := item.name;
-            if(invItem.life < 4 || invItem.lightLife < 60) {
-                key := key + "*";
-            }
+            key := inventoryItemName(invItem);
             if(nameSuffixFx != null) {
                 key := key + nameSuffixFx(item);
             }

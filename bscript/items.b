@@ -73,10 +73,7 @@ const ITEMS = [
     { "name": "Mail armor", "level": 5, "price": 32, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 6, },    
     { "name": "War helm", "level": 3, "price": 20, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 4, },    
     { "name": "Platemail", "level": 6, "price": 50, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 7, },
-    { "name": "+1 Ring of Protection", "level": 5, "price": 75, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "ac": 1, },
-    { "name": "+2 Ring of Protection", "level": 7, "price": 150, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "ac": 2, },
-    { "name": "Ring of Light", "level": 1, "price": 45, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "light": 3, },
-    { "name": "Sun ring", "level": 6, "price": 250, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "light": 3, "lightLife": -1 },
+    { "name": "Ring of Protection", "level": 5, "price": 75, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "ac": 1, },
 
     { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Forest cape", "level": 2, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
@@ -119,6 +116,7 @@ const ITEMS = [
     { "name": "Cross key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
     { "name": "Tomes of Knowledge", "level": 1, "price": 1, "type": OBJECT_SPECIAL },
     { "name": "Swirl Key", "level": 1, "price": 1, "type": OBJECT_SPECIAL },
+    { "name": "Ring of Light", "level": 1, "price": 2, "type": OBJECT_SPECIAL, "slot": [ SLOT_RING1, SLOT_RING2 ], "light": 3, "lightLife": -1 },    
 ];
 
 ITEMS_BY_TYPE := {};
