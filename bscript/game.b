@@ -28,6 +28,8 @@ equipmentSlotItems := [];
 const EFFECT_DAMAGE = 0;
 effect := null;
 
+const DISTANCES = {};
+
 convo := {
     "npc": null,
     "map": null,
@@ -57,6 +59,7 @@ def initGame() {
     # init the maps
     initMaps();
     initItems();    
+    initDistances();
 
     savegame := load("savegame.dat");
     if(savegame = null) {
@@ -106,6 +109,18 @@ def initGame() {
     gameLoadMap(mapName);
     if(events[mapName] != null) {
         events[mapName].onEnter();
+    }
+}
+
+def initDistances() {
+    x := 0;
+    while(x < 10) {
+        y := 0;
+        while(y < 10) {
+            DISTANCES["" + x + "." + y] := int(distance(0, 0, x, y));
+            y := y + 1;
+        }
+        x := x + 1;
     }
 }
 
@@ -279,12 +294,13 @@ def gameIsBlockVisible(mx, my) {
     return block["light"] = 1;
 }
 
-def darkenTile(xx, yy) {
+def darkenTile(xx, yy, mod, mode) {
     x := 0;
     while(x < TILE_W) {
         y := 0;
         while(y < TILE_H) {
-            if(x % 2 = 0 || y % 2 = 0) {
+            n := x % mod = 0 && y % mod = 0;
+            if(mode = n) {
                 setPixel(x + xx, y + yy, COLOR_BLACK);
             }
             y := y + 1;
@@ -346,7 +362,13 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
         }
     }
     if(onScreen) {
-        d := int(distance(player.x, player.y, mx, my));
+        #d := int(distance(player.x, player.y, mx, my));
+        dx := abs(player.x - mx);
+        dy := abs(player.y - my);
+        d := DISTANCES["" + dx + "." + dy];
+        if(d = null) {
+            d := 10;
+        }
         dd := 0;
         if(isOutdoors()) {            
             dd := d - max(player.calendar.light, player.light);
@@ -354,10 +376,16 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
         if(isDarkMap()) {
             dd := d - player.light;
         }
-        if(dd = 1) {
-            darkenTile(x, y);
+        if(dd = 0) {
+            darkenTile(x, y, 4, true);
         }
-        if(dd > 1) {
+        if(dd = 1) {
+            darkenTile(x, y, 2, true);
+        }
+        if(dd = 2) {
+            darkenTile(x, y, 3, false);
+        }
+        if(dd > 2) {
             fillRect(x, y, x + TILE_W, y + TILE_H, COLOR_BLACK);
         }
     }
