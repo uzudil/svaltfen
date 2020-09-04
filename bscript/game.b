@@ -27,6 +27,9 @@ equipmentSlotItems := [];
 
 const EFFECT_DAMAGE = 0;
 effect := null;
+rangeFinder := false;
+rangeX := 5;
+rangeY := 5;
 
 const DISTANCES = {};
 
@@ -325,6 +328,11 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
                     }
                 }
             });
+            if(rangeFinder) {
+                rx := 6 + rangeX * TILE_W;
+                ry := 6 + rangeY * TILE_H;
+                drawRect(rx, ry, rx + TILE_W - 3, ry + TILE_H - 3, COLOR_GREEN);
+            }
         } else {
             # draw the player only
             if(mx = player.x && my = player.y) {
@@ -369,8 +377,8 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
         if(d = null) {
             d := 10;
         }
-        dd := 0;
-        if(isOutdoors()) {            
+        dd := -1;
+        if(isOutdoors()) {
             dd := d - max(player.calendar.light, player.light);
         }
         if(isDarkMap()) {
@@ -762,7 +770,11 @@ def gameInput() {
                 initPartyInventoryList();
             } else {
                 if(viewMode = null && gameMode = COMBAT && combat.playerControl) {
-                    apUsed := 10;
+                    if(rangeFinder) {
+                        rangeFinder := false;
+                    } else {
+                        apUsed := 10;
+                    }
                 }
                 endConvo();
             }
@@ -776,7 +788,18 @@ def gameInput() {
                 while(isKeyDown(KeyEnter)) {
                 }
                 if(gameMode = COMBAT) {
-                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                    if(rangeFinder) {
+                        combatRound := combat.round[combat.roundIndex];
+                        combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
+                        if(combatRound.pc["rangeMonster"] != null) {
+                            # todo: projectile animation
+                            # todo: wall collision checking
+                            apUsed := apUsed + playerAttacks(combatRound.pc["rangeMonster"], true);
+                        }
+                        rangeFinder := false;
+                    } else {
+                        gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                    }
                 } else {
                     gameEnterMap();
                 }
@@ -799,6 +822,32 @@ def gameInput() {
                     }
                 }
                 apUsed := apUsed + 1;
+            }
+            if(isKeyDown(KeyR)) {
+                while(isKeyDown(KeyR)) {
+                }
+                if(gameMode = COMBAT) {
+                    combatRound := combat.round[combat.roundIndex];
+                    if(rangeFinder = false && combatRound.pc["ranged"] != null) {
+                        rangeFinder := true;                        
+                        if(combatRound.pc["rangeMonster"] != null) {
+                            rangeX := combatRound.pc["rangeMonster"].pos[0] - player.x + 5;
+                            rangeY := combatRound.pc["rangeMonster"].pos[1] - player.y + 5;
+                            if(rangeX < 0 || rangeX >= 11 || rangeY < 0 || rangeY >= 11) {
+                                rangeX := 5;
+                                rangeY := 5;
+                            }
+                        } else {
+                            rangeX := 5;
+                            rangeY := 5;
+                        }
+                        combatRound.pc["rangeMonster"] := null;
+                    } else {
+                        # make buzzer sound
+                    }
+                } else {
+                    gameMessage("Using ranged weapons is only allowed in combat.", COLOR_MID_GRAY);
+                }
             }
         }
         if(isKeyDown(KeyC)) {
@@ -853,54 +902,69 @@ def gameInput() {
             }
         }
         if(viewMode = null) {
-            if(isKeyDown(KeyUp)) {
-                player.y := player.y - 1;
-            }
-            if(isKeyDown(KeyDown)) {
-                player.y := player.y + 1;
-            }
-            if(isKeyDown(KeyLeft)) {
-                player.x := player.x - 1;
-            }
-            if(isKeyDown(KeyRight)) {
-                player.x := player.x + 1;
-            }
-
-            blocked := player.x < 0 || player.y < 0 || player.x >= map.width || player.y >= map.height;
-            if(blocked = false) {
-                m := array_find(map.monster, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0);
-                blocked := m != null;
-                if(m != null && gameMode = COMBAT) {
-                    apUsed := apUsed + playerAttacks(m);
+            if(rangeFinder) {
+                if(isKeyDown(KeyUp) && rangeY > 0) {
+                    rangeY := rangeY - 1;
                 }
-            }
-            if(blocked = false) {
-                block := blocks[getBlock(player.x, player.y).block];
-                blocked := block.blocking;
-            }
-            if(blocked) {
-                player.x := ox;
-                player.y := oy;
+                if(isKeyDown(KeyDown) && rangeY < 10) {
+                    rangeY := rangeY + 1;
+                }
+                if(isKeyDown(KeyLeft) && rangeX > 0) {
+                    rangeX := rangeX - 1;
+                }
+                if(isKeyDown(KeyRight) && rangeX < 10) {
+                    rangeX := rangeX + 1;
+                }
             } else {
-                # if stepping on an npc, swap places
-                n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
-                if(n != null) {
-                    n.pos[0] := ox;
-                    n.pos[1] := oy;
+                if(isKeyDown(KeyUp)) {
+                    player.y := player.y - 1;
+                }
+                if(isKeyDown(KeyDown)) {
+                    player.y := player.y + 1;
+                }
+                if(isKeyDown(KeyLeft)) {
+                    player.x := player.x - 1;
+                }
+                if(isKeyDown(KeyRight)) {
+                    player.x := player.x + 1;
                 }
 
-                if(gameMode = COMBAT) {
-                    # if stepping on another player, swap places
-                    pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
-                    if(pc != null) {
-                        pc.pos[0] := ox;
-                        pc.pos[1] := oy;
+                blocked := player.x < 0 || player.y < 0 || player.x >= map.width || player.y >= map.height;
+                if(blocked = false) {
+                    m := array_find(map.monster, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0);
+                    blocked := m != null;
+                    if(m != null && gameMode = COMBAT) {
+                        apUsed := apUsed + playerAttacks(m, false);
+                    }
+                }
+                if(blocked = false) {
+                    block := blocks[getBlock(player.x, player.y).block];
+                    blocked := block.blocking;
+                }
+                if(blocked) {
+                    player.x := ox;
+                    player.y := oy;
+                } else {
+                    # if stepping on an npc, swap places
+                    n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
+                    if(n != null) {
+                        n.pos[0] := ox;
+                        n.pos[1] := oy;
                     }
 
-                    # trace("SAVING POS of " + player.partyIndex);
-                    player.party[player.partyIndex].pos[0] := player.x;
-                    player.party[player.partyIndex].pos[1] := player.y;
-                    apUsed := apUsed + 1;
+                    if(gameMode = COMBAT) {
+                        # if stepping on another player, swap places
+                        pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
+                        if(pc != null) {
+                            pc.pos[0] := ox;
+                            pc.pos[1] := oy;
+                        }
+
+                        # trace("SAVING POS of " + player.partyIndex);
+                        player.party[player.partyIndex].pos[0] := player.x;
+                        player.party[player.partyIndex].pos[1] := player.y;
+                        apUsed := apUsed + 1;
+                    }
                 }
             }
         }

@@ -141,9 +141,18 @@ def drawCharSheet() {
         a[len(a)] := s;
         return a;
     }), ","));
-    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
-    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, describeHunger(pc));
-    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, describeThirst(pc));
+    if(pc["ranged"] != null) {
+        s := "" + pc.ranged.dam[0] + "-" + pc.ranged.dam[1];
+        if(pc.ranged.bonus > 0) {
+            s := s + "+" + pc.ranged.bonus;
+        }
+        drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
+    } else {
+        drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
+    }
+    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
+    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, describeHunger(pc));
+    drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, describeThirst(pc));
 
     drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex);
     drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed + " INT:" + pc.int);
@@ -271,6 +280,7 @@ def showGameHelp() {
     gameMessage("_1_E: change equipment", COLOR_MID_GRAY);
     gameMessage("_1_I: party inventory", COLOR_MID_GRAY);
     gameMessage("_1_T: talk", COLOR_MID_GRAY);
+    gameMessage("_1_R: ranged attack in combat", COLOR_MID_GRAY);
     gameMessage("_1_Space: search/use door", COLOR_MID_GRAY);
     gameMessage("_1_Enter: use stairs/gate", COLOR_MID_GRAY);
     gameMessage("_1_Numbers: switch pc / option in conversation or trade", COLOR_MID_GRAY);

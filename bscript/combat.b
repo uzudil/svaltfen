@@ -346,10 +346,15 @@ def attackMonster(targetPc) {
     }
 }
 
-def playerAttacks(monster) {
+def playerAttacks(monster, rangedAttack) {
     combatRound := combat.round[combat.roundIndex];
+    if(rangedAttack) {
+        attacks := [ combatRound.pc.ranged ];
+    } else {
+        attacks := combatRound.pc.attack; 
+    }
     res := { "attackChanged": false };
-    array_foreach(combatRound.pc.attack, (i, attack) => {
+    array_foreach(attacks, (i, attack) => {
         gameMessage(combatRound.pc.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
         if(playerAttacksDam(monster, attack.dam, attack.bonus) && attack.slot != null) {
             if(decItemLife(combatRound.pc, attack.slot)) {

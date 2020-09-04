@@ -146,12 +146,24 @@ def calculateArmor(pc) {
             "slot": null,
         } ];
     }
+
+    if(pc.equipment[SLOT_RANGED] != null) {
+        item := ITEMS_BY_NAME[pc.equipment[SLOT_RANGED].name];
+        pc["ranged"] := {
+            "dam": [ item.dam[0] + attackBonus, item.dam[1] + attackBonus ],
+            "weapon": item.name,
+            "bonus": item.bonus,
+            "slot": SLOT_RANGED,
+        };
+    } else {
+        pc["ranged"] := null;
+    }
 }
 
 def getWeaponSlots(pc) {
     return array_filter(SLOTS, slot => {
         if(pc.equipment[slot] != null) {
-            return ITEMS_BY_NAME[pc.equipment[slot].name]["dam"] != null;
+            return slot != SLOT_RANGED && ITEMS_BY_NAME[pc.equipment[slot].name]["dam"] != null;
         }
         return false;
     });

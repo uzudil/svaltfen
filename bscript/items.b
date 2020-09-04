@@ -95,6 +95,13 @@ const ITEMS = [
     { "name": "Greatsword", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 6, 9 ] },
     { "name": "Greatsaxe", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 10 ] },
 
+    { "name": "Composite Bow", "level": 1, "price": 25, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 2, 4 ], "range": 6 },
+    { "name": "Longbow", "level": 2, "price": 50, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 2, 5 ], "range": 6 },
+    { "name": "Hunting bow", "level": 2, "price": 42, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 3, 5 ], "range": 6 },
+    { "name": "Crossbow", "level": 3, "price": 75, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 2, 6 ], "range": 6 },
+    { "name": "Heavy Crossbow", "level": 4, "price": 120, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 3, 6 ], "range": 6 },
+    { "name": "Throwing Knife", "level": 2, "price": 60, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 1, 2 ], "range": 3 },
+
     { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "light": 3 },
     { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },
     { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES },
