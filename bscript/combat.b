@@ -356,9 +356,53 @@ def playerRangeAttack() {
     combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
     apUsed := 0;
     if(combatRound.pc["rangeMonster"] != null) {
-        # todo: projectile animation
-        # todo: wall collision checking
-        apUsed := playerAttacks(combatRound.pc["rangeMonster"], true);
+        # animate arrow path
+        arrowX := player.x;
+        arrowY := player.y;
+        mx := combatRound.pc.rangeMonster.pos[0] - arrowX;
+        my := combatRound.pc.rangeMonster.pos[1] - arrowY;
+        amx := abs(mx);
+        amy := abs(my);
+        steps := max(amx, amy);
+        arrowRot := 0;
+        if(amx > amy) {
+            dx := mx / amx;
+            dy := my / amx;
+            if(dx > 0) {
+                arrowRot := 2;
+            }
+        } else {
+            dy := my / amy;
+            dx := mx / amy;
+            if(dy < 0) {
+                arrowRot := 1;
+            } else {
+                arrowRot := 3;
+            }
+        }
+        step := 0;
+        success := true;
+        while(success && step < steps) {
+            arrowX := arrowX + dx;
+            arrowY := arrowY + dy;
+            step := step + 1;
+            sleep(50);
+            renderGame();
+            updateVideo();
+
+            # did we hit a wall?
+            block := blocks[getBlock(round(arrowX), round(arrowY)).block];
+            success := block.light = false;
+        }
+        arrowX := 0;
+        arrowY := 0;
+        renderGame();
+        updateVideo();
+        if(success) {
+            apUsed := playerAttacks(combatRound.pc.rangeMonster, true);
+        } else {
+            buzzer();
+        }
     }
     rangeFinder := false;
     return apUsed;
