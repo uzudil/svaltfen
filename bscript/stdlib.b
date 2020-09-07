@@ -157,3 +157,11 @@ def copy_map(m) {
 def copy_array(m) {
     return array_reduce(m, [], (d, e) => { d[len(d)] := e; return d; });
 }
+
+def isKeyPress(key) {
+    if(isKeyDown(key)) {
+        while(isKeyDown(key)) {}
+        return true;
+    }
+    return false;
+}

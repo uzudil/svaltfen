@@ -743,24 +743,219 @@ def endConvo() {
     }
 }
 
+def switchPc() {
+    if(isKeyPress(Key1)) {
+        player.partyIndex := 0;
+    }
+    if(isKeyPress(Key2) && len(player.party) > 1) {
+        player.partyIndex := 1;
+    }
+    if(isKeyPress(Key3) && len(player.party) > 2) {
+        player.partyIndex := 2;
+    }
+    if(isKeyPress(Key4) && len(player.party) > 3) {
+        player.partyIndex := 3;
+    }
+}
+
+
+def moveInput(apUsed) {
+    ox := player.x;
+    oy := player.y;
+    if(viewMode = null) {
+        if(isKeyPress(KeyEnter)) {
+            if(gameMode = COMBAT) {
+                if(rangeFinder) {
+                    apUsed := apUsed + playerRangeAttack();
+                } else {
+                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                    buzzer();
+                }
+            } else {
+                gameEnterMap();
+            }
+        }
+        if(isKeyPress(KeyT)) {
+            if(gameMode = COMBAT) {
+                gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                buzzer();
+            } else {                
+                gameConvo();
+            }
+        }
+        if(isKeyPress(KeySpace)) {
+            if(gameUseDoor() = null) {
+                if(gameSearch()) {
+                    actionSound();
+                } else {
+                    buzzer();
+                    gameMessage("You find nothing.", COLOR_MID_GRAY);
+                }
+            } else {
+                actionSound();
+            }
+            apUsed := apUsed + 1;
+        }
+        if(isKeyPress(KeyR)) {
+            if(gameMode = COMBAT) {
+                playerRangeTarget();
+            } else {
+                gameMessage("Using ranged weapons is only allowed in combat.", COLOR_MID_GRAY);
+                buzzer();
+            }
+        }
+    }
+    if(isKeyPress(KeyC)) {
+        viewMode := CHAR_SHEET;
+    }        
+    if(isKeyPress(KeyE)) {
+        viewMode := EQUIPMENT;
+        setEquipmentList();
+    }
+    if(isKeyPress(KeyI)) {
+        invMode := null;
+        viewMode := INVENTORY;
+        initPartyInventoryList();
+    }
+    if(isKeyPress(KeyA)) {
+        viewMode := ACCOMPLISHMENTS;
+        initAccomplishmentsList();
+    }
+    if(viewMode = null) {
+        if(rangeFinder) {
+            if(isKeyDown(KeyUp) && rangeY > 0) {
+                rangeY := rangeY - 1;
+            }
+            if(isKeyDown(KeyDown) && rangeY < 10) {
+                rangeY := rangeY + 1;
+            }
+            if(isKeyDown(KeyLeft) && rangeX > 0) {
+                rangeX := rangeX - 1;
+            }
+            if(isKeyDown(KeyRight) && rangeX < 10) {
+                rangeX := rangeX + 1;
+            }
+        } else {
+            if(isKeyDown(KeyUp)) {
+                player.y := player.y - 1;
+            }
+            if(isKeyDown(KeyDown)) {
+                player.y := player.y + 1;
+            }
+            if(isKeyDown(KeyLeft)) {
+                player.x := player.x - 1;
+            }
+            if(isKeyDown(KeyRight)) {
+                player.x := player.x + 1;
+            }
+
+            blocked := player.x < 0 || player.y < 0 || player.x >= map.width || player.y >= map.height;
+            if(blocked = false) {
+                m := array_find(map.monster, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0);
+                blocked := m != null;
+                if(m != null && gameMode = COMBAT) {
+                    apUsed := apUsed + playerAttacks(m, false);
+                }
+            }
+            if(blocked = false) {
+                block := blocks[getBlock(player.x, player.y).block];
+                blocked := block.blocking;
+            }
+            if(blocked) {
+                player.x := ox;
+                player.y := oy;
+            } else {
+                if(gameMode = COMBAT && (ox != player.x || oy != player.y)) {
+                    stepSound();
+                }
+
+                # if stepping on an npc, swap places
+                n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
+                if(n != null) {
+                    n.pos[0] := ox;
+                    n.pos[1] := oy;
+                }
+
+                if(gameMode = COMBAT) {
+                    # if stepping on another player, swap places
+                    pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
+                    if(pc != null) {
+                        pc.pos[0] := ox;
+                        pc.pos[1] := oy;
+                    }
+
+                    # trace("SAVING POS of " + player.partyIndex);
+                    player.party[player.partyIndex].pos[0] := player.x;
+                    player.party[player.partyIndex].pos[1] := player.y;
+                    apUsed := apUsed + 1;
+                }
+            }
+        }
+    }
+
+    # do this last, as it can switch players
+    if(gameMode = COMBAT && apUsed > 0) {
+        combatTurnStep(apUsed);
+    }
+
+    return apUsed;
+}
+
+def convoInput() {
+    if(viewMode = null) {
+        index := null;
+        if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
+            while(anyKeyDown()) {}
+            index := 0;
+        }
+        if(isKeyPress(Key2)) {
+            index := 1;
+        }
+        if(isKeyPress(Key3)) {
+            index := 2;
+        }
+        if(isKeyPress(Key4)) {
+            index := 3;
+        }
+        if(isKeyPress(Key5)) {
+            index := 4;
+        }
+        if(isKeyPress(Key6)) {
+            index := 5;
+        }
+        if(index != null) {
+            if(index = 0) {
+                gameMode := MOVE;
+                viewMode := null;
+                gameMessage("Bye.", COLOR_MID_GRAY);
+            } else {
+                if(viewMode = null) {
+                    if(len(convo.answers) > index) {
+                        convo.key := convo.answers[index][1];
+                        clearGameMessages();
+                        showConvoText();
+                    }
+                }
+            }
+        }
+    }
+}
+
 def gameInput() {
 
     if(moreText) {
-        if(isKeyDown(KeySpace)) {
-            while(anyKeyDown()) {}
+        if(isKeyPress(KeySpace)) {
             pageGameMessages();
         }
         return 1;
     }
 
-    if(isKeyDown(KeyH)) {
-        while(anyKeyDown()) {}
+    if(isKeyPress(KeyH)) {
         showGameHelp();
     }
 
     apUsed := 0;
-    if(isKeyDown(KeyEscape)) {
-        while(isKeyDown(KeyEscape)) {}
+    if(isKeyPress(KeyEscape)) {
         if(equipmentSlot != null) {
             equipmentSlot := null;
             setEquipmentList();
@@ -780,199 +975,18 @@ def gameInput() {
             }
         }        
     }
-    if(gameMode = MOVE || (gameMode = COMBAT && combat.playerControl)) {
-        ox := player.x;
-        oy := player.y;
-        if(viewMode = null) {
-            if(isKeyDown(KeyEnter)) {
-                while(isKeyDown(KeyEnter)) {
-                }
-                if(gameMode = COMBAT) {
-                    if(rangeFinder) {
-                        combatRound := combat.round[combat.roundIndex];
-                        combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
-                        if(combatRound.pc["rangeMonster"] != null) {
-                            # todo: projectile animation
-                            # todo: wall collision checking
-                            apUsed := apUsed + playerAttacks(combatRound.pc["rangeMonster"], true);
-                        }
-                        rangeFinder := false;
-                    } else {
-                        gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
-                    }
-                } else {
-                    gameEnterMap();
-                }
-            }
-            if(isKeyDown(KeyT)) {
-                while(isKeyDown(KeyT)) {
-                }
-                if(gameMode = COMBAT) {
-                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
-                } else {                
-                    gameConvo();
-                }
-            }
-            if(isKeyDown(KeySpace)) {
-                while(isKeyDown(KeySpace)) {
-                }
-                if(gameUseDoor() = null) {
-                    if(gameSearch() != true) {
-                        gameMessage("You find nothing.", COLOR_MID_GRAY);
-                    }
-                }
-                apUsed := apUsed + 1;
-            }
-            if(isKeyDown(KeyR)) {
-                while(isKeyDown(KeyR)) {
-                }
-                if(gameMode = COMBAT) {
-                    combatRound := combat.round[combat.roundIndex];
-                    if(rangeFinder = false && combatRound.pc["ranged"] != null) {
-                        rangeFinder := true;                        
-                        if(combatRound.pc["rangeMonster"] != null) {
-                            rangeX := combatRound.pc["rangeMonster"].pos[0] - player.x + 5;
-                            rangeY := combatRound.pc["rangeMonster"].pos[1] - player.y + 5;
-                            if(rangeX < 0 || rangeX >= 11 || rangeY < 0 || rangeY >= 11) {
-                                rangeX := 5;
-                                rangeY := 5;
-                            }
-                        } else {
-                            rangeX := 5;
-                            rangeY := 5;
-                        }
-                        combatRound.pc["rangeMonster"] := null;
-                    } else {
-                        # make buzzer sound
-                    }
-                } else {
-                    gameMessage("Using ranged weapons is only allowed in combat.", COLOR_MID_GRAY);
-                }
-            }
-        }
-        if(isKeyDown(KeyC)) {
-            while(isKeyDown(KeyC)) {
-            }
-            viewMode := CHAR_SHEET;
-        }        
-        if(isKeyDown(KeyE)) {
-            while(isKeyDown(KeyE)) {
-            }
-            viewMode := EQUIPMENT;
+
+    # can't switch party during convo and combat
+    if(gameMode != COMBAT && (gameMode != CONVO || viewMode != null)) {
+        oldPartyIndex := player.partyIndex;
+        switchPc();
+        if(oldPartyIndex != player.partyIndex && viewMode = EQUIPMENT) {
             setEquipmentList();
         }
-        if(isKeyDown(KeyI)) {
-            while(isKeyDown(KeyI)) {
-            }
-            invMode := null;
-            viewMode := INVENTORY;
-            initPartyInventoryList();
-        }
-        if(isKeyDown(KeyA)) {
-            while(isKeyDown(KeyA)) {
-            }
-            viewMode := ACCOMPLISHMENTS;
-            initAccomplishmentsList();
-        }
-        if(isKeyDown(KeyW)) {
-            while(isKeyDown(KeyW)) {
-            }
-            player.calendar.day := player.calendar.day + 1;
-        }        
-        if(gameMode != COMBAT) {
-            oldPartyIndex := player.partyIndex;
-            if(isKeyDown(Key1)) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 0;
-            }
-            if(isKeyDown(Key2) && len(player.party) > 1) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 1;
-            }
-            if(isKeyDown(Key3) && len(player.party) > 2) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 2;
-            }
-            if(isKeyDown(Key4) && len(player.party) > 3) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 3;
-            }
-            if(oldPartyIndex != player.partyIndex && viewMode = EQUIPMENT) {
-                setEquipmentList();
-            }
-        }
-        if(viewMode = null) {
-            if(rangeFinder) {
-                if(isKeyDown(KeyUp) && rangeY > 0) {
-                    rangeY := rangeY - 1;
-                }
-                if(isKeyDown(KeyDown) && rangeY < 10) {
-                    rangeY := rangeY + 1;
-                }
-                if(isKeyDown(KeyLeft) && rangeX > 0) {
-                    rangeX := rangeX - 1;
-                }
-                if(isKeyDown(KeyRight) && rangeX < 10) {
-                    rangeX := rangeX + 1;
-                }
-            } else {
-                if(isKeyDown(KeyUp)) {
-                    player.y := player.y - 1;
-                }
-                if(isKeyDown(KeyDown)) {
-                    player.y := player.y + 1;
-                }
-                if(isKeyDown(KeyLeft)) {
-                    player.x := player.x - 1;
-                }
-                if(isKeyDown(KeyRight)) {
-                    player.x := player.x + 1;
-                }
+    }
 
-                blocked := player.x < 0 || player.y < 0 || player.x >= map.width || player.y >= map.height;
-                if(blocked = false) {
-                    m := array_find(map.monster, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0);
-                    blocked := m != null;
-                    if(m != null && gameMode = COMBAT) {
-                        apUsed := apUsed + playerAttacks(m, false);
-                    }
-                }
-                if(blocked = false) {
-                    block := blocks[getBlock(player.x, player.y).block];
-                    blocked := block.blocking;
-                }
-                if(blocked) {
-                    player.x := ox;
-                    player.y := oy;
-                } else {
-                    # if stepping on an npc, swap places
-                    n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
-                    if(n != null) {
-                        n.pos[0] := ox;
-                        n.pos[1] := oy;
-                    }
-
-                    if(gameMode = COMBAT) {
-                        # if stepping on another player, swap places
-                        pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
-                        if(pc != null) {
-                            pc.pos[0] := ox;
-                            pc.pos[1] := oy;
-                        }
-
-                        # trace("SAVING POS of " + player.partyIndex);
-                        player.party[player.partyIndex].pos[0] := player.x;
-                        player.party[player.partyIndex].pos[1] := player.y;
-                        apUsed := apUsed + 1;
-                    }
-                }
-            }
-        }
-
-        # do this last, as it can switch players
-        if(gameMode = COMBAT && apUsed > 0) {
-            combatTurnStep(apUsed);
-        }
+    if(gameMode = MOVE || (gameMode = COMBAT && combat.playerControl)) {
+        moveInput(apUsed);
     }
 
     if(viewMode != null) {
@@ -980,67 +994,7 @@ def gameInput() {
     }
 
     if(gameMode = CONVO) {
-        if(viewMode != null) {
-            if(isKeyDown(Key1)) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 0;
-            }
-            if(isKeyDown(Key2) && len(player.party) > 1) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 1;
-            }
-            if(isKeyDown(Key3) && len(player.party) > 2) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 2;
-            }
-            if(isKeyDown(Key4) && len(player.party) > 3) {
-                while(anyKeyDown()) {}
-                player.partyIndex := 3;
-            }
-        }
-
-        if(viewMode = null) {
-            index := null;
-            if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
-                while(anyKeyDown()) {}
-                index := 0;
-            }
-            if(isKeyDown(Key2)) {
-                while(anyKeyDown()) {}
-                index := 1;
-            }
-            if(isKeyDown(Key3)) {
-                while(anyKeyDown()) {}
-                index := 2;
-            }
-            if(isKeyDown(Key4)) {
-                while(anyKeyDown()) {}
-                index := 3;
-            }
-            if(isKeyDown(Key5)) {
-                while(anyKeyDown()) {}
-                index := 4;
-            }
-            if(isKeyDown(Key6)) {
-                while(anyKeyDown()) {}
-                index := 5;
-            }
-            if(index != null) {
-                if(index = 0) {
-                    gameMode := MOVE;
-                    viewMode := null;
-                    gameMessage("Bye.", COLOR_MID_GRAY);
-                } else {
-                    if(viewMode = null) {
-                        if(len(convo.answers) > index) {
-                            convo.key := convo.answers[index][1];
-                            clearGameMessages();
-                            showConvoText();
-                        }
-                    }
-                }
-            }
-        }
+        convoInput();
     }
 }
 

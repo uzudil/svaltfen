@@ -25,6 +25,7 @@ def listUiInput() {
             listUi.index := 0;
             listUi.page := listUi.page + 10;
         }
+        stepSound();
     }
     if(isKeyDown(KeyUp) && listUi.index + listUi.page > 0) {
         listUi.index := listUi.index - 1;
@@ -32,11 +33,12 @@ def listUiInput() {
             listUi.index := 9;
             listUi.page := listUi.page - 10;
         }
+        stepSound();
     }
     if(len(listUi.list) > 0) {
         array_foreach(listUi.onSelect, (i, pair) => {
-            if(isKeyDown(pair[0])) {
-                while(isKeyDown(pair[0])) {}
+            if(isKeyPress(pair[0])) {
+                actionSound();
                 idx := listUi.page + listUi.index;
                 fx := pair[1];
                 fx(idx, listUi.list[idx]);

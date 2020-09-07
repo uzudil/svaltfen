@@ -26,6 +26,7 @@ def startCombat() {
                 }
             });
             # trace("COMBAT START");
+            combatStartSound();
             gameMode := COMBAT;        
             combat.roundCount := 0;
             combat.monsters := monsters;
@@ -111,6 +112,7 @@ def checkCombatDone() {
     live_monsters := array_filter(combat.monsters, m => m.visible && m.hp > 0);
     if(len(live_monsters) = 0) {
         gameMessage("Victory!", COLOR_GREEN);
+        combatEndSound();
         gameMode := MOVE;
         player.partyIndex := array_find_index(player.party, p => p.hp > 0);
         return true;
@@ -301,6 +303,7 @@ def moveMonster() {
 
     if(moved) {
         #gameMessage(monster.monsterTemplate.name + " moves", COLOR_MID_GRAY);
+        stepSound();
     } else {
         gameMessage(monster.monsterTemplate.name + " waits", COLOR_MID_GRAY);        
     }
@@ -316,6 +319,7 @@ def attackMonster(targetPc) {
     toHit := roll(0, 20) + monster.monsterTemplate.armor;
     if(toHit <= targetPc.armor) {
         gameMessage(monster.monsterTemplate.name + " misses.", COLOR_MID_GRAY);
+        combatMissSound();
         return 1;
     }
 
@@ -323,6 +327,7 @@ def attackMonster(targetPc) {
     dam := roll(monster.monsterTemplate.attack[0], monster.monsterTemplate.attack[1]);
     if(dam > 0) {
         gameMessage(targetPc.name + " takes " + dam + " damage!", COLOR_RED);
+        combatAttackSound();
         targetPc.hp := max(targetPc.hp - dam, 0);
         setMapEffect(monster.pos[0], monster.pos[1], targetPc.pos, EFFECT_DAMAGE);
         if(targetPc.hp = 0) {
@@ -343,6 +348,40 @@ def attackMonster(targetPc) {
         }
     } else {
         gameMessage(monster.monsterTemplate.name + " misses.", COLOR_MID_GRAY);
+    }
+}
+
+def playerRangeAttack() {
+    combatRound := combat.round[combat.roundIndex];
+    combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
+    apUsed := 0;
+    if(combatRound.pc["rangeMonster"] != null) {
+        # todo: projectile animation
+        # todo: wall collision checking
+        apUsed := playerAttacks(combatRound.pc["rangeMonster"], true);
+    }
+    rangeFinder := false;
+    return apUsed;
+}
+
+def playerRangeTarget() {
+    combatRound := combat.round[combat.roundIndex];
+    if(rangeFinder = false && combatRound.pc["ranged"] != null) {
+        rangeFinder := true;                        
+        if(combatRound.pc["rangeMonster"] != null) {
+            rangeX := combatRound.pc["rangeMonster"].pos[0] - player.x + 5;
+            rangeY := combatRound.pc["rangeMonster"].pos[1] - player.y + 5;
+            if(rangeX < 0 || rangeX >= 11 || rangeY < 0 || rangeY >= 11) {
+                rangeX := 5;
+                rangeY := 5;
+            }
+        } else {
+            rangeX := 5;
+            rangeY := 5;
+        }
+        combatRound.pc["rangeMonster"] := null;
+    } else {
+        buzzer();
     }
 }
 
@@ -375,6 +414,7 @@ def playerAttacksDam(monster, damage, bonus) {
     toHit := roll(0, 20) + getToHitBonus(combatRound.pc) + bonus;
     if(toHit <= monster.monsterTemplate.armor) {
         gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
+        combatMissSound();
         return false;
     }
 
@@ -382,6 +422,7 @@ def playerAttacksDam(monster, damage, bonus) {
     dam := roll(damage[0], damage[1]) + bonus;
     if(dam > 0) {
         gameMessage(monster.monsterTemplate.name + " takes " + dam + " damage!", COLOR_RED);
+        combatAttackSound();
         monster.hp := max(monster.hp - dam, 0);
         setMapEffect(combatRound.pc.pos[0], combatRound.pc.pos[1], monster.pos, EFFECT_DAMAGE);
         if(monster.hp = 0) {
