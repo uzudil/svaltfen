@@ -7,7 +7,7 @@ const events_redclaw = {
             return {
                 "": "Like the tomes say, a $stranger comes to $Redclaw|way castle.",
                 "stranger": "Yes, I've read about $this in the library, before it $burned down.",
-                "this": "The old tomes say, in times of need, a pale stranger will arrive and seek their $lore. We must do all we can to $aid him in his travels.",
+                "this": "The old tomes say, in times of need, a lone stranger will arrive and seek their $lore. We must do all we can to $aid him in his travels.",
                 "lore": "Unfortunatelly, the library $burned down some years ago and Sir Egon did not rebuild it.",
                 "burned": "The flames destroyed all the books. Good thing I $read|this most of them before the fire!",
                 "aid": "The books mentioned you $stranger and went on to say that the world is in great $danger at the time of your arrival.",
