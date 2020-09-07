@@ -357,10 +357,12 @@ def playerRangeAttack() {
     apUsed := 0;
     if(combatRound.pc["rangeMonster"] != null) {
         # animate arrow path
-        arrowX := player.x;
-        arrowY := player.y;
-        mx := combatRound.pc.rangeMonster.pos[0] - arrowX;
-        my := combatRound.pc.rangeMonster.pos[1] - arrowY;
+        arrowX := TILE_W * 5;
+        arrowY := TILE_H * 5;
+        ex := (combatRound.pc.rangeMonster.pos[0] - player.x + 5) * TILE_W;
+        ey := (combatRound.pc.rangeMonster.pos[1] - player.y + 5) * TILE_H;
+        mx := ex - arrowX;
+        my := ey - arrowY;
         amx := abs(mx);
         amy := abs(my);
         steps := max(amx, amy);
@@ -380,18 +382,27 @@ def playerRangeAttack() {
                 arrowRot := 3;
             }
         }
+
+        updateVideo();
+        bg := getImage(5, 5, 5 + (11 * TILE_W), 5 + (11 * TILE_H));
+
         step := 0;
         success := true;
+        arrowFireSound();
         while(success && step < steps) {
+            fillRect(arrowX + 5 - 2, arrowY + 5 - 2, arrowX + 5 + TILE_W + 2, arrowY + 5 + TILE_H + 2, COLOR_BLACK);
+            drawImage(5, 5, bg);
+            drawImageRot(arrowX + 5, arrowY + 5, arrowRot, 0, 0, img["arrow"]);
+            sleep(2);
+            updateVideo();
+
+            # move arrow
             arrowX := arrowX + dx;
             arrowY := arrowY + dy;
             step := step + 1;
-            sleep(50);
-            renderGame();
-            updateVideo();
 
             # did we hit a wall?
-            block := blocks[getBlock(round(arrowX), round(arrowY)).block];
+            block := blocks[getBlock(round(arrowX / TILE_W) - 5 + player.x, round(arrowY / TILE_H) - 5 + player.y).block];
             success := block.light = false;
         }
         arrowX := 0;

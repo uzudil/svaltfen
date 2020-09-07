@@ -44,3 +44,8 @@ def actionSound() {
     playSound(0, 280, 0.075);
     playSound(1, 310, 0.1);
 }
+
+def arrowFireSound() {
+    playSound(0, 1200, 0.05);
+    playSound(1, 1240, 0.075);
+}
