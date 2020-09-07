@@ -42,6 +42,7 @@ def gainExp(pc, amount) {
         pc.level := pc.level + 1;
         pc.hp := pc.startHp * pc.level;
         gameMessage(pc.name + " is now level " + pc.level + "!", COLOR_GREEN);
+        levelUpSound();
     }
 }
 
@@ -184,10 +185,12 @@ def decItemLife(pc, slot) {
         gameMessage(invItem.name + " breaks!", COLOR_RED);
         pc.equipment[slot] := null;
         calculateTorchLight();
+        equipmentFailSound(3);
         return true;
     }
     if(invItem.life < 4) {
         gameMessage(invItem.name + " cracks!", COLOR_RED);
+        equipmentFailSound(2);
     }
     return false;
 }

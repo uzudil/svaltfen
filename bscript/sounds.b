@@ -49,3 +49,28 @@ def arrowFireSound() {
     playSound(0, 1200, 0.05);
     playSound(1, 1240, 0.075);
 }
+
+def equipmentFailSound(n) {
+    i := 0;
+    while(i < n) {
+        playSound(0, 350, 0.05);
+        playSound(0, 0, 0.05);
+        i := i + 1;
+    }
+}
+
+def levelUpSound() {
+    playSound(1, 0, 0.15);
+    playSound(1, 750, 0.25);
+    playSound(1, 700, 0.15);
+    playSound(1, 800, 0.15);
+    playSound(1, 0, 0.15);
+    playSound(1, 800, 0.25);
+
+    playSound(2, 0, 0.15);
+    playSound(2, 770, 0.25);
+    playSound(2, 720, 0.15);
+    playSound(2, 820, 0.15);
+    playSound(2, 0, 0.15);
+    playSound(2, 820, 0.25);
+}
