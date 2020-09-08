@@ -366,49 +366,51 @@ def playerRangeAttack() {
         amx := abs(mx);
         amy := abs(my);
         steps := max(amx, amy);
-        arrowRot := 0;
+        flipX := 0;
+        flipY := 0;
+        imgIndex := 0;
         if(amx > amy) {
             dx := mx / amx;
             dy := my / amx;
             if(dx > 0) {
-                arrowRot := 2;
+                flipX := 1;
             }
         } else {
+            imgIndex := 1;
             dy := my / amy;
             dx := mx / amy;
-            if(dy < 0) {
-                arrowRot := 1;
-            } else {
-                arrowRot := 3;
+            if(dy > 0) {
+                flipY := 1;
             }
         }
 
-        updateVideo();
-        bg := getImage(5, 5, 5 + (11 * TILE_W), 5 + (11 * TILE_H));
+        setSprite(ARROW_SPRITE, [ img["arrow"], img["arrow2"] ]);
 
         step := 0;
         success := true;
         arrowFireSound();
+        t := 0;
+        speed := 2;
         while(success && step < steps) {
-            fillRect(arrowX + 5 - 2, arrowY + 5 - 2, arrowX + 5 + TILE_W + 2, arrowY + 5 + TILE_H + 2, COLOR_BLACK);
-            drawImage(5, 5, bg);
-            drawImageRot(arrowX + 5, arrowY + 5, arrowRot, 0, 0, img["arrow"]);
-            sleep(2);
+            if(getTicks() > t) {
+                t := getTicks() + 0.01;
+                drawSprite(arrowX + 5 + TILE_W/2, arrowY + 5 + TILE_H/2, ARROW_SPRITE, imgIndex, flipX, flipY);
+
+                # move arrow
+                arrowX := arrowX + dx * speed;
+                arrowY := arrowY + dy * speed;
+                step := step + speed;
+
+                # did we hit a wall?
+                block := blocks[getBlock(round(arrowX / TILE_W) - 5 + player.x, round(arrowY / TILE_H) - 5 + player.y).block];
+                success := block.light = false;
+            }
+
             updateVideo();
-
-            # move arrow
-            arrowX := arrowX + dx;
-            arrowY := arrowY + dy;
-            step := step + 1;
-
-            # did we hit a wall?
-            block := blocks[getBlock(round(arrowX / TILE_W) - 5 + player.x, round(arrowY / TILE_H) - 5 + player.y).block];
-            success := block.light = false;
         }
+        delSprite(ARROW_SPRITE);
         arrowX := 0;
         arrowY := 0;
-        renderGame();
-        updateVideo();
         if(success) {
             apUsed := playerAttacks(combatRound.pc.rangeMonster, true);
         } else {

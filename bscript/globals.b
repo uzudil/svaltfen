@@ -20,6 +20,8 @@ map := {};
 const events = {};
 minimap := [];
 
+const ARROW_SPRITE = 0;
+
 const MODES = {
     "title": {
         "init": self => initTitle(),
