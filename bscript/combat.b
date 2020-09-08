@@ -409,8 +409,6 @@ def playerRangeAttack() {
             updateVideo();
         }
         delSprite(ARROW_SPRITE);
-        arrowX := 0;
-        arrowY := 0;
         if(success) {
             apUsed := playerAttacks(combatRound.pc.rangeMonster, true);
         } else {

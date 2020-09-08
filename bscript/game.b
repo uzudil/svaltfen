@@ -30,9 +30,6 @@ effect := null;
 rangeFinder := false;
 rangeX := 5;
 rangeY := 5;
-arrowX := 0;
-arrowY := 0;
-arrowRot := 0;
 
 const DISTANCES = {};
 
@@ -371,9 +368,6 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
         if(mx = effect.pos[0] && my = effect.pos[1]) {
             drawEffect(x, y, mx, my, effect);
         }
-    }
-    if(mx = round(arrowX) && my = round(arrowY)) {
-        drawImageRot(x, y, arrowRot, 0, 0, img["arrow"]);
     }
     if(onScreen) {
         #d := int(distance(player.x, player.y, mx, my));
