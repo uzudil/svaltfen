@@ -42,6 +42,11 @@ def listUiInput() {
                 idx := listUi.page + listUi.index;
                 fx := pair[1];
                 fx(idx, listUi.list[idx]);
+                if(idx >= len(listUi.list)) {
+                    idx := len(listUi.list) - 1;
+                }
+                listUi.page := int(idx / 10) * 10;
+                listUi.index := idx % 10;
             }
         });
     }

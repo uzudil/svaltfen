@@ -639,7 +639,7 @@ def startConvo(theNpc, theConvoMap) {
     convo.key := "";
 
     clearGameMessages();
-    gameMessage("Talking to " + theNpc.name, COLOR_GREEN);
+    addGameMessage("Talking to " + theNpc.name, COLOR_GREEN, true);
     showConvoText();
 }
 
@@ -705,9 +705,9 @@ def showConvoText() {
             result.words := result.words + s;
         }
     });
-    gameMessage(" ", COLOR_MID_GRAY);
-    gameMessage(result.words, COLOR_MID_GRAY);
-    array_foreach(result.answers, (i, s) => gameMessage("" + (i + 1) + ": " + s[0], COLOR_WHITE));
+    addGameMessage(" ", COLOR_MID_GRAY, true);
+    addGameMessage(result.words, COLOR_MID_GRAY, true);
+    array_foreach(result.answers, (i, s) => addGameMessage("" + (i + 1) + ": " + s[0], COLOR_WHITE, true));
     convo.answers := result.answers;
 }
 
@@ -732,7 +732,15 @@ def saveGame() {
             "pos": m.pos,
         };
     });
+    rangeMonsters := [];
+    array_foreach(player.party, (i, pc) => {
+        rangeMonsters[len(rangeMonsters)] := pc["rangeMonster"];
+        pc["rangeMonster"] := null;
+    });
     save("savegame.dat", player);
+    array_foreach(player.party, (i, pc) => {
+        pc["rangeMonster"] := rangeMonsters[i];
+    });
     save(mapName + ".mut", mapMutation);
 }
 
@@ -1010,7 +1018,7 @@ def initHealList() {
 
 def healPc(index, selection) {
     spell := HEALING_LIST[index];
-    if(player.coins >= spell.price) {
+    if(player.coins >= spell.price) {   
         gameMessage(spell.name + " is cast on " + player.party[player.partyIndex].name + ".", COLOR_MID_GRAY);
         spell.action(player.party[player.partyIndex]);
         player.coins := player.coins - spell.price;

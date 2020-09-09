@@ -40,6 +40,10 @@ def pageGameMessages() {
 }
 
 def gameMessage(message, color) {
+    addGameMessage(message, color, false);
+}
+
+def addGameMessage(message, color, isConvo) {
     #trace(message);
     lines := splitGameMessage(message);
     t := 0;
@@ -47,7 +51,7 @@ def gameMessage(message, color) {
         player.messages[len(player.messages)] := [lines[t], color];
         t := t + 1;
     }
-    withPause := gameMode = CONVO || longMessage;
+    withPause := isConvo || longMessage;
     moreText := withPause && len(player.messages) > MESSAGES_SIZE;
     if(withPause = false) {
         while(len(player.messages) > MESSAGES_SIZE) {
