@@ -165,3 +165,11 @@ def isKeyPress(key) {
     }
     return false;
 }
+
+def range(start, end, step, fx) {
+    i := start;
+    while(i < end) {
+        fx(i);
+        i := i + step;
+    }
+}

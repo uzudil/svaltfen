@@ -15,7 +15,7 @@ def startCombat() {
     if(gameMode = MOVE && mode != "death") {
         player.party[player.partyIndex].pos[0] := player.x;
         player.party[player.partyIndex].pos[1] := player.y;
-        monsters := getLiveMonsters(map.monster, player.party[player.partyIndex]);
+        monsters := getLiveMonsters(map.monster);
         if(len(monsters) > 0) {
             # position party
             array_foreach(player.party, (i, p) => {
@@ -40,7 +40,7 @@ def initCombatRound() {
         # find any extra monsters
         new_monsters := getLiveMonsters(array_filter(map.monster, m => {
             return array_find_index(combat.monsters, cm => cm.id = m.id) = -1;
-        }), player.party[player.partyIndex]);
+        }));
         if(len(new_monsters) > 0) {
             trace("Added " + len(new_monsters) + " new monsters to combat.");
         }
@@ -102,11 +102,14 @@ def initCombatRound() {
 def checkCombatDone() {
     pc := array_filter(player.party, p => p.hp > 0);
     if(len(pc) = 0) {
-        gameMode := MOVE;
-        player.partyIndex := 0;
-        mode := "death";
-        MODES[mode].render();
-        updateVideo();
+        if(mode != "death") {
+            gameMode := MOVE;
+            player.partyIndex := 0;
+            mode := "death";
+            MODES[mode].render();
+            updateVideo();
+            deathSound();
+        }
         return true;
     }
     live_monsters := array_filter(combat.monsters, m => m.visible && m.hp > 0);
@@ -147,6 +150,8 @@ def runCombatTurn() {
             combatTurnEnd();
         } else {
             combat.playerControl := false;
+            renderGame();
+            updateVideo();
             while(monster.visible && combatRound.ap > 0) {
                 
                 # target still valid?
@@ -176,6 +181,9 @@ def runCombatTurn() {
                         monster.pos[1] - pc.pos[1]
                     ];
                     near := abs(d[0]) <= monster.monsterTemplate.range && abs(d[1]) <= monster.monsterTemplate.range;
+                    if(near && monster.monsterTemplate.range > 1) {
+                        near := checkProjectile(monster.pos[0], monster.pos[1], pc.pos[0], pc.pos[1]);
+                    }
                     if(monster.target != null) {
                         return pc.name = monster.target.name && near;
                     } else {
@@ -255,15 +263,16 @@ def combatTurnEnd() {
     }
 }
 
-def getLiveMonsters(monsters, pc) {
+def getLiveMonsters(monsters) {
     return array_filter(monsters, m => { 
-        if(m.visible && m.hp > 0 && abs(m.pos[0] - player.x) < 6 && abs(m.pos[1] - player.y) < 6) {
-            #trace("live? finding path to " + pc.index + " pos=" + pc.pos);
-            m["path"] := findPath(m, pc);
-            return len(m.path) > 0;
-        } else {
-            return false;
+        if(m.visible && m.hp > 0) {
+            pc := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= 6 && abs(m.pos[1] - pc.pos[1]) <= 6);
+            if(pc != null) {
+                m["path"] := findPath(m, pc);
+                return len(m.path) > 0;
+            }
         }
+        return false;
     });
 }
 
@@ -313,6 +322,23 @@ def moveMonster() {
 def attackMonster(targetPc) {
     combatRound := combat.round[combat.roundIndex];
     monster := combatRound.monster;
+
+    if(monster.monsterTemplate.range > 1) {
+        if(monster.monsterTemplate["rangeBlocks"] = null) {
+            projectile := [ img["arrow"], img["arrow2"] ];
+        } else {
+            projectile := array_map(monster.monsterTemplate.rangeBlocks, p => img[p]);
+        }
+        success := animateProjectile(
+            monster.pos[0], monster.pos[1],
+            targetPc.pos[0], targetPc.pos[1],
+            projectile
+        );
+        if(success = false) {
+            return 1;
+        }
+    }
+
     gameMessage(monster.monsterTemplate.name + " attacks " + targetPc.name + "!", COLOR_MID_GRAY);
 
     # roll to-hit
@@ -356,59 +382,11 @@ def playerRangeAttack() {
     combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
     apUsed := 0;
     if(combatRound.pc["rangeMonster"] != null) {
-        # animate arrow path
-        arrowX := TILE_W * 5;
-        arrowY := TILE_H * 5;
-        ex := (combatRound.pc.rangeMonster.pos[0] - player.x + 5) * TILE_W;
-        ey := (combatRound.pc.rangeMonster.pos[1] - player.y + 5) * TILE_H;
-        mx := ex - arrowX;
-        my := ey - arrowY;
-        amx := abs(mx);
-        amy := abs(my);
-        steps := max(amx, amy);
-        flipX := 0;
-        flipY := 0;
-        imgIndex := 0;
-        if(amx > amy) {
-            dx := mx / amx;
-            dy := my / amx;
-            if(dx > 0) {
-                flipX := 1;
-            }
-        } else {
-            imgIndex := 1;
-            dy := my / amy;
-            dx := mx / amy;
-            if(dy > 0) {
-                flipY := 1;
-            }
-        }
-
-        setSprite(ARROW_SPRITE, [ img["arrow"], img["arrow2"] ]);
-
-        step := 0;
-        success := true;
-        arrowFireSound();
-        t := 0;
-        speed := 2;
-        while(success && step < steps) {
-            if(getTicks() > t) {
-                t := getTicks() + 0.01;
-                drawSprite(arrowX + 5 + TILE_W/2, arrowY + 5 + TILE_H/2, ARROW_SPRITE, imgIndex, flipX, flipY);
-
-                # move arrow
-                arrowX := arrowX + dx * speed;
-                arrowY := arrowY + dy * speed;
-                step := step + speed;
-
-                # did we hit a wall?
-                block := blocks[getBlock(round(arrowX / TILE_W) - 5 + player.x, round(arrowY / TILE_H) - 5 + player.y).block];
-                success := block.light = false;
-            }
-
-            updateVideo();
-        }
-        delSprite(ARROW_SPRITE);
+        success := animateProjectile(
+            player.x, player.y,
+            combatRound.pc.rangeMonster.pos[0] , combatRound.pc.rangeMonster.pos[1],
+            [ img["arrow"], img["arrow2"] ]
+        );
         if(success) {
             apUsed := playerAttacks(combatRound.pc.rangeMonster, true);
         } else {
@@ -417,6 +395,94 @@ def playerRangeAttack() {
     }
     rangeFinder := false;
     return apUsed;
+}
+
+def checkProjectile(srcX, srcY, dstX, dstY) {
+    # check that a projectile could reach the target
+    mx := dstX - srcX;
+    my := dstY - srcY;
+    amx := abs(mx);
+    amy := abs(my);
+    steps := max(amx, amy);
+    if(amx > amy) {
+        dx := mx / amx;
+        dy := my / amx;
+    } else {
+        dy := my / amy;
+        dx := mx / amy;
+    }
+
+    step := 0;
+    success := true;
+    while(success && step < steps) {
+            # move arrow
+            srcX := srcX + dx;
+            srcY := srcY + dy;
+            step := step + 1;
+
+            # did we hit a wall?
+            block := blocks[getBlock(round(srcX), round(srcY)).block];
+            success := block.light = false;
+    }
+    return success;
+}
+
+# assumes screen is centered on src
+def animateProjectile(srcX, srcY, dstX, dstY, arrowImages) {
+    # animate arrow path
+    arrowX := TILE_W * 5;
+    arrowY := TILE_H * 5;
+    ex := (dstX - srcX + 5) * TILE_W;
+    ey := (dstY - srcY + 5) * TILE_H;
+    mx := ex - arrowX;
+    my := ey - arrowY;
+    amx := abs(mx);
+    amy := abs(my);
+    steps := max(amx, amy);
+    flipX := 0;
+    flipY := 0;
+    imgIndex := 0;
+    if(amx > amy) {
+        dx := mx / amx;
+        dy := my / amx;
+        if(dx > 0) {
+            flipX := 1;
+        }
+    } else {
+        imgIndex := 1;
+        dy := my / amy;
+        dx := mx / amy;
+        if(dy > 0) {
+            flipY := 1;
+        }
+    }
+
+    setSprite(ARROW_SPRITE, arrowImages);
+
+    step := 0;
+    success := true;
+    arrowFireSound();
+    t := 0;
+    speed := 2;
+    while(success && step < steps) {
+        if(getTicks() > t) {
+            t := getTicks() + 0.01;
+            drawSprite(arrowX + 5 + TILE_W/2, arrowY + 5 + TILE_H/2, ARROW_SPRITE, imgIndex, flipX, flipY);
+
+            # move arrow
+            arrowX := arrowX + dx * speed;
+            arrowY := arrowY + dy * speed;
+            step := step + speed;
+
+            # did we hit a wall?
+            block := blocks[getBlock(round(arrowX / TILE_W) - 5 + srcX, round(arrowY / TILE_H) - 5 + srcY).block];
+            success := block.light = false;
+        }
+
+        updateVideo();
+    }
+    delSprite(ARROW_SPRITE);
+    return success;
 }
 
 def playerRangeTarget() {

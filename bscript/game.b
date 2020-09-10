@@ -813,6 +813,9 @@ def moveInput(apUsed) {
             }
         }
     }
+    #if(isKeyPress(KeyW)) {
+    #    deathSound();
+    #}        
     if(isKeyPress(KeyC)) {
         viewMode := CHAR_SHEET;
     }        

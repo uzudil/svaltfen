@@ -12,6 +12,10 @@ MONSTERS := [
     { "name": "Animated Skeleton", "block": "skeleton", 
         "attack": [2,4], "range": 1, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8 
     },
+    { "name": "Skeleton Archer", "block": "skeletona", 
+        "drops": [ "coins", "Composite Bow" ],    
+        "attack": [1,3], "range": 6, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8 
+    },
     { "name": "Nixbeetle", "block": "beetle", 
         "onDeath": self => {
             if(getGameState("nixbeetle_quest") != null && getGameState("nixbeetle_trophy") = null) {
@@ -20,7 +24,7 @@ MONSTERS := [
                 gameMessage("You take a bloody piece of the dead beetle's carapce with you.", COLOR_GREEN);
             }
         },
-        "attack": [4,6], "range": 1, "attackAp": 4, "armor": 5, "startHp": 24, "level": 3, "speed": 15 
+        "attack": [2,5], "range": 5, "rangeBlocks": [ "acid", "acid" ], "attackAp": 4, "armor": 5, "startHp": 24, "level": 3, "speed": 15 
     },
     { "name": "Skeleton Warrior", "block": "skeleton2", 
         "drops": [ "Soldier's sword", "Small shield", "coins" ],
@@ -38,6 +42,10 @@ MONSTERS := [
         "drops": [ "coins", "Warhammer", "Kite shield", "Oval potion" ],
         "attack": [6,8], "range": 1, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
     },
+    { "name": "Gnork Archer", "block": "gnorka", 
+        "drops": [ "coins", "Longbow", "Round potion" ],
+        "attack": [2,5], "range": 6, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
+    },    
     { "name": "Green Mold", "block": "slime1", 
         "drops": [ "coins" ],
         "attack": [4,5], "range": 1, "attackAp": 4, "armor": 18, "startHp": 20, "level": 6, "speed": 3 
@@ -45,6 +53,10 @@ MONSTERS := [
     { "name": "Demon Grunt", "block": "demon", 
         "drops": [ "coins", "Lance", "Oval potion" ],
         "attack": [6,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8 
+    },
+    { "name": "Demon Archer", "block": "demona", 
+        "drops": [ "coins", "Longbow", "Oval potion" ],
+        "attack": [2,5], "range": 6, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8 
     },
     { "name": "Cult Fanatic", "block": "cultist", 
         "drops": [ "coins", "Lance", "Oval potion" ],

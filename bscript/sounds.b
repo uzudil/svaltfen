@@ -1,6 +1,5 @@
 def buzzer() {
-    playSound(0, 235, 0.2);
-    playSound(0, 215, 0.1);
+    playSounds(0, [ 235, 0.2, 215, 0.1 ]);
 }
 
 def stepSound() {
@@ -8,36 +7,21 @@ def stepSound() {
 }
 
 def combatMissSound() {
-    playSound(0, 100, 0.05);
+    playSounds(0, [ 550, 0.02, 470, 0.02, 420, 0.02, 350, 0.1 ]);
 }
 
 def combatAttackSound() {
-    playSound(0, 360, 0.1);
-    playSound(1, 380, 0.2);
+    playSounds(0, [ 360, 0.02, 420, 0.02, 470, 0.02, 550, 0.02, 900, 0.02 ]);
 }
 
 def combatStartSound() {
-    playSound(0, 500, 0.1);
-    playSound(1, 520, 0.1);
-    playSound(0, 0, 0.1);
-    playSound(1, 0, 0.1);
-    playSound(0, 500, 0.1);
-    playSound(1, 520, 0.1);
-    playSound(0, 570, 0.3);
-    playSound(1, 580, 0.3);
+    playSounds(0, [ 500, 0.1, 0, 0.1, 500, 0.1, 570, 0.35 ]);
+    playSounds(1, [ 520, 0.1, 0, 0.1, 520, 0.1, 580, 0.35 ]);
 }
 
 def combatEndSound() {
-    i := 0;
-    while(i < 3) {
-        playSound(0, 500, 0.2);
-        playSound(1, 520, 0.2);
-        playSound(0, 0, 0.2);
-        playSound(1, 0, 0.2);
-        i := i + 1;
-    }
-    playSound(0, 570, 0.5);
-    playSound(1, 580, 0.5);
+    playSounds(0, [ 500, 0.075, 0, 0.05, 500, 0.075, 0, 0.25, 500, 0.1, 0, 0.05, 570, 0.35 ]);
+    playSounds(1, [ 520, 0.075, 0, 0.05, 520, 0.075, 0, 0.25, 520, 0.1, 0, 0.05, 580, 0.35 ]);
 }
 
 def actionSound() {
@@ -53,24 +37,22 @@ def arrowFireSound() {
 def equipmentFailSound(n) {
     i := 0;
     while(i < n) {
-        playSound(0, 350, 0.05);
-        playSound(0, 0, 0.05);
+        playSounds(0, [ 350, 0.025, 380, 0.025,  420, 0.025, 450, 0.025, 480, 0.025, 0, 0.05 ]);
+        playSounds(1, [ 360, 0.025, 390, 0.025,  430, 0.025, 460, 0.025, 490, 0.025, 0, 0.05 ]);
         i := i + 1;
     }
 }
 
 def levelUpSound() {
-    playSound(1, 0, 0.15);
-    playSound(1, 750, 0.25);
-    playSound(1, 700, 0.15);
-    playSound(1, 800, 0.15);
-    playSound(1, 0, 0.15);
-    playSound(1, 800, 0.25);
+    playSounds(0, [ 500, 0.05, 550, 0.05, 600, 0.05, 650, 0.05, 700, 0.05, 750, 0.05, 800, 0.05, 900, 0.15, 0, 0.1, 900, 0.15 ]);
+    playSounds(1, [ 250, 0.15, 280, 0.15, 250, 0.15, 280, 0.15, 300, 0.45 ]);
+}
 
-    playSound(2, 0, 0.15);
-    playSound(2, 770, 0.25);
-    playSound(2, 720, 0.15);
-    playSound(2, 820, 0.15);
-    playSound(2, 0, 0.15);
-    playSound(2, 820, 0.25);
+def deathSound() {
+    playSounds(0, [ 320, 0.5, 300, 0.5, 280, 0.5, 0, 0.2, 200, 0.5, 0, 0.2, 200, 0.2, 220, 0.2, 200, 0.2, 220, 0.2, 200, 1 ]);
+    playSounds(1, [ 310, 0.5, 290, 0.5, 270, 0.5, 0, 0.2, 210, 0.5 ]);
+}
+
+def playSounds(channel, notes) {
+    range(0, len(notes), 2, i => playSound(channel, notes[i], notes[i + 1]));
 }

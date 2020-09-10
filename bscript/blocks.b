@@ -158,4 +158,9 @@ blocks := [
     { "img": "ctrl2", "blocking": true, "light": false },
     { "img": "caravan" },
     { "img": "arrow" },
+    { "img": "gnorka" },
+    { "img": "skeletona" },
+    { "img": "acid" },
+    { "img": "demona" },
+    { "img": "temple" },
 ];

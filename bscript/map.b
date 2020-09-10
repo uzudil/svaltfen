@@ -126,6 +126,7 @@ def initMaps() {
     events["tristen"] := events_tristen;
     events["weapon"] := events_weapon;
     events["market"] := events_market;
+    events["temple"] := events_temple;
 }
 
 const OVERLAND_MAPS = [
