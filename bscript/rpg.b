@@ -197,7 +197,7 @@ def decItemLife(pc, slot) {
 
 def joinParty(npc, level) {
     gameMessage(npc.name + " joins you as a companion!", COLOR_YELLOW);
-    ch := newChar(npc.name, blocks[npc.block].img, 3);
+    ch := newChar(npc.name, blocks[npc.block].img, level);
     # todo: add some equipment/spells/etc
     ch["index"] := len(player.party);
     player.party[len(player.party)] := ch;

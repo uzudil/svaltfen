@@ -50,6 +50,10 @@ MONSTERS := [
         "drops": [ "coins" ],
         "attack": [4,5], "range": 1, "attackAp": 4, "armor": 18, "startHp": 20, "level": 6, "speed": 3 
     },
+    { "name": "Draconian", "block": "draconian", 
+        "drops": [ "coins", "Greatsword", "Oval potion" ],
+        "attack": [6,8], "range": 1, "attackAp": 4, "armor": 14, "startHp": 50, "level": 6, "speed": 3 
+    },
     { "name": "Demon Grunt", "block": "demon", 
         "drops": [ "coins", "Lance", "Oval potion" ],
         "attack": [6,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8 
@@ -65,6 +69,10 @@ MONSTERS := [
     { "name": "Demon Champion", "block": "demon2", 
         "drops": [ "coins", "Greatsword", "Oval potion" ],
         "attack": [10,12], "range": 1, "attackAp": 3, "armor": 12, "startHp": 64, "level": 8, "speed": 8 
+    },
+    { "name": "Yggxurantes", "block": "dragon", 
+        "drops": [ "coins" ],
+        "attack": [5,8], "range": 6, "rangeBlocks": [ "fire", "fire" ], "attackAp": 3, "armor": 15, "startHp": 150, "level": 10, "speed": 3 
     },
     { "name": "Malleus", "block": "malleus", 
         "drops": [ "coins", "Warhammer", "Oval potion", "Tomes of Knowledge" ],

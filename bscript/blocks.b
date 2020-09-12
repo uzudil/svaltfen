@@ -163,4 +163,8 @@ blocks := [
     { "img": "acid" },
     { "img": "demona" },
     { "img": "temple" },
+    { "img": "draconian" },
+    { "img": "dragon" },
+    { "img": "struts", "blocking": true, "light": false },
+    { "img": "rocks2" },
 ];
