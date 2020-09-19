@@ -131,7 +131,7 @@ def runCombatTurn() {
 
     combatRound := combat.round[combat.roundIndex];
     if(combatRound.type = "pc") {
-        if(combatRound.pc.hp <= 0) {
+        if(combatRound.pc.hp <= 0 || isPcInState(combatRound.pc, STATE_PARALYZE)) {
             combatTurnEnd();
         } else {
             # trace("SWITCH to " + combatRound.pc.index);
@@ -352,24 +352,16 @@ def attackMonster(targetPc) {
     # roll damage
     dam := roll(monster.monsterTemplate.attack[0], monster.monsterTemplate.attack[1]);
     if(dam > 0) {
-        gameMessage(targetPc.name + " takes " + dam + " damage!", COLOR_RED);
+        takeDamage(targetPc, dam);
         combatAttackSound();
-        targetPc.hp := max(targetPc.hp - dam, 0);
         setMapEffect(monster.pos[0], monster.pos[1], targetPc.pos, EFFECT_DAMAGE);
+        if(monster.monsterTemplate["onHit"] != null) {
+            monster.monsterTemplate.onHit(targetPc);
+        }
         if(targetPc.hp = 0) {
-            gameMessage(targetPc.name + " dies!", COLOR_RED);
             pc := array_filter(player.party, p => p.hp > 0);
             if(len(pc) = 0) {
                 combatTurnEnd();
-            } else {
-                # return dead pc-s equipment to pool so someone else can use it
-                array_foreach(SLOTS, (i, slot) => {
-                    if(targetPc.equipment[slot] != null) {
-                        player.inventory[len(player.inventory)] := targetPc.equipment[slot];
-                        targetPc.equipment[slot] := null;
-                    }
-                });
-                calculateArmor(targetPc);
             }
         }
     } else {
@@ -558,12 +550,12 @@ def playerAttacksDam(monster, damage, bonus) {
             }
             if(monster.monsterTemplate["drops"] != null) {
                 array_foreach(monster.monsterTemplate.drops, (i, name) => {
-                    if(random() < 0.3) {
-                        if(name = "coins") {
-                            amount := roll(7 * monster.monsterTemplate.level, 10 * monster.monsterTemplate.level);
-                            player.coins := player.coins + amount;
-                            gameMessage("You find " + amount + " coins!", COLOR_GREEN);
-                        } else {
+                    if(name = "coins") {
+                        amount := roll(7 * monster.monsterTemplate.level, 10 * monster.monsterTemplate.level);
+                        player.coins := player.coins + amount;
+                        gameMessage("You find " + amount + " coins!", COLOR_GREEN);
+                    } else {
+                        if(random() < 0.3 || ITEMS_BY_NAME[name].type = OBJECT_SPECIAL) {
                             gameMessage("You find " + name + "!", COLOR_GREEN);
                             player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME[name]);
                         }

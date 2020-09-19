@@ -48,18 +48,26 @@ const HEALING_LIST = [
     { "name": "Minor healing", "price": 10, "action": (self, pc) => gainHp(pc, 10), },
     { "name": "Major healing", "price": 32, "action": (self, pc) => gainHp(pc, 50), },
     { "name": "Absolute healing", "price": 55, "action": (self, pc) => gainHp(pc, pc.level * pc.startHp), },
+    { "name": "Cure ailments", "price": 75, "action": (self, pc) => {
+        if(setState(pc, STATE_POISON, 0) = false && setState(pc, STATE_PARALYZE, 0) = false && 
+            setState(pc, STATE_CURSE, 0) = false && setState(pc, STATE_CHARM, 0) = false) {
+            gameMessage("Nothing happens.", COLOR_MID_GRAY);
+        }
+    }, },
     { 
         "name": "Resurrection", "price": 128, 
         "action": (self, pc) => { 
             gameMessage(pc.name + " returns to life!", COLOR_GREEN);
             pc.hp := 1; 
             gainHp(pc, pc.level * pc.startHp); 
+            resetStats(pc);
         }, 
     },
 ];
 
 def initGame() {
     # init the maps
+    initStates();
     initMaps();
     initItems();    
     initDistances();
@@ -109,6 +117,9 @@ def initGame() {
     player.blockIndex := getBlockIndexByName("fighter1");
     player["image"] := img[blocks[player.blockIndex].img];
     mapName := player.map;
+    if(player.calendar["stateStep"] = null) {
+        player.calendar.stateStep := 0;
+    }
     gameLoadMap(mapName);
     if(events[mapName] != null) {
         events[mapName].onEnter();
@@ -218,7 +229,9 @@ def renderGame() {
         moveNpcs();
     }
     if(viewMode = null) {
-        calendarStep();
+        if(gameMode = MOVE) {        
+            calendarStep();
+        }
         ageEqipment();
         mx := player.x;
         my := player.y;
@@ -235,7 +248,7 @@ def renderGame() {
         array_foreach(map.monster, (i, m) => { m.visible := false; });
         drawViewRadius(mx, my, LIGHT_RADIUS * 2 - 1);
         startCombat();
-    }    
+    }
 }
 
 def initLight() {
@@ -570,6 +583,25 @@ def gameUseDoor() {
     });
 }
 
+def gameSearchQuiet() {
+    return aroundPlayer((x, y) => {
+        space := getBlockIndexByName("space");
+        block := getBlock(x, y).block;
+        if(map.secrets["" + x + "," + y] = 1 && block != space) {
+            if(events[mapName]["onSecret"] != null) {
+                if(events[mapName].onSecret(x, y) = false) {
+                    return false;
+                }
+            }
+            setBlock(x, y, space, 0);
+            setGameBlock(x, y, space);
+            gameMessage("Found a secret door!", COLOR_MID_GRAY);
+            return true;
+        }
+        return null;
+    });
+}
+
 def gameSearch() {
     gameMessage("Searching...", COLOR_MID_GRAY);
     return aroundPlayer((x, y) => {
@@ -643,13 +675,20 @@ def startConvo(theNpc, theConvoMap) {
     showConvoText();
 }
 
+def clearViewMode() {
+    viewMode := null;
+    if(isPcIncapacitated(player.party[player.partyIndex])) {
+        player.partyIndex := array_find_index(player.party, pc => isPcIncapacitated(pc) = false);
+    }
+}
+
 def showConvoText() {
     result := {
         "words": "",
         "answers": [],
     };
     text := null;
-    viewMode := null;
+    clearViewMode();
     if(convo.key = "_heal_") {
         viewMode := HEAL;
         text := "How can I help?";
@@ -680,7 +719,7 @@ def showConvoText() {
     # convo is over
     if(text = null) {
         gameMode := MOVE;
-        viewMode := null;
+        clearViewMode();
         return true;
     }
 
@@ -745,13 +784,14 @@ def saveGame() {
 }
 
 def endConvo() {
-    viewMode := null;
+    clearViewMode();
     if(gameMode = CONVO) {
         gameMode := MOVE;
     }
 }
 
 def switchPc() {
+    oldIndex := player.partyIndex;
     if(isKeyPress(Key1)) {
         player.partyIndex := 0;
     }
@@ -763,6 +803,10 @@ def switchPc() {
     }
     if(isKeyPress(Key4) && len(player.party) > 3) {
         player.partyIndex := 3;
+    }
+    # can't switch to dead or paralyzed character (unless in a viewMode)
+    if(viewMode = null && isPcIncapacitated(player.party[player.partyIndex])) {
+        player.partyIndex := oldIndex;
     }
 }
 
@@ -876,9 +920,7 @@ def moveInput(apUsed) {
                 player.x := ox;
                 player.y := oy;
             } else {
-                if(gameMode = COMBAT && (ox != player.x || oy != player.y)) {
-                    stepSound();
-                }
+                playerMoved := ox != player.x || oy != player.y;
 
                 # if stepping on an npc, swap places
                 n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
@@ -888,6 +930,10 @@ def moveInput(apUsed) {
                 }
 
                 if(gameMode = COMBAT) {
+                    if(playerMoved) {
+                        stepSound();
+                    }
+
                     # if stepping on another player, swap places
                     pc := array_find(player.party, e => e.pos[0] = player.x && e.pos[1] = player.y && e.hp > 0 && e.index != player.partyIndex);
                     if(pc != null) {
@@ -899,6 +945,13 @@ def moveInput(apUsed) {
                     player.party[player.partyIndex].pos[0] := player.x;
                     player.party[player.partyIndex].pos[1] := player.y;
                     apUsed := apUsed + 1;
+                } else {
+                    # if someone is alert, look for secrets
+                    if(playerMoved && anyPcInState(STATE_ALERT)) {
+                        if(gameSearchQuiet()) {
+                            actionSound();
+                        }
+                    }
                 }
             }
         }
@@ -937,7 +990,7 @@ def convoInput() {
         if(index != null) {
             if(index = 0) {
                 gameMode := MOVE;
-                viewMode := null;
+                clearViewMode();
                 gameMessage("Bye.", COLOR_MID_GRAY);
             } else {
                 if(viewMode = null) {

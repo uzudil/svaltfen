@@ -136,11 +136,10 @@ def drawCharSheet() {
     pc := player.party[player.partyIndex];
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, pc.name);
 
-    drawColoredText(10, 20, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level);
+    drawColoredText(10, 20, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level + " HP:" + pc.hp + "/" + (pc.startHp * pc.level));
     drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp + " Nxt:" + getNextLevelExp(pc));
-    drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "HP:" + pc.hp + "/" + (pc.startHp * pc.level));
-    drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
-    drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Attack:" + array_join(array_reduce(pc.attack, [], (a, p) => {
+    drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
+    drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Attack:" + array_join(array_reduce(pc.attack, [], (a, p) => {
         s := "" + p.dam[0] + "-" + p.dam[1];
         if(p.bonus > 0) {
             s := s + "+" + p.bonus;
@@ -153,18 +152,20 @@ def drawCharSheet() {
         if(pc.ranged.bonus > 0) {
             s := s + "+" + pc.ranged.bonus;
         }
-        drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
+        drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
     } else {
-        drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
+        drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
     }
-    drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
-    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, describeHunger(pc));
-    drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, describeThirst(pc));
+    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
+    h := describeHunger(pc);
+    t := describeThirst(pc);
+    drawColoredText(10, 90, h[1], COLOR_BLACK, "HUN:" + h[0]);
+    drawColoredText(10, 100, t[1], COLOR_BLACK, "THR:" + t[0]);
 
-    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex);
-    drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed + " INT:" + pc.int);
-    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "WIS:" + pc.wis + " CHR:" + pc.cha);
-    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "LUCK:" + pc.luck);
+    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex + " SPD:" + pc.speed);
+    drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "INT:" + pc.int + " WIS:" + pc.wis + " CHR:" + pc.cha);
+    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "LUK:" + pc.luck);
+    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc));
 
     drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");

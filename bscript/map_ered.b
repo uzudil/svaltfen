@@ -32,11 +32,6 @@ const events_ered = {
             return {
                 "": "Welcome to my armory, esteemed guest! The finest blades and armor away is but a $trade|_trade_ away!",
             };
-        }
-        if(n.name = "Zolan") {
-            return {
-                "": "Welcome to my armory, esteemed guest! The finest blades and armor away is but a $trade|_trade_ away!",
-            };
         }        
         if(n.name = "Meddrin") {
             return {
@@ -60,6 +55,15 @@ const events_ered = {
         return null;
     },
     "onTrade": (self, n) => {
+        if(n.name = "Zolan") {
+            return [ OBJECT_ARMOR, OBJECT_WEAPON ];
+        }
+        if(n.name = "Meddrin") {
+            return [ OBJECT_SUPPLIES, OBJECT_POTION ];
+        }
+        if(n.name = "Shele") {
+            return [ OBJECT_FOOD, OBJECT_DRINK ];
+        }
         return null;
     },
 };

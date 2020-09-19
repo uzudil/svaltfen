@@ -26,7 +26,8 @@ def newChar(name, imgName, level) {
         "wis": roll(15, 20),
         "cha": roll(15, 20),
         "luck": roll(15, 20),
-        "equipment": eq,        
+        "equipment": eq,
+        "state": array_map(STATES, state => state.default),
     };
     calculateArmor(pc);
     return pc;
@@ -59,38 +60,140 @@ def gainHp(pc, amount) {
     }
 }
 
+def takeDamage(pc, dam) {
+    if(pc.hp > 0) {
+        gameMessage(pc.name + " takes " + dam + " damage!", COLOR_RED);
+        pc.hp := max(pc.hp - dam, 0);
+        if(pc.hp = 0) {
+            gameMessage(pc.name + " dies!", COLOR_RED);
+            # return dead pc-s equipment to pool so someone else can use it
+            array_foreach(SLOTS, (i, slot) => {
+                if(pc.equipment[slot] != null) {
+                    player.inventory[len(player.inventory)] := pc.equipment[slot];
+                    pc.equipment[slot] := null;
+                }
+            });
+            calculateArmor(pc);
+            calculateTorchLight();
+        }
+    }
+}
+
 def eat(pc, amount) {
-    pc.hunger := max(0, pc.hunger - amount);    
-}
-
-def describeHunger(pc) {
-    if(pc.hunger < 5) {
-        return "Not hungry";
-    }
-    if(pc.hunger < 10) {
-        return "Hungry";
-    }
-    if(pc.hunger < 15) {
-        return "Ravenous";
-    }
-    return "Starving";
-}
-
-def describeThirst(pc) {
-    if(pc.hunger < 5) {
-        return "Not thirsty";
-    }
-    if(pc.hunger < 10) {
-        return "Thirsty";
-    }
-    if(pc.hunger < 15) {
-        return "Parched";
-    }
-    return "Dehydrated";
+    index := STATE_NAME_INDEX[STATE_HUNGER];
+    pc.state[index] := min(max(0, pc.state[index] + amount * 10), 100);    
+    a := describeHunger(pc);
+    gameMessage(pc.name + " is " + a[0], a[1]);
+    trace("state=" + pc.state);
 }
 
 def drink(pc, amount) {
-    pc.thirst := max(0, pc.thirst - amount);    
+    index := STATE_NAME_INDEX[STATE_THIRST];
+    pc.state[index] := min(max(0, pc.state[index] + amount * 10), 100);
+    a := describeThirst(pc);
+    gameMessage(pc.name + " is " + a[0], a[1]);
+    trace("state=" + pc.state);
+}
+
+def setState(pc, state, value) {
+    index := STATE_NAME_INDEX[state];
+    oldValue := pc.state[index];
+    pc.state[index] := max(0, min(pc.state[index] + value, value));
+    calculateArmor(pc);
+    if(oldValue = 0 && pc.state[index] > 0) {
+        gameMessage(pc.name + " is now " + state + "!", STATES[index].color);
+        return true;
+    }
+    if(oldValue > 0 && pc.state[index] = 0) {
+        gameMessage(pc.name + " is no longer " + state + "!", COLOR_GREEN);
+        return true;
+    }
+    return false;
+}
+
+def resetStats(pc) {
+    pc.state := [];
+    array_foreach(STATES, (t, state) => {
+        pc.state[t] := state.default;
+    });
+}
+
+def describeHunger(pc) {
+    value := pc.state[STATE_NAME_INDEX[STATE_HUNGER]];
+    msg := "";
+    color := COLOR_MID_GRAY;
+    if(value = 0) {
+        msg := "starving!";
+        color := COLOR_YELLOW;
+    } else {
+        if(value < 5) {
+            msg := "famished!";
+            color := COLOR_YELLOW;
+        } else {
+            if(value < 25) {
+                msg := "hungry!";
+                color := COLOR_YELLOW;
+            } else {
+                if(value > 80) {
+                    msg := "pleasently full";
+                    color := COLOR_GREEN;
+                } else {
+                    msg := "not hungry";
+                }
+            }
+        }
+    }
+    return [ msg, color ];    
+}
+
+def describeThirst(pc) {
+    value := pc.state[STATE_NAME_INDEX[STATE_THIRST]];
+    msg := "";
+    color := COLOR_MID_GRAY;
+    if(value = 0) {
+        msg := "dying of thirst!";
+        color := COLOR_YELLOW;
+    } else {
+        if(value < 5) {
+            msg := "parched!";
+            color := COLOR_YELLOW;
+        } else {
+            if(value < 25) {
+                msg := "thirsty!";
+                color := COLOR_YELLOW;
+            } else {
+                if(value > 80) {
+                    msg := "well hydrated";
+                    color := COLOR_GREEN;
+                } else {
+                    msg := "not thirsty";
+                }
+            }
+        }
+    }
+    return [ msg, color ];    
+}
+
+def getStateEffect(pc, effectFx) {
+    return array_reduce(STATES, 0, (value, st) => {
+        index := STATE_NAME_INDEX[st.name];
+        if(pc.state[index] > 0 && st[effectFx] != null) {
+            value := value + st[effectFx](pc);
+        }
+        return value;
+    });
+}
+
+def anyPcInState(state) {
+    return array_find(player.party, pc => isPcInState(pc, state)) != null;
+}
+
+def isPcInState(pc, state) {
+    return pc.state[STATE_NAME_INDEX[state]] > 0;
+}
+
+def isPcIncapacitated(pc) {
+    return isPcInState(pc, STATE_PARALYZE) || pc.hp <= 0;
 }
 
 def calculateTorchLight() {
@@ -114,7 +217,7 @@ def calculateTorchLight() {
 }
 
 def calculateArmor(pc) {
-    armorBonus := max(0, pc.dex - 15) + max(0, pc.speed - 18);
+    armorBonus := max(0, pc.dex - 15) + max(0, pc.speed - 18) + getStateEffect(pc, "getArmorMod");
     invArmor := array_map(array_filter(SLOTS, slot => {
         if(pc.equipment[slot] != null) {
             return ITEMS_BY_NAME[pc.equipment[slot].name]["ac"] != null;
@@ -126,7 +229,7 @@ def calculateArmor(pc) {
         return value + invItem.ac + invItem.bonus;
     });
 
-    attackBonus := int(pc.level / 3) + max(0, pc.str - 18) + max(0, pc.dex - 18);
+    attackBonus := int(pc.level / 3) + max(0, pc.str - 18) + max(0, pc.dex - 18) + getStateEffect(pc, "getAttackMod");
     weaponSlots := getWeaponSlots(pc);
     pc.attack := array_map(weaponSlots, slot => {
         invItem := pc.equipment[slot];
@@ -171,7 +274,7 @@ def getWeaponSlots(pc) {
 }
 
 def getToHitBonus(pc) {
-    tohit := int(pc.level / 3) + max(0, pc.dex - 18) + max(0, pc.speed - 18);
+    tohit := int(pc.level / 3) + max(0, pc.dex - 18) + max(0, pc.speed - 18) + getStateEffect(pc, "getToHitMod");
     if(getGameState("mark_of_fregnar") != null) {
         tohit := tohit + 2;
     }

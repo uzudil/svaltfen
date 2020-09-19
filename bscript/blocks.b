@@ -167,4 +167,8 @@ blocks := [
     { "img": "dragon" },
     { "img": "struts", "blocking": true, "light": false },
     { "img": "rocks2" },
+    { "img": "fireball" }, 
+    { "img": "arnel" }, 
+    { "img": "morten" }, 
+    { "img": "rosa" }, 
 ];
