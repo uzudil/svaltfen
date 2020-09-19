@@ -31,12 +31,15 @@ jobs:
 
     - name: Build
       run: go build -v .
+
+    - name: package
+      run: tar czvf svaltfen.mac.tgz svaltfen bscript/*
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: svaltfen.mac
-        path: svaltfen
+        name: svaltfen.mac.tgz
+        path: svaltfen.mac.tgz
         
         
 
