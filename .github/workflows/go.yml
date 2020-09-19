@@ -64,7 +64,7 @@ jobs:
       run: go build -v .
 
     - name: package
-      run: tar -czvf svaltfen.win.zip svaltfen bscript/*
+      run: tar -czvf svaltfen.win.zip svaltfen.exe bscript/*
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
