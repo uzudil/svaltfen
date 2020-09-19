@@ -171,4 +171,5 @@ blocks := [
     { "img": "arnel" }, 
     { "img": "morten" }, 
     { "img": "rosa" }, 
+    { "img": "vbat" }, 
 ];

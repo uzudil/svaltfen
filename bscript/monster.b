@@ -65,6 +65,15 @@ MONSTERS := [
         "drops": [ "coins", "Longbow", "Round potion" ],
         "attack": [2,5], "range": 6, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
     },    
+    { "name": "Vampire Bat", "block": "vbat", 
+        "attack": [5,10], "range": 1, "attackAp": 2, "armor": 0, "startHp": 60, "level": 6, "speed": 14,
+        "drops": [ "coins" ],
+        "onHit": (self, pc) => {
+            if(random() >= 0.75) {
+                setState(pc, STATE_CURSE, 10);
+            }
+        }, 
+    },
     { "name": "Green Mold", "block": "slime1", 
         "drops": [ "coins" ],
         "onHit": (self, pc) => {

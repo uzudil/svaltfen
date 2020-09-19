@@ -116,6 +116,7 @@ def initMaps() {
     events["untervalt"] := events_untervalt;
     events["ashnar"] := events_ashnar;
     events["ashnar2"] := events_ashnar2;
+    events["ashnar3"] := events_ashnar3;
     events["van"] := events_van;
     events["skyforge"] := events_skyforge;
     events["world2"] := events_world2;
