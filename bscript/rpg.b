@@ -28,6 +28,7 @@ def newChar(name, imgName, level) {
         "luck": roll(15, 20),
         "equipment": eq,
         "state": array_map(STATES, state => state.default),
+        "magic": [],
     };
     calculateArmor(pc);
     return pc;
@@ -307,4 +308,19 @@ def joinParty(npc, level) {
     removeNpc(npc.name);
     endConvo();
     saveGame();
+}
+
+def gainSpells() {
+    maxLevel := array_reduce(player.party, 0, (level, pc) => max(level, pc.level));
+    level := 0;
+    newSpells := [];
+    while(level < maxLevel && level < len(SPELLS)) {
+        spells := array_filter(SPELLS[level], spell => array_find_index(player.magic, spellName => spellName = spell.name) = -1);
+        array_foreach(spells, (i, sp) => {
+            player.magic[len(player.magic)] := sp.name; 
+            newSpells[len(newSpells)] := sp.name;
+        });
+        level := level + 1;
+    }
+    return newSpells;
 }

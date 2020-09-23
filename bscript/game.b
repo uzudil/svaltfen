@@ -17,6 +17,7 @@ const BUY = 4;
 const SELL = 5;
 const ACCOMPLISHMENTS = 6;
 const HEAL = 7;
+const MAGIC = 8;
 viewMode := null;
 invMode := null;
 invTypeList := [];
@@ -71,6 +72,7 @@ def initGame() {
     initMaps();
     initItems();    
     initDistances();
+    initMagic();
 
     savegame := load("savegame.dat");
     if(savegame = null) {
@@ -109,6 +111,9 @@ def initGame() {
         if(player["light"] = null) {
             player["light"] := 1;
             calculateTorchLight();
+        }
+        if(player["magic"] = null) {
+            player["magic"] := [];
         }
         array_foreach(player.party, (i, pc) => calculateArmor(pc));
         gameMessage("You continue on your adventure.", COLOR_WHITE);
@@ -708,6 +713,16 @@ def showConvoText() {
         text := "What do you want to sell?";
         initSellList();
     }
+    if(convo.key = "_magic_") {
+        newSpells := gainSpells();
+        if(len(newSpells) = 0) {
+            text := "You try to concentrate but magic seems to elude you at this time.";
+        } else {
+            text := "You focus on the wizard and suddenly feel imbued with magical force!";
+            saveGame();
+        }
+        result.answers[0] := [ "Bye", "bye" ];
+    }
     if(text = null) {
         text := convo.map[convo.key];
         result.answers[0] := [ "Bye", "bye" ];
@@ -855,6 +870,10 @@ def moveInput(apUsed) {
                 gameMessage("Using ranged weapons is only allowed in combat.", COLOR_MID_GRAY);
                 buzzer();
             }
+        }
+        if(isKeyPress(KeyM)) {
+            viewMode := MAGIC;
+            setMagicList();
         }
     }
     #if(isKeyPress(KeyW)) {
@@ -1201,6 +1220,15 @@ def inventoryItemName(invItem) {
         }
     }
     return name;
+}
+
+def castSpell(index, selection) {
+    trace("Casting " + selection);
+    viewMode := null;
+}
+
+def setMagicList() {
+    setListUi(player.magic, [ [ KeyEnter, castSpell ] ], "");
 }
 
 def setEquipmentList() {

@@ -178,6 +178,14 @@ def drawAccomplishments() {
     drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
 }
 
+def drawMagic() {
+    pc := player.party[player.partyIndex];
+    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Magic Spells");
+    drawListUi(10, 30);
+    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to cast spell");
+    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+}
+
 def drawPartyInventory() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Party Inventory");
     drawListUi(10, 30);
@@ -276,6 +284,9 @@ def drawUI() {
     if(viewMode = ACCOMPLISHMENTS) {
         drawAccomplishments();
     }
+    if(viewMode = MAGIC) {
+        drawMagic();
+    }
 }
 
 def showGameHelp() {
@@ -289,6 +300,7 @@ def showGameHelp() {
     gameMessage("_1_I: party inventory", COLOR_MID_GRAY);
     gameMessage("_1_T: talk", COLOR_MID_GRAY);
     gameMessage("_1_R: ranged attack in combat", COLOR_MID_GRAY);
+    gameMessage("_1_M: cast a magic spell", COLOR_MID_GRAY);
     gameMessage("_1_Space: search/use door", COLOR_MID_GRAY);
     gameMessage("_1_Enter: use stairs/gate", COLOR_MID_GRAY);
     gameMessage("_1_Numbers: switch pc / option in conversation or trade", COLOR_MID_GRAY);
