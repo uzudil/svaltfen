@@ -5,6 +5,14 @@ def createFood(n) {
     gameMessage("Your magic has created food and drink!", COLOR_GREEN);
 }
 
+def getFreeHandSlot(pc) {
+    slot := SLOT_LEFT_HAND;
+    if(pc.equipment[slot] != null) {
+        slot := SLOT_RIGHT_HAND;
+    }
+    return slot;
+}
+
 SPELLS := [
     [
         { "name": "Party rations", "onParty": self => createFood(5), },
@@ -20,12 +28,8 @@ SPELLS := [
                 if(player.light = 1) {
                     player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME["Torch"]);
                     pc := player.party[0];
-                    slot := SLOT_LEFT_HAND;
-                    if(pc.equipment[slot] != null) {
-                        slot := SLOT_RIGHT_HAND;
-                    }
-                    pcDonItem(pc, len(player.inventory) - 1, slot);
-                    gameMessage("A toch appears in your hand!", COLOR_GREEN);
+                    pcDonItem(pc, len(player.inventory) - 1, getFreeHandSlot(pc));
+                    gameMessage("A burning torch appears in your hand!", COLOR_GREEN);
                 } else {
                     gameMessage("Your magic fizzles and nothing happens.", COLOR_MID_GRAY);
                 }

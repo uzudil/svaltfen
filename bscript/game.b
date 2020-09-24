@@ -1214,7 +1214,7 @@ def inventoryItemName(invItem) {
 def castSpell(index, selection) {
     spell := SPELLS_BY_NAME[selection];
     if(spell["onParty"] != null) {
-        gameMessage("You cast " + spell.name + " on the party!", COLOR_YELLOW);
+        gameMessage("You cast " + spell.name + "!", COLOR_YELLOW);
         spell.onParty();
         spell := null;
         viewMode := null;
