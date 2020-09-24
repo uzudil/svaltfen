@@ -30,7 +30,7 @@ jobs:
         fi
 
     - name: Build
-      run: go build -v .
+      run: CGO_CFLAGS="-mmacosx-version-min=10.12" CGO_LDFLAGS="-mmacosx-version-min=10.12" go build -v .
 
     - name: package
       run: tar czvf svaltfen.mac.tgz svaltfen bscript/*
