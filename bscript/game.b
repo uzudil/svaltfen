@@ -34,6 +34,8 @@ rangeY := 5;
 
 const DISTANCES = {};
 
+spell := null;
+
 convo := {
     "npc": null,
     "map": null,
@@ -49,21 +51,8 @@ const HEALING_LIST = [
     { "name": "Minor healing", "price": 10, "action": (self, pc) => gainHp(pc, 10), },
     { "name": "Major healing", "price": 32, "action": (self, pc) => gainHp(pc, 50), },
     { "name": "Absolute healing", "price": 55, "action": (self, pc) => gainHp(pc, pc.level * pc.startHp), },
-    { "name": "Cure ailments", "price": 75, "action": (self, pc) => {
-        if(setState(pc, STATE_POISON, 0) = false && setState(pc, STATE_PARALYZE, 0) = false && 
-            setState(pc, STATE_CURSE, 0) = false && setState(pc, STATE_CHARM, 0) = false) {
-            gameMessage("Nothing happens.", COLOR_MID_GRAY);
-        }
-    }, },
-    { 
-        "name": "Resurrection", "price": 128, 
-        "action": (self, pc) => { 
-            gameMessage(pc.name + " returns to life!", COLOR_GREEN);
-            pc.hp := 1; 
-            gainHp(pc, pc.level * pc.startHp); 
-            resetStats(pc);
-        }, 
-    },
+    { "name": "Cure ailments", "price": 75, "action": (self, pc) => cureAilments(pc), },
+    { "name": "Resurrection", "price": 128, "action": (self, pc) => resurrect(pc), },
 ];
 
 def initGame() {
@@ -1223,7 +1212,23 @@ def inventoryItemName(invItem) {
 }
 
 def castSpell(index, selection) {
-    trace("Casting " + selection);
+    spell := SPELLS_BY_NAME[selection];
+    if(spell["onParty"] != null) {
+        gameMessage("You cast " + spell.name + " on the party!", COLOR_YELLOW);
+        spell.onParty();
+        spell := null;
+        viewMode := null;
+    } else {
+        if(spell["onPc"] != null) {
+            setListUi(array_map(player.party, pc => pc.name), [ [ KeyEnter, castSpellPc ] ], "");    
+        }
+    }
+}
+
+def castSpellPc(index, selection) {
+    gameMessage("You cast " + spell.name + " on " + player.party[index].name + "!", COLOR_YELLOW);
+    spell.onPc(player.party[index]);
+    spell := null;
     viewMode := null;
 }
 
@@ -1280,15 +1285,19 @@ def donEquipment(index, selection) {
     setListUi(names, [ [ KeyEnter, donItem ] ], "No items for _7_" + equipmentSlot);
 }
 
-def donItem(index, selection) {
-    if(equipmentPc.equipment[equipmentSlot] != null) {
-        player.inventory[len(player.inventory)] := equipmentPc.equipment[equipmentSlot];
+def pcDonItem(pc, inventoryIndex, slot) {
+    if(pc.equipment[slot] != null) {
+        player.inventory[len(player.inventory)] := pc.equipment[slot];
     }
-    inventoryIndex := equipmentSlotItems[index][0];
-    equipmentPc.equipment[equipmentSlot] := player.inventory[inventoryIndex];
+    pc.equipment[slot] := player.inventory[inventoryIndex];
     del player.inventory[inventoryIndex];
-    calculateArmor(equipmentPc);
+    calculateArmor(pc);
     calculateTorchLight();
+}
+
+def donItem(index, selection) {
+    inventoryIndex := equipmentSlotItems[index][0];
+    pcDonItem(equipmentPc, inventoryIndex, equipmentSlot);
     saveGame();
     setEquipmentList();    
 }

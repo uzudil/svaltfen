@@ -180,10 +180,17 @@ def drawAccomplishments() {
 
 def drawMagic() {
     pc := player.party[player.partyIndex];
-    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Magic Spells");
-    drawListUi(10, 30);
-    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to cast spell");
-    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    if(spell = null) {
+        drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Magic Spells");
+        drawListUi(10, 30);
+        drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to cast spell");
+        drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    } else {
+        drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "PC to cast spell on");
+        drawListUi(10, 30);
+        drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to cast spell");
+        drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    }
 }
 
 def drawPartyInventory() {

@@ -57,7 +57,7 @@ def gainHp(pc, amount) {
     if(pc.hp > old) {
         gameMessage(pc.name + " gains " + (pc.hp - old) + " health points.", COLOR_GREEN);
     } else {
-        gameMessage("Nothing happens.", COLOR_MID_GRAY);
+        gameMessage("Nothing happens for " + pc.name + ".", COLOR_MID_GRAY);
     }
 }
 
@@ -94,6 +94,22 @@ def drink(pc, amount) {
     a := describeThirst(pc);
     gameMessage(pc.name + " is " + a[0], a[1]);
     trace("state=" + pc.state);
+}
+
+def resurrect(pc) {
+    gameMessage(pc.name + " returns to life!", COLOR_GREEN);
+    pc.hp := 1; 
+    gainHp(pc, pc.level * pc.startHp); 
+    resetStats(pc);
+}
+
+def cureAilments(pc) {
+    if(setState(pc, STATE_POISON, 0) = false && setState(pc, STATE_PARALYZE, 0) = false && 
+        setState(pc, STATE_CURSE, 0) = false && setState(pc, STATE_CHARM, 0) = false) {
+        gameMessage("Nothing happens for " + pc.name + ".", COLOR_MID_GRAY);
+    } else {
+        gameMessage(pc.name + " suddenly feels better!", COLOR_GREEN);
+    }
 }
 
 def setState(pc, state, value) {
