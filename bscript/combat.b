@@ -332,7 +332,8 @@ def attackMonster(targetPc) {
         success := animateProjectile(
             monster.pos[0], monster.pos[1],
             targetPc.pos[0], targetPc.pos[1],
-            projectile
+            projectile,
+            true
         );
         if(success = false) {
             return 1;
@@ -377,7 +378,8 @@ def playerRangeAttack() {
         success := animateProjectile(
             player.x, player.y,
             combatRound.pc.rangeMonster.pos[0] , combatRound.pc.rangeMonster.pos[1],
-            [ img["arrow"], img["arrow2"] ]
+            [ img["arrow"], img["arrow2"] ],
+            true
         );
         if(success) {
             apUsed := playerAttacks(combatRound.pc.rangeMonster, true);
@@ -387,6 +389,34 @@ def playerRangeAttack() {
     }
     rangeFinder := false;
     return apUsed;
+}
+
+def playerSpellAttack(projectile, damage, bonus) {
+    combatRound := combat.round[combat.roundIndex];
+    combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
+    apUsed := 0;
+    if(combatRound.pc["rangeMonster"] != null) {
+        animateProjectile(
+            player.x, player.y,
+            combatRound.pc.rangeMonster.pos[0] , combatRound.pc.rangeMonster.pos[1],
+            array_map(projectile, p => img[p]),
+            false
+        );
+        playerAttacksDam(combatRound.pc.rangeMonster, damage, bonus);
+        apUsed := 3;
+    }
+    rangeFinder := false;
+    return apUsed;
+}
+
+def playerAreaSpellAttack(projectile, damage, bonus, radius) {
+    combatRound := combat.round[combat.roundIndex];
+    tx := player.x + rangeX - 5;
+    ty := player.y + rangeY - 5;
+    animateProjectile(player.x, player.y, tx, ty, array_map(projectile, p => img[p]), false);
+    monsters := animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus));
+    rangeFinder := false;
+    return 3;
 }
 
 def checkProjectile(srcX, srcY, dstX, dstY) {
@@ -420,7 +450,41 @@ def checkProjectile(srcX, srcY, dstX, dstY) {
 }
 
 # assumes screen is centered on src
-def animateProjectile(srcX, srcY, dstX, dstY, arrowImages) {
+def animateBlast(srcX, srcY, dstX, dstY, radius, projectileImg, attackFx) {
+    r := 0;
+    t := 0;
+    seen_ids := [];
+    while(r <= radius) {
+        if(getTicks() > t) {
+            t := getTicks() + 0.1;
+            xx := -1 * r;
+            while(xx < r) {
+                yy := -1 * r;
+                while(yy < r) {
+                    d := getDistance(0, 0, xx, yy);
+                    if(d < r) {
+                        drawImage(5 + (dstX - srcX + 5 + xx) * TILE_W, 5 + (dstY - srcY + 5 + yy) * TILE_H, projectileImg);
+                        m := array_find(map.monster, e => e.pos[0] = dstX + xx && e.pos[1] = dstY + yy && e.hp > 0);
+                        if(m != null) {
+                            if(array_find(seen_ids, id => m.id = id) = null) {
+                                attackFx(m);
+                                seen_ids[len(seen_ids)] := m.id;
+                            }
+                        }
+                    }
+                    yy := yy + 1;
+                }
+                xx := xx + 1;
+            }
+
+            r := r + 1;
+        }
+        updateVideo();
+    }
+}
+
+# assumes screen is centered on src
+def animateProjectile(srcX, srcY, dstX, dstY, arrowImages, checkWall) {
     # animate arrow path
     arrowX := TILE_W * 5;
     arrowY := TILE_H * 5;
@@ -467,8 +531,10 @@ def animateProjectile(srcX, srcY, dstX, dstY, arrowImages) {
             step := step + speed;
 
             # did we hit a wall?
-            block := blocks[getBlock(round(arrowX / TILE_W) - 5 + srcX, round(arrowY / TILE_H) - 5 + srcY).block];
-            success := block.light = false;
+            if(checkWall) {
+                block := blocks[getBlock(round(arrowX / TILE_W) - 5 + srcX, round(arrowY / TILE_H) - 5 + srcY).block];
+                success := block.light = false;
+            }
         }
 
         updateVideo();
@@ -480,7 +546,7 @@ def animateProjectile(srcX, srcY, dstX, dstY, arrowImages) {
 def playerRangeTarget() {
     combatRound := combat.round[combat.roundIndex];
     if(rangeFinder = false && combatRound.pc["ranged"] != null) {
-        rangeFinder := true;                        
+        rangeFinder := true;
         if(combatRound.pc["rangeMonster"] != null) {
             rangeX := combatRound.pc["rangeMonster"].pos[0] - player.x + 5;
             rangeY := combatRound.pc["rangeMonster"].pos[1] - player.y + 5;

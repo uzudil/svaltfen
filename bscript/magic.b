@@ -20,7 +20,15 @@ SPELLS := [
         { "name": "Protect Ally", "onPc": (self, pc) => setState(pc, STATE_SHIELD, 150), },
     ],
     [
-        { "name": "Magic Arrow" },
+        { 
+            "name": "Magic Arrow", 
+            "onLocation" : (self, x, y) => { 
+                pc := player.party[0];
+                level := min(3, int(pc.level / 2));
+                return playerSpellAttack([ level + "arrow", level + "arrow2" ], [2 + level, 6 + level], pc.level);
+            },
+            "isCombat": true, 
+        },
         { "name": "Cure Poison", "onPc": (self, pc) => setState(pc, STATE_POISON, 0) },
         { 
             "name": "Cast Light",  
@@ -35,7 +43,13 @@ SPELLS := [
                 }
             },
         },
-        { "name": "Wall of Force" },
+        { 
+            "name": "Wall of Force",
+            "onLocation" : (self, x, y) => { 
+                trace("casting at: " + x + "," + y);
+            },
+            "isCombat": true,  
+        },
     ],
     [
         { "name": "Party feast", "onParty": self => createFood(10), },        
@@ -43,26 +57,84 @@ SPELLS := [
         { "name": "Remember Location" },
         { "name": "Return to Location" },
         { "name": "Reveal Secrets" },
+        { 
+            "name": "Venom Ray", 
+            "onLocation" : (self, x, y) => { 
+                pc := player.party[0];
+                level := min(4, int(pc.level / 2));
+                return playerSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level);
+            },
+            "isCombat": true, 
+        },
     ],
     [
         { "name": "Remove Curse", "onPc": (self, pc) => setState(pc, STATE_CURSE, 0) },
         { "name": "Heal All", "onParty": self => array_foreach(player.party, (i, pc) => gainHp(pc, pc.level * pc.startHp)), },
         { "name": "Protect All", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_SHIELD, 150)), },
-        { "name": "Summon Monster" },
+        { 
+            "name": "Summon Monster",
+            "onLocation" : (self, x, y) => { 
+                trace("casting at: " + x + "," + y);
+            },
+            "isCombat": true, 
+        },
         { "name": "Telekinesis" },
         { "name": "View Map" },
+        { 
+            "name": "Acid Cloud",
+            "onLocation" : (self, x, y) => { 
+                pc := player.party[0];
+                level := min(4, int(pc.level / 2));
+                return playerAreaSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, 2 + pc.level / 2);
+            },
+            "isCombat": true, 
+        },
     ],
     [
-        { "name": "Fireball" },
-        { "name": "Command Monster" },
+        { 
+            "name": "Fireball",
+            "onLocation" : (self, x, y) => { 
+                pc := player.party[0];
+                level := min(3, int(pc.level / 2));
+                return playerAreaSpellAttack([ "fireball", "fireball" ], [10 + level, 16 + level], pc.level, 2 + pc.level / 2);
+            },
+            "isCombat": true, 
+        },
+        { 
+            "name": "Command Monster",
+            "onLocation" : (self, x, y) => { 
+                trace("casting at: " + x + "," + y);
+            },
+            "isCombat": true,  
+        },
         { "name": "Free from Charm", "onPc": (self, pc) => setState(pc, STATE_CHARM, 0) },
         { "name": "Bless Party", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_BLESS, 150)), },
     ],
     [
-        { "name": "Petrification" },
+        { 
+            "name": "Petrification",
+            "onLocation" : (self, x, y) => { 
+                trace("casting at: " + x + "," + y);
+            },
+            "isCombat": true, 
+        },
         { "name": "Cure Paralysis", "onPc": (self, pc) => setState(pc, STATE_PARALYZE, 0), },
-        { "name": "Summon Demon" },
-        { "name": "Lightning Strike" },
+        { 
+            "name": "Summon Demon",
+            "onLocation" : (self, x, y) => { 
+                trace("casting at: " + x + "," + y);
+            },
+            "isCombat": true, 
+        },
+        { 
+            "name": "Lightning Strike",
+            "onLocation" : (self, x, y) => { 
+                pc := player.party[0];
+                level := min(4, int(pc.level / 2));
+                return playerSpellAttack([ "zap2", "zap" ], [15 + level, 25 + level], pc.level);
+            },
+            "isCombat": true, 
+        },
         { "name": "Invisibility", "onPc": (self, pc) => setState(pc, STATE_INVISIBLE, 150), },
     ],
     [

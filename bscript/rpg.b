@@ -28,7 +28,6 @@ def newChar(name, imgName, level) {
         "luck": roll(15, 20),
         "equipment": eq,
         "state": array_map(STATES, state => state.default),
-        "magic": [],
     };
     calculateArmor(pc);
     return pc;
@@ -339,4 +338,27 @@ def gainSpells() {
         level := level + 1;
     }
     return newSpells;
+}
+
+def incSpellCount() {
+    if(player["spellCount"] = null) {
+        player["spellCount"] := 1;
+    } else {
+        player.spellCount := player.spellCount + 1;
+    }
+    saveGame();
+}
+
+def resetSpellCount() {
+    player["spellCount"] := 0;
+    saveGame();
+}
+
+def canCastSpell() {
+    if(player["spellCount"] = null) {
+        return true;
+    } else {
+        maxLevel := array_reduce(player.party, 0, (level, pc) => max(level, pc.level));
+        return player.spellCount <= maxLevel * 3;
+    }
 }

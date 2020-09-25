@@ -77,6 +77,7 @@ def initGame() {
             "party": [],
             "partyIndex": 0,
             "light": 1,
+            "magic": [],
         };    
 
         gameMessage("You awake underground surrounded by damp earth and old bones. Press H any time for help.", COLOR_YELLOW);
@@ -219,14 +220,14 @@ def gameLoadMap(name) {
 def renderGame() {
     drawUI();
     initLight();
-    if(gameMode = MOVE) {        
-        moveNpcs();
-    }
     if(viewMode = null) {
-        if(gameMode = MOVE) {        
-            calendarStep();
+        if(rangeFinder = false) {
+            if(gameMode = MOVE) {
+                moveNpcs();
+                calendarStep();
+            }
+            ageEqipment();
         }
-        ageEqipment();
         mx := player.x;
         my := player.y;
         if(gameMode = COMBAT) {
@@ -335,16 +336,16 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
                     }
                 }
             });
-            if(rangeFinder) {
-                rx := 6 + rangeX * TILE_W;
-                ry := 6 + rangeY * TILE_H;
-                drawRect(rx, ry, rx + TILE_W - 3, ry + TILE_H - 3, COLOR_GREEN);
-            }
         } else {
             # draw the player only
             if(mx = player.x && my = player.y) {
                 drawImage(x, y, player.party[player.partyIndex].image, 0);
             }
+        }
+        if(rangeFinder) {
+            rx := 6 + rangeX * TILE_W;
+            ry := 6 + rangeY * TILE_H;
+            drawRect(rx, ry, rx + TILE_W - 3, ry + TILE_H - 3, COLOR_GREEN);
         }
         array_foreach(map.npc, (i, e) => {
             if(e.pos[0] = mx && e.pos[1] = my) {
@@ -378,12 +379,7 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
     }
     if(onScreen) {
         #d := int(distance(player.x, player.y, mx, my));
-        dx := abs(player.x - mx);
-        dy := abs(player.y - my);
-        d := DISTANCES["" + dx + "." + dy];
-        if(d = null) {
-            d := 10;
-        }
+        d := getDistance(player.x, player.y, mx, my);
         dd := -1;
         if(isOutdoors()) {
             dd := d - max(player.calendar.light, player.light);
@@ -404,6 +400,16 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
             fillRect(x, y, x + TILE_W, y + TILE_H, COLOR_BLACK);
         }
     }
+}
+
+def getDistance(srcX, srcY, dstX, dstY) {
+    dx := abs(srcX - dstX);
+    dy := abs(srcY - dstY);
+    d := DISTANCES["" + dx + "." + dy];
+    if(d = null) {
+        d := 10;
+    }
+    return d;
 }
 
 def moveNpcs() {
@@ -820,15 +826,19 @@ def moveInput(apUsed) {
     oy := player.y;
     if(viewMode = null) {
         if(isKeyPress(KeyEnter)) {
-            if(gameMode = COMBAT) {
-                if(rangeFinder) {
-                    apUsed := apUsed + playerRangeAttack();
-                } else {
-                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
-                    buzzer();
-                }
+            if(spell != null && rangeFinder) {
+                apUsed := apUsed + castLocationSpell();
             } else {
-                gameEnterMap();
+                if(gameMode = COMBAT) {
+                    if(rangeFinder) {
+                        apUsed := apUsed + playerRangeAttack();
+                    } else {
+                        gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                        buzzer();
+                    }
+                } else {
+                    gameEnterMap();
+                }
             }
         }
         if(isKeyPress(KeyT)) {
@@ -861,8 +871,18 @@ def moveInput(apUsed) {
             }
         }
         if(isKeyPress(KeyM)) {
-            viewMode := MAGIC;
-            setMagicList();
+            if(player.partyIndex = 0) {
+                if(canCastSpell()) {
+                    viewMode := MAGIC;
+                    setMagicList();
+                } else {
+                    gameMessage("You may cast no more spells today.", COLOR_MID_GRAY);
+                    buzzer();
+                }
+            } else {
+                gameMessage("Only the Fregnar may use magic.", COLOR_MID_GRAY);
+                buzzer();
+            }
         }
     }
     #if(isKeyPress(KeyW)) {
@@ -1218,9 +1238,22 @@ def castSpell(index, selection) {
         spell.onParty();
         spell := null;
         viewMode := null;
+        incSpellCount();
     } else {
         if(spell["onPc"] != null) {
             setListUi(array_map(player.party, pc => pc.name), [ [ KeyEnter, castSpellPc ] ], "");    
+        } else {
+            if(spell["onLocation"] != null) {
+                viewMode := null;
+                if(gameMode != COMBAT && spell["isCombat"]) {
+                    gameMessage("This spell is only allowed in combat.", COLOR_MID_GRAY);
+                    buzzer();
+                } else {
+                    rangeFinder := true;
+                    rangeX := 5;
+                    rangeY := 5;
+                }
+            }
         }
     }
 }
@@ -1230,10 +1263,20 @@ def castSpellPc(index, selection) {
     spell.onPc(player.party[index]);
     spell := null;
     viewMode := null;
+    incSpellCount();
+}
+
+def castLocationSpell() {
+    gameMessage("You cast " + spell.name + "!", COLOR_YELLOW);
+    rangeFinder := false;
+    apUsed := spell.onLocation(player.x + rangeX - 5, player.y + rangeY - 5);
+    spell := null;
+    incSpellCount();
+    return apUsed;
 }
 
 def setMagicList() {
-    setListUi(player.magic, [ [ KeyEnter, castSpell ] ], "");
+    setListUi(player.magic, [ [ KeyEnter, castSpell ] ], "You have no spells yet.");
 }
 
 def setEquipmentList() {

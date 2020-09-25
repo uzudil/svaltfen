@@ -81,6 +81,7 @@ def calendarStep() {
         if(player.calendar.hour >= HOURS_PER_DAY) {
             player.calendar.hour := 0;
             player.calendar.day := player.calendar.day + 1;
+            resetSpellCount();
         }
         calendarLight();
     }
