@@ -33,7 +33,7 @@ jobs:
       run: CGO_CFLAGS="-mmacosx-version-min=10.12" CGO_LDFLAGS="-mmacosx-version-min=10.12" go build -v .
 
     - name: package
-      run: tar czvf svaltfen.mac.tgz svaltfen bscript/*
+      run: tar czvf svaltfen.mac.tgz svaltfen runner.app/* bscript/*
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2

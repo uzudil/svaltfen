@@ -10,11 +10,11 @@ MONSTERS := [
         "attack": [0,3], "range": 1, "attackAp": 2, "armor": 0, "startHp": 8, "level": 1, "speed": 14 
     },
     { "name": "Animated Skeleton", "block": "skeleton", 
-        "attack": [2,4], "range": 1, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8 
+        "attack": [2,4], "range": 1, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8, "hit_mods": { "fire": 5 }, 
     },
     { "name": "Skeleton Archer", "block": "skeletona", 
         "drops": [ "coins", "Composite Bow" ],    
-        "attack": [1,3], "range": 6, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8 
+        "attack": [1,3], "range": 6, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8, "hit_mods": { "fire": 5, "mind": -2 }, 
     },
     { "name": "Nixbeetle", "block": "beetle", 
         "onDeath": self => {
@@ -31,11 +31,11 @@ MONSTERS := [
                 setState(pc, STATE_POISON, 10);
             }
         }, 
-        "range": 5, "rangeBlocks": [ "acid", "acid" ], "attackAp": 4, "armor": 5, "startHp": 24, "level": 3, "speed": 15 
+        "range": 5, "rangeBlocks": [ "acid", "acid" ], "attackAp": 4, "armor": 5, "startHp": 24, "level": 3, "speed": 15, "hit_mods": { "acid": -5 },  
     },
     { "name": "Skeleton Warrior", "block": "skeleton2", 
         "drops": [ "Soldier's sword", "Small shield", "coins" ],
-        "attack": [6,10], "range": 1, "attackAp": 3, "armor": 7, "startHp": 32, "level": 4, "speed": 8 
+        "attack": [6,10], "range": 1, "attackAp": 3, "armor": 7, "startHp": 32, "level": 4, "speed": 8, "hit_mods": { "fire": 5 },   
     },
     { "name": "Specter", "block": "ghost", 
         "onHit": (self, pc) => {
@@ -45,7 +45,7 @@ MONSTERS := [
             }
         }, 
         "drops": [ "coins" ],
-        "attack": [1,2], "range": 1, "attackAp": 2, "armor": 16, "startHp": 15, "level": 5, "speed": 16 
+        "attack": [1,2], "range": 1, "attackAp": 2, "armor": 16, "startHp": 15, "level": 5, "speed": 16, "hit_mods": { "mind": -5, "electricity": -5 },   
     },
     { "name": "Vegetal Warrior", "block": "vegwar", 
         "onHit": (self, pc) => {
@@ -55,15 +55,16 @@ MONSTERS := [
             }
         }, 
         "drops": [ "coins", "Lance", "Round potion" ],
-        "attack": [5,9], "range": 1, "attackAp": 4, "armor": 12, "startHp": 42, "level": 6, "speed": 4 
+        "attack": [5,9], "range": 1, "attackAp": 4, "armor": 12, "startHp": 42, "level": 6, "speed": 4, 
+        "hit_mods": { "fire": 5, "acid": 5, "electricity": -5, },   
     },
     { "name": "Gnork", "block": "gnork", 
         "drops": [ "coins", "Warhammer", "Kite shield", "Oval potion" ],
-        "attack": [6,8], "range": 1, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
+        "attack": [6,8], "range": 1, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4, "hit_mods": { "acid": -5 },   
     },
     { "name": "Gnork Archer", "block": "gnorka", 
         "drops": [ "coins", "Longbow", "Round potion" ],
-        "attack": [2,5], "range": 6, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4 
+        "attack": [2,5], "range": 6, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4, "hit_mods": { "acid": -5 },   
     },    
     { "name": "Vampire Bat", "block": "vbat", 
         "attack": [5,10], "range": 1, "attackAp": 2, "armor": 0, "startHp": 60, "level": 6, "speed": 14,
@@ -73,6 +74,7 @@ MONSTERS := [
                 setState(pc, STATE_CURSE, 10);
             }
         }, 
+        "hit_mods": { "acid": 5, "electricity": 2 },  
     },
     { "name": "Green Mold", "block": "slime1", 
         "drops": [ "coins" ],
@@ -81,19 +83,23 @@ MONSTERS := [
                 setState(pc, STATE_POISON, 10);
             }
         }, 
-        "attack": [4,5], "range": 1, "attackAp": 4, "armor": 18, "startHp": 20, "level": 6, "speed": 3 
+        "attack": [4,5], "range": 1, "attackAp": 4, "armor": 18, "startHp": 20, "level": 6, "speed": 3, 
+        "hit_mods": { "acid": -5, "fire": 5, "electricity": -3 },   
     },
     { "name": "Draconian", "block": "draconian", 
         "drops": [ "coins", "Greatsword", "Oval potion" ],
-        "attack": [6,8], "range": 1, "attackAp": 4, "armor": 14, "startHp": 50, "level": 6, "speed": 3 
+        "attack": [6,8], "range": 1, "attackAp": 4, "armor": 14, "startHp": 50, "level": 6, "speed": 3, 
+        "hit_mods": { "fire": -5, "electricity": -5, "acid": 5, "mind": 3 },   
     },
     { "name": "Demon Grunt", "block": "demon", 
         "drops": [ "coins", "Lance", "Oval potion" ],
-        "attack": [6,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8 
+        "attack": [6,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8,
+        "hit_mods": { "fire": -5 },    
     },
     { "name": "Demon Archer", "block": "demona", 
         "drops": [ "coins", "Longbow", "Oval potion" ],
-        "attack": [2,5], "range": 6, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8 
+        "attack": [2,5], "range": 6, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8,
+        "hit_mods": { "fire": -5, "mind": -5 },     
     },
     { "name": "Cult Fanatic", "block": "cultist", 
         "drops": [ "coins", "Lance", "Oval potion" ],
@@ -102,7 +108,8 @@ MONSTERS := [
                 setState(pc, STATE_CURSE, 10);
             }
         }, 
-        "attack": [5,8], "range": 1, "attackAp": 3, "armor": 11, "startHp": 40, "level": 7, "speed": 8 
+        "attack": [5,8], "range": 1, "attackAp": 3, "armor": 11, "startHp": 40, "level": 7, "speed": 8,
+        "hit_mods": { "mind": -5 },      
     },
     { "name": "Demon Champion", "block": "demon2", 
         "drops": [ "coins", "Greatsword", "Oval potion" ],
@@ -112,6 +119,7 @@ MONSTERS := [
                 setState(pc, STATE_CURSE, 10);
             }
         }, 
+        "hit_mods": { "fire": -5, "mind": -5, "electricity": -5 },     
     },
     { "name": "Yggxurantes", "block": "dragon", 
         "drops": [ "coins" ],
@@ -123,11 +131,13 @@ MONSTERS := [
             if(random() >= 0.75) {
                 setState(pc, STATE_CURSE, 10);
             }
-        },            
+        },
+        "hit_mods": { "fire": -10, "mind": -10, "electricity": -10, "acid": -10 },     
     },
     { "name": "Malleus", "block": "malleus", 
         "drops": [ "coins", "Warhammer", "Oval potion", "Tomes of Knowledge" ],
-        "attack": [10,15], "range": 1, "attackAp": 4, "armor": 13, "startHp": 100, "level": 9, "speed": 7
+        "attack": [10,15], "range": 1, "attackAp": 4, "armor": 13, "startHp": 100, "level": 9, "speed": 7,
+        "hit_mods": { "fire": -10, "mind": -10, "electricity": -10, "acid": -10 },     
     },
     { "name": "Demon Prince", "block": "demon3", 
         "drops": [ "coins", "Lance", "Oval potion" ],
@@ -138,6 +148,7 @@ MONSTERS := [
                 setState(pc, STATE_PARALYZE, 10);
             }
         },  
+        "hit_mods": { "fire": -5, "mind": -5, "electricity": -5, "acid": -5 },     
     },
     { "name": "Xurtang Thrall", "block": "alien1", 
         "drops": [ "coins", "Lance", "Oval potion" ],
@@ -151,5 +162,6 @@ MONSTERS := [
                 setState(pc, STATE_CURSE, 10);
             }
         },   
+        "hit_mods": { "fire": 2, "mind": -10, "electricity": 2, "acid": 2 },     
     },
 ];

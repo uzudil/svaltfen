@@ -391,7 +391,17 @@ def playerRangeAttack() {
     return apUsed;
 }
 
-def playerSpellAttack(projectile, damage, bonus) {
+def getHitMod(monster, save) {
+    if(save != null && monster.monsterTemplate["hit_mods"] != null) {
+        if(monster.monsterTemplate.hit_mods[save] != null) {
+            #trace(monster.monsterTemplate.name + " vs " + save + "=" + monster.monsterTemplate.hit_mods[save]);
+            return monster.monsterTemplate.hit_mods[save];
+        }
+    }
+    return 0;
+}
+
+def playerSpellAttack(projectile, damage, bonus, save) {
     combatRound := combat.round[combat.roundIndex];
     combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
     apUsed := 0;
@@ -402,19 +412,45 @@ def playerSpellAttack(projectile, damage, bonus) {
             array_map(projectile, p => img[p]),
             false
         );
-        playerAttacksDam(combatRound.pc.rangeMonster, damage, bonus);
+        playerAttacksDam(combatRound.pc.rangeMonster, damage, bonus + getHitMod(combatRound.pc.rangeMonster, save));
         apUsed := 3;
     }
     rangeFinder := false;
     return apUsed;
 }
 
-def playerAreaSpellAttack(projectile, damage, bonus, radius) {
+def playerAreaSpellAttack(projectile, damage, bonus, radius, save) {
     combatRound := combat.round[combat.roundIndex];
     tx := player.x + rangeX - 5;
     ty := player.y + rangeY - 5;
     animateProjectile(player.x, player.y, tx, ty, array_map(projectile, p => img[p]), false);
-    monsters := animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus));
+    monsters := animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus + getHitMod(m, save)));
+    rangeFinder := false;
+    return 3;
+}
+
+def playerQuakeSpellAttack(projectile, damage, bonus) {
+    combatRound := combat.round[combat.roundIndex];
+    tx := player.x + rangeX - 5;
+    ty := player.y + rangeY - 5;
+    animateProjectile(player.x, player.y, tx, ty, array_map(projectile, p => img[p]), false);
+    bg := getImage(6, 6, 5 + TILE_W * 11, 5 + TILE_H * 11);
+    i := 0;
+    t := 0;
+    while(i < 15) {
+        if(getTicks() > t) {
+            t := getTicks() + 0.05;
+            fillRect(6, 6, 5 + TILE_W * 11 - 1, 5 + TILE_H * 11 - 1, COLOR_BLACK);
+            drawImage(5 + random() * 10 - 5, 5 + random() * 10 - 5, bg);
+            i := i + 1;
+        }
+        updateVideo();
+    }
+    array_foreach(map.monster, (i, e) => {
+        if(e.hp > 0 && e.pos[0] >= player.x - 6 && e.pos[0] < player.x + 6 && e.pos[1] >= player.y - 6 && e.pos[1] < player.y + 6) {
+            playerAttacksDam(e, damage, bonus);
+        }
+    });
     rangeFinder := false;
     return 3;
 }
