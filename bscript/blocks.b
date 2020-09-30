@@ -172,4 +172,5 @@ blocks := [
     { "img": "morten" }, 
     { "img": "rosa" }, 
     { "img": "vbat" }, 
+    { "img": "force", "blocking": true, "light": false },    
 ];

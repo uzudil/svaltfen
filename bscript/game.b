@@ -159,7 +159,12 @@ def gameLoadMap(name) {
             "monster": {},
             "loot": {},
             "npcs": {},
+            "barrier": {},
         };
+    } else {
+        if(mapMutation["barrier"] = null) {
+            mapMutation["barrier"] := {};
+        }
     }
 
     applyGameBlocks(name);
@@ -511,48 +516,53 @@ def gameEnterMap() {
                 }
             }
 
-            lastMap := mapName;
-            lastMapX := player.x;
-            lastMapY := player.y;
             ss := split(s, ",");
             if(len(ss) > 1) {
                 if(ss[0] = "return") {
-                    gameLoadMap(player["lastMap"]);
-                    player.map := player["lastMap"];
-                    player.x := player["lastMapX"];
-                    player.y := player["lastMapY"];
+                    gameEnterMapByName(player["lastMap"], player["lastMapX"], player["lastMapY"]);
                 } else {
-                    gameLoadMap(ss[0]);
-                    player.map := ss[0];
-                    player.x := int(ss[1]);
-                    player.y := int(ss[2]);
+                    gameEnterMapByName(ss[0], int(ss[1]), int(ss[2]));
                 }
             } else {
                 pos := getMapStartPos(s);
-                gameLoadMap(s);
-                player.x := pos[0];
-                player.y := pos[1];
-                player.map := s;
-            }
-            player["lastMap"] := lastMap;
-            player["lastMapX"] := lastMapX;
-            player["lastMapY"] := lastMapY;
-            saveGame();
-            if(events[mapName] != null) {
-                events[mapName].onEnter();
-            } else {
-                gameMessage("Enter another area.", COLOR_MID_GRAY);
+                gameEnterMapByName(s, pos[0], pos[1]);
             }
         }
     }
 }
 
+def gameEnterMapByName(name, mx, my) {
+    lastMap := mapName;
+    lastMapX := player.x;
+    lastMapY := player.y;
+
+    gameLoadMap(name);
+    player.map := name;
+    player.x := mx;
+    player.y := my;
+
+    player["lastMap"] := lastMap;
+    player["lastMapX"] := lastMapX;
+    player["lastMapY"] := lastMapY;
+    
+    saveGame();
+    if(events[mapName] != null) {
+        events[mapName].onEnter();
+    } else {
+        gameMessage("Enter another area.", COLOR_MID_GRAY);
+    }
+}
+
 def aroundPlayer(fx) {
+    return aroundLocation(player.x, player.y, fx);
+}
+
+def aroundLocation(x, y, fx) {
     dx := -1;
     while(dx <= 1) {
         dy := -1;
         while(dy <= 1) {
-            res := fx(player.x + dx, player.y + dy);
+            res := fx(x + dx, y + dy);
             if(res != null) {
                 return res;
             }
@@ -563,8 +573,8 @@ def aroundPlayer(fx) {
     return null;
 }
 
-def gameUseDoor() {
-    return aroundPlayer((x, y) => {
+def gameUseDoor(mx, my) {
+    return aroundLocation(mx, my, (x, y) => {
         block := blocks[getBlock(x, y).block];
         if(block["nextState"] != null) {
             if(events[mapName]["onDoor"] != null) {
@@ -583,8 +593,8 @@ def gameUseDoor() {
     });
 }
 
-def gameSearchQuiet() {
-    return aroundPlayer((x, y) => {
+def gameSearchQuiet(mx, my) {
+    return aroundLocation(mx, my, (x, y) => {
         space := getBlockIndexByName("space");
         block := getBlock(x, y).block;
         if(map.secrets["" + x + "," + y] = 1 && block != space) {
@@ -826,16 +836,20 @@ def moveInput(apUsed) {
     oy := player.y;
     if(viewMode = null) {
         if(isKeyPress(KeyEnter)) {
-            if(spell != null && rangeFinder) {
-                apUsed := apUsed + castLocationSpell();
-            } else {
-                if(gameMode = COMBAT) {
+            if(gameMode = COMBAT) {
+                if(spell != null && rangeFinder) {
+                    apUsed := apUsed + castLocationSpell();
+                } else {
                     if(rangeFinder) {
                         apUsed := apUsed + playerRangeAttack();
                     } else {
                         gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
                         buzzer();
                     }
+                }
+            } else {
+                if(spell != null && rangeFinder) {
+                    castLocationSpell();
                 } else {
                     gameEnterMap();
                 }
@@ -850,7 +864,7 @@ def moveInput(apUsed) {
             }
         }
         if(isKeyPress(KeySpace)) {
-            if(gameUseDoor() = null) {
+            if(gameUseDoor(player.x, player.y) = null) {
                 if(gameSearch()) {
                     actionSound();
                 } else {
@@ -976,7 +990,7 @@ def moveInput(apUsed) {
                 } else {
                     # if someone is alert, look for secrets
                     if(playerMoved && anyPcInState(STATE_ALERT)) {
-                        if(gameSearchQuiet()) {
+                        if(gameSearchQuiet(player.x, player.y)) {
                             actionSound();
                         }
                     }
@@ -1245,7 +1259,7 @@ def castSpell(index, selection) {
         } else {
             if(spell["onLocation"] != null) {
                 viewMode := null;
-                if(gameMode != COMBAT && spell["isCombat"]) {
+                if(gameMode != COMBAT && spell["isCombat"] = true) {
                     gameMessage("This spell is only allowed in combat.", COLOR_MID_GRAY);
                     buzzer();
                 } else {
@@ -1479,4 +1493,78 @@ def operateSwitch(x, y, switchX, switchY, dstX, dstY, dstClosed, dstOpen) {
         return true;
     }
     return false;
+}
+
+def addBarrier(x, y) {
+    if(blocks[getBlock(x, y).block].blocking) {
+        gameMessage("Location is blocked!", COLOR_YELLOW);
+    } else {
+        mapMutation.barrier["" + x + "," + y] := getBlock(x, y).block;
+        index := getBlockIndexByName("force");
+        setBlock(x, y, index, 0);
+        setGameBlock(x, y, index);
+    }
+}
+
+def delBarrier(x, y) {
+    if(blocks[getBlock(x, y).block].img = "force") {
+        index := mapMutation.barrier["" + x + "," + y];
+        setBlock(x, y, index, 0);
+        setGameBlock(x, y, index);
+        del mapMutation.barrier["" + x + "," + y];
+    } else {
+        gameMessage("No barrier found!", COLOR_YELLOW);
+    }
+}
+
+def storeLocation() {
+    if(gameMode = COMBAT) {
+        gameMessage("Can't cast this spell during combat.", COLOR_MID_GRAY);
+    } else {
+        player["location"] := mapName + "," + player.x + "," + player.y;
+    }
+}
+
+def recallLocation() {
+    if(gameMode = COMBAT) {
+        gameMessage("Can't cast this spell during combat.", COLOR_MID_GRAY);
+    } else {
+        if(player["location"] = null) {
+            gameMessage("You need to store a location first!", COLOR_YELLOW);
+        } else {
+            ss := split(player.location, ",");    
+            gameEnterMapByName(ss[0], int(ss[1]), int(ss[2]));
+        }
+    }
+}
+
+def gameShowMap() {
+    gameMessage("Press Esc to continue.", COLOR_GREEN);
+    drawUI();    
+    dx := -22;
+    while(dx < 22) {    
+        dy := -22;
+        while(dy < 22) {
+            x := player.x + dx;
+            y := player.y + dy;
+            if(x < 0 || y < 0 || x >= map.width || y >= map.height) {
+                color := COLOR_BLACK;
+            } else {
+                color := blocks[getBlock(x, y).block].color;
+            }
+            px := (dx + 22) * (TILE_W / 4) + 5;
+            py := (dy + 22) * (TILE_H / 4) + 5;
+            fillRect(px, py, px + TILE_W / 4, py + TILE_H / 4, color);
+
+            if(dx = 0 && dy = 0) {
+                drawRect(px + 1, py + 1, px + TILE_W / 4 - 1, py + TILE_H / 4 - 1, COLOR_YELLOW);
+            }
+
+            dy := dy + 1;
+        }
+        dx := dx + 1;
+    }
+    while(isKeyPress(KeyEscape) = false) {
+        updateVideo();
+    }
 }

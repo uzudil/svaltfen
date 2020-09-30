@@ -40,10 +40,16 @@ def initMagic() {
             { 
                 "name": "Wall of Force",
                 "onLocation" : (self, x, y) => { 
-                    # todo
-                    trace("casting at: " + x + "," + y);
+                    addBarrier(x, y);
+                    return 3;
                 },
-                "isCombat": true,  
+            },
+            { 
+                "name": "Destroy Barrier",
+                "onLocation" : (self, x, y) => { 
+                    delBarrier(x, y);
+                    return 3;
+                },
             },
         ],
         [
@@ -52,19 +58,22 @@ def initMagic() {
             { 
                 "name": "Remember Location", 
                 "onParty": self => {
-                    # todo
+                    storeLocation();
                 } 
             },
             { 
                 "name": "Return to Location",
                 "onParty": self => {
-                    # todo
+                    recallLocation();
                 }  
             },
             { 
                 "name": "Reveal Secrets",
                 "onLocation": (self, x, y) => {
-                    # todo
+                    if(gameSearchQuiet(x, y)) {
+                        actionSound();
+                    }
+                    return 3;
                 }
             },
             { 
@@ -92,13 +101,16 @@ def initMagic() {
             { 
                 "name": "Telekinesis",  
                 "onLocation": (self, x, y) => {
-                    # todo
+                    if(gameUseDoor(x, y)) {
+                        actionSound();
+                    }
+                    return 3;
                 }
             },
             { 
                 "name": "View Map",
                 "onParty": self => {
-                    # todo
+                    gameShowMap();
                 } 
             },
             { 
