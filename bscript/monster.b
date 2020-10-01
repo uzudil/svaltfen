@@ -43,6 +43,9 @@ MONSTERS := [
             if(random() >= 0.75) {
                 setState(pc, STATE_CURSE, 10);
             }
+            if(random() >= 0.75) {
+                setState(pc, STATE_SCARED, 10);
+            }
         }, 
         "drops": [ "coins" ],
         "attack": [1,2], "range": 1, "attackAp": 2, "armor": 16, "startHp": 15, "level": 5, "speed": 16, "hit_mods": { "mind": -5, "electricity": -5 },   
@@ -90,11 +93,23 @@ MONSTERS := [
         "drops": [ "coins", "Greatsword", "Oval potion" ],
         "attack": [6,8], "range": 1, "attackAp": 4, "armor": 14, "startHp": 50, "level": 6, "speed": 3, 
         "hit_mods": { "fire": -5, "electricity": -5, "acid": 5, "mind": 3 },   
+        "onHit": (self, pc) => {
+            # there is a chance the character becomes poisoned
+            if(random() >= 0.75) {
+                setState(pc, STATE_SCARED, 10);
+            }
+        }, 
     },
     { "name": "Demon Grunt", "block": "demon", 
         "drops": [ "coins", "Lance", "Oval potion" ],
         "attack": [6,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8,
         "hit_mods": { "fire": -5 },    
+        "onHit": (self, pc) => {
+            # there is a chance the character becomes poisoned
+            if(random() >= 0.75) {
+                setState(pc, STATE_SCARED, 10);
+            }
+        }, 
     },
     { "name": "Demon Archer", "block": "demona", 
         "drops": [ "coins", "Longbow", "Oval potion" ],
@@ -131,6 +146,9 @@ MONSTERS := [
             if(random() >= 0.75) {
                 setState(pc, STATE_CURSE, 10);
             }
+            if(random() >= 0.75) {
+                setState(pc, STATE_SCARED, 10);
+            }
         },
         "hit_mods": { "fire": -10, "mind": -10, "electricity": -10, "acid": -10 },     
     },
@@ -146,6 +164,9 @@ MONSTERS := [
             # there is a chance the character becomes poisoned
             if(random() >= 0.75) {
                 setState(pc, STATE_PARALYZE, 10);
+            }
+            if(random() >= 0.75) {
+                setState(pc, STATE_SCARED, 10);
             }
         },  
         "hit_mods": { "fire": -5, "mind": -5, "electricity": -5, "acid": -5 },     

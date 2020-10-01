@@ -112,7 +112,7 @@ def checkCombatDone() {
         }
         return true;
     }
-    live_monsters := array_filter(combat.monsters, m => m.visible && m.hp > 0);
+    live_monsters := array_filter(combat.monsters, m => m.visible && m.hp > 0 && m.state[STATE_PARALYZE] = null);
     if(len(live_monsters) = 0) {
         gameMessage("Victory!", COLOR_GREEN);
         combatEndSound();
@@ -146,7 +146,7 @@ def runCombatTurn() {
         }
     } else {
         monster := combatRound.monster;
-        if(monster.hp <= 0) {
+        if(monster.hp <= 0 || monster.state[STATE_PARALYZE] != null) {
             combatTurnEnd();
         } else {
             combat.playerControl := false;
@@ -154,74 +154,10 @@ def runCombatTurn() {
             updateVideo();
             while(monster.visible && combatRound.ap > 0) {
                 
-                # target still valid?
-                if(combatRound.target != null) {
-                    # target died
-                    if(combatRound.target.hp <= 0) {
-                        combatRound.target := null;
-                        combatRound.pathIndex := len(combatRound.path);
-                    }
-
-                    # if target moved: retarget
-                    if(combatRound.target != null && len(combatRound.path) > 0) {
-                        lastNode := combatRound.path[len(combatRound.path) - 1];
-                        if(lastNode.x != combatRound.target.pos[0] || lastNode.y != combatRound.target.pos[1]) {
-                            combatRound.pathIndex := len(combatRound.path);
-                        }
-                    }
-                }
-
-                apUsed := 1;
-                near_pc := array_find(player.party, pc => {
-                    if(pc.hp <= 0) {
-                        return false;
-                    }
-                    d := [
-                        monster.pos[0] - pc.pos[0],
-                        monster.pos[1] - pc.pos[1]
-                    ];
-                    near := abs(d[0]) <= monster.monsterTemplate.range && abs(d[1]) <= monster.monsterTemplate.range;
-                    if(near && monster.monsterTemplate.range > 1) {
-                        near := checkProjectile(monster.pos[0], monster.pos[1], pc.pos[0], pc.pos[1]);
-                    }
-                    if(monster.target != null) {
-                        return pc.name = monster.target.name && near;
-                    } else {
-                        return near;
-                    }
-                });
-                if(near_pc != null) {
-                    attackMonster(near_pc);
-                    apUsed := monster.monsterTemplate.attackAp;
+                if(monster.state[STATE_SCARED] = null) {
+                    apUsed := monsterCombatMove(monster);
                 } else {
-                    if(combatRound.pathIndex < len(combatRound.path)) {
-                        # move along path
-                        if(moveMonster() = false) {
-                            # if blocked (by another monster), end path
-                            combatRound.pathIndex := len(combatRound.path);
-                        }
-                    }
-
-                    if(combatRound.pathIndex >= len(combatRound.path)) {
-                        # try to find a new target
-                        combatRound.pathIndex := 0;
-                        combatRound.path := [];
-                        try := 0;
-                        while(try < 3 && len(combatRound.path) = 0) {
-                            combatRound.target := choose(array_filter(player.party, p => p.hp > 0));
-                            if(combatRound.target != null) {
-                                #trace("new target: finding path target=" + combatRound.target.index + " from=" + monster.pos + " to=" + combatRound.target.pos);
-                                combatRound.path := findPath(monster, combatRound.target);
-                                combatRound.pathIndex := 0;
-                            }
-                            try := try + 1;
-                        }
-
-                        # if we can't find a path, skip rest of turn
-                        if(len(combatRound.path) = 0) {
-                            apUsed := combatRound.ap;
-                        }
-                    }
+                    apUsed := monsterScaredMove(monster);
                 }
 
                 combatRound.ap := combatRound.ap - apUsed;
@@ -233,6 +169,86 @@ def runCombatTurn() {
             combatTurnEnd();
         }
     }
+}
+
+def monsterScaredMove(monster) {
+    trace(monster.monsterTemplate.name + " is running away!");
+    return 1;
+}
+
+def monsterCombatMove(monster) {
+    combatRound := combat.round[combat.roundIndex];
+    
+    # target still valid?
+    if(combatRound.target != null) {
+        # target died
+        if(combatRound.target.hp <= 0) {
+            combatRound.target := null;
+            combatRound.pathIndex := len(combatRound.path);
+        }
+
+        # if target moved: retarget
+        if(combatRound.target != null && len(combatRound.path) > 0) {
+            lastNode := combatRound.path[len(combatRound.path) - 1];
+            if(lastNode.x != combatRound.target.pos[0] || lastNode.y != combatRound.target.pos[1]) {
+                combatRound.pathIndex := len(combatRound.path);
+            }
+        }
+    }
+
+    apUsed := 1;
+    near_pc := array_find(player.party, pc => {
+        if(pc.hp <= 0) {
+            return false;
+        }
+        d := [
+            monster.pos[0] - pc.pos[0],
+            monster.pos[1] - pc.pos[1]
+        ];
+        near := abs(d[0]) <= monster.monsterTemplate.range && abs(d[1]) <= monster.monsterTemplate.range;
+        if(near && monster.monsterTemplate.range > 1) {
+            near := checkProjectile(monster.pos[0], monster.pos[1], pc.pos[0], pc.pos[1]);
+        }
+        if(monster.target != null) {
+            return pc.name = monster.target.name && near;
+        } else {
+            return near;
+        }
+    });
+    if(near_pc != null) {
+        attackMonster(near_pc);
+        apUsed := monster.monsterTemplate.attackAp;
+    } else {
+        if(combatRound.pathIndex < len(combatRound.path)) {
+            # move along path
+            if(moveMonster() = false) {
+                # if blocked (by another monster), end path
+                combatRound.pathIndex := len(combatRound.path);
+            }
+        }
+
+        if(combatRound.pathIndex >= len(combatRound.path)) {
+            # try to find a new target
+            combatRound.pathIndex := 0;
+            combatRound.path := [];
+            try := 0;
+            while(try < 3 && len(combatRound.path) = 0) {
+                combatRound.target := choose(array_filter(player.party, p => p.hp > 0));
+                if(combatRound.target != null) {
+                    #trace("new target: finding path target=" + combatRound.target.index + " from=" + monster.pos + " to=" + combatRound.target.pos);
+                    combatRound.path := findPath(monster, combatRound.target);
+                    combatRound.pathIndex := 0;
+                }
+                try := try + 1;
+            }
+
+            # if we can't find a path, skip rest of turn
+            if(len(combatRound.path) = 0) {
+                apUsed := combatRound.ap;
+            }
+        }
+    }
+    return apUsed;
 }
 
 def combatTurnStep(d) {
@@ -265,7 +281,7 @@ def combatTurnEnd() {
 
 def getLiveMonsters(monsters) {
     return array_filter(monsters, m => { 
-        if(m.visible && m.hp > 0) {
+        if(m.visible && m.hp > 0 && m.state[STATE_PARALYZE] = null) {
             pc := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= 6 && abs(m.pos[1] - pc.pos[1]) <= 6);
             if(pc != null) {
                 m["path"] := findPath(m, pc);
@@ -667,6 +683,7 @@ def playerAttacksDam(monster, damage, bonus) {
         } else {
             percent := monster.hp / monster.monsterTemplate.startHp;
             if(percent < 0.2) {
+                monster.state[STATE_SCARED] := 10;
                 gameMessage(monster.monsterTemplate.name + " is critical!", COLOR_RED);
             } else {
                 if(percent < 0.5) {

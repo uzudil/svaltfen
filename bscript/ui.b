@@ -308,6 +308,7 @@ def showGameHelp() {
     gameMessage("_1_T: talk", COLOR_MID_GRAY);
     gameMessage("_1_R: ranged attack in combat", COLOR_MID_GRAY);
     gameMessage("_1_M: cast a magic spell", COLOR_MID_GRAY);
+    gameMessage("_1_N: re-cast the last spell", COLOR_MID_GRAY);
     gameMessage("_1_Space: search/use door", COLOR_MID_GRAY);
     gameMessage("_1_Enter: use stairs/gate", COLOR_MID_GRAY);
     gameMessage("_1_Numbers: switch pc / option in conversation or trade", COLOR_MID_GRAY);

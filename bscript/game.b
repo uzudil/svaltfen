@@ -35,6 +35,7 @@ rangeY := 5;
 const DISTANCES = {};
 
 spell := null;
+lastSpellName := null;
 
 convo := {
     "npc": null,
@@ -178,8 +179,12 @@ def gameLoadMap(name) {
         if(mapMutation.monster[e.id] != null) {
             e["hp"] := mapMutation.monster[e.id].hp;
             e["pos"] := mapMutation.monster[e.id].pos;
+            e["state"] := mapMutation.monster[e.id]["state"];
         } else {
-            e["hp"] := e.monsterTemplate.startHp;
+            e["hp"] := e.monsterTemplate.startHp;            
+        }
+        if(e["state"] = null) {
+            e["state"] := {};
         }
     });
 
@@ -789,6 +794,7 @@ def saveGame() {
         mapMutation.monster[m.id] := {
             "hp": m.hp,
             "pos": m.pos,
+            "state": m.state,
         };
     });
     rangeMonsters := [];
@@ -898,6 +904,19 @@ def moveInput(apUsed) {
                 buzzer();
             }
         }
+        if(isKeyPress(KeyN) && lastSpellName != null) {
+            if(player.partyIndex = 0) {
+                if(canCastSpell()) {
+                    castSpell(0, lastSpellName);
+                } else {
+                    gameMessage("You may cast no more spells today.", COLOR_MID_GRAY);
+                    buzzer();
+                }
+            } else {
+                gameMessage("Only the Fregnar may use magic.", COLOR_MID_GRAY);
+                buzzer();
+            }
+        }        
     }
     #if(isKeyPress(KeyW)) {
     #    deathSound();
@@ -1115,11 +1134,11 @@ def initHealList() {
 }
 
 def healPc(index, selection) {
-    spell := HEALING_LIST[index];
-    if(player.coins >= spell.price) {   
-        gameMessage(spell.name + " is cast on " + player.party[player.partyIndex].name + ".", COLOR_MID_GRAY);
-        spell.action(player.party[player.partyIndex]);
-        player.coins := player.coins - spell.price;
+    heal_spell := HEALING_LIST[index];
+    if(player.coins >= heal_spell.price) {   
+        gameMessage(heal_spell.name + " is cast on " + player.party[player.partyIndex].name + ".", COLOR_MID_GRAY);
+        heal_spell.action(player.party[player.partyIndex]);
+        player.coins := player.coins - heal_spell.price;
         saveGame();
     } else {
         gameMessage("You don't have enough money to buy that.", COLOR_RED);
@@ -1246,6 +1265,7 @@ def inventoryItemName(invItem) {
 }
 
 def castSpell(index, selection) {
+    lastSpellName := selection;
     spell := SPELLS_BY_NAME[selection];
     if(spell["onParty"] != null) {
         gameMessage("You cast " + spell.name + "!", COLOR_YELLOW);
@@ -1290,7 +1310,11 @@ def castLocationSpell() {
 }
 
 def setMagicList() {
-    setListUi(player.magic, [ [ KeyEnter, castSpell ] ], "You have no spells yet.");
+    setListUi(SPELL_TYPES, [ [ KeyEnter, setMagicListType ] ], "You have no spells yet.");
+}
+
+def setMagicListType(index, selection) {
+    setListUi(array_filter(player.magic, name => SPELLS_BY_NAME[name].type = selection), [ [ KeyEnter, castSpell ] ], "No spells of type " + selection);
 }
 
 def setEquipmentList() {
@@ -1567,4 +1591,8 @@ def gameShowMap() {
     while(isKeyPress(KeyEscape) = false) {
         updateVideo();
     }
+}
+
+def getMonsterAt(mx, my) {
+    return array_find(map.monster, e => e.pos[0] = mx && e.pos[1] = my && e.hp > 0);
 }

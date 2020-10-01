@@ -3,15 +3,21 @@ const SAVE_FIRE = "fire";
 const SAVE_ELECTRICITY = "electricity";
 const SAVE_MIND = "mind";
 
+const SPELL_TYPE_AID = "aid";
+const SPELL_TYPE_ATTACK = "attack";
+const SPELL_TYPE_EXPLORE = "explore";
+const SPELL_TYPE_OTHER = "other";
+const SPELL_TYPES = [ SPELL_TYPE_AID, SPELL_TYPE_ATTACK, SPELL_TYPE_EXPLORE, SPELL_TYPE_OTHER ];
+
 SPELLS := [];
 SPELLS_BY_NAME := {};
 
 def initMagic() {
     SPELLS := [
         [
-            { "name": "Party rations", "onParty": self => createFood(5), },
-            { "name": "Minor Healing", "onPc": (self, pc) => gainHp(pc, 10), },
-            { "name": "Protect Ally", "onPc": (self, pc) => setState(pc, STATE_SHIELD, 150), },
+            { "name": "Party rations", "onParty": self => createFood(5), "type": SPELL_TYPE_AID },
+            { "name": "Minor Healing", "onPc": (self, pc) => gainHp(pc, 10), "type": SPELL_TYPE_AID },
+            { "name": "Protect Ally", "onPc": (self, pc) => setState(pc, STATE_SHIELD, 150), "type": SPELL_TYPE_AID },
         ],
         [
             { 
@@ -22,8 +28,9 @@ def initMagic() {
                     return playerSpellAttack([ level + "arrow", level + "arrow2" ], [2 + level, 6 + level], pc.level, SAVE_MIND);
                 },
                 "isCombat": true, 
+                "type": SPELL_TYPE_ATTACK
             },
-            { "name": "Cure Poison", "onPc": (self, pc) => setState(pc, STATE_POISON, 0) },
+            { "name": "Cure Poison", "onPc": (self, pc) => setState(pc, STATE_POISON, 0), "type": SPELL_TYPE_AID },
             { 
                 "name": "Cast Light",  
                 "onParty": self => {
@@ -36,6 +43,7 @@ def initMagic() {
                         gameMessage("Your magic fizzles and nothing happens.", COLOR_MID_GRAY);
                     }
                 },
+                "type": SPELL_TYPE_EXPLORE
             },
             { 
                 "name": "Wall of Force",
@@ -43,6 +51,7 @@ def initMagic() {
                     addBarrier(x, y);
                     return 3;
                 },
+                "type": SPELL_TYPE_OTHER
             },
             { 
                 "name": "Destroy Barrier",
@@ -50,22 +59,21 @@ def initMagic() {
                     delBarrier(x, y);
                     return 3;
                 },
+                "type": SPELL_TYPE_OTHER
             },
         ],
         [
-            { "name": "Party feast", "onParty": self => createFood(10), },        
-            { "name": "Full Healing", "onPc": (self, pc) => gainHp(pc, pc.level * pc.startHp), },
+            { "name": "Party feast", "onParty": self => createFood(10), "type": SPELL_TYPE_AID },
+            { "name": "Full Healing", "onPc": (self, pc) => gainHp(pc, pc.level * pc.startHp), "type": SPELL_TYPE_AID },
             { 
                 "name": "Remember Location", 
-                "onParty": self => {
-                    storeLocation();
-                } 
+                "onParty": self => storeLocation(),
+                "type": SPELL_TYPE_OTHER
             },
             { 
                 "name": "Return to Location",
-                "onParty": self => {
-                    recallLocation();
-                }  
+                "onParty": self => recallLocation(),
+                "type": SPELL_TYPE_OTHER  
             },
             { 
                 "name": "Reveal Secrets",
@@ -74,7 +82,8 @@ def initMagic() {
                         actionSound();
                     }
                     return 3;
-                }
+                },
+                "type": SPELL_TYPE_EXPLORE
             },
             { 
                 "name": "Venom Ray", 
@@ -84,12 +93,41 @@ def initMagic() {
                     return playerSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, SAVE_ACID);
                 },
                 "isCombat": true, 
+                "type": SPELL_TYPE_ATTACK
             },
+            {
+                "name": "Enchant weapons",
+                "type": SPELL_TYPE_OTHER,
+                "onParty": self => {
+                    changed := [ false ];
+                    array_foreach([ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], (i, slot) => {   
+                        if(player.party[0].equipment[slot] != null) {
+                            item := player.party[0].equipment[slot];
+                            itemTmpl := ITEMS_BY_NAME[item.name];
+                            if(itemTmpl.type = OBJECT_WEAPON && itemTmpl.bonus = 0) {
+                                if(player.party[0].level < 5) {
+                                    name := "+1 " + item.name;
+                                } else {
+                                    name := "+2 " + item.name;
+                                }
+                                player.party[0].equipment[slot] := itemInstance(ITEMS_BY_NAME[name]);
+                                changed[0] := true;
+                            }
+                        }
+                    });
+                    if(changed[0]) {
+                        calculateArmor(player.party[0]);
+                        gameMessage("You successfully enchanted some weapons!", COLOR_GREEN);
+                    } else {
+                        gameMessage("Nothing happens.", COLOR_MID_GRAY);
+                    }
+                },
+            }
         ],
         [
-            { "name": "Remove Curse", "onPc": (self, pc) => setState(pc, STATE_CURSE, 0) },
-            { "name": "Heal All", "onParty": self => array_foreach(player.party, (i, pc) => gainHp(pc, pc.level * pc.startHp)), },
-            { "name": "Protect All", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_SHIELD, 150)), },
+            { "name": "Remove Curse", "onPc": (self, pc) => setState(pc, STATE_CURSE, 0), "type": SPELL_TYPE_AID },
+            { "name": "Heal All", "onParty": self => array_foreach(player.party, (i, pc) => gainHp(pc, pc.level * pc.startHp)), "type": SPELL_TYPE_AID },
+            { "name": "Protect All", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_SHIELD, 150)), "type": SPELL_TYPE_AID },
             { 
                 "name": "Summon Monster",
                 "onLocation" : (self, x, y) => { 
@@ -97,6 +135,7 @@ def initMagic() {
                     # todo
                 },
                 "isCombat": true, 
+                "type": SPELL_TYPE_ATTACK
             },
             { 
                 "name": "Telekinesis",  
@@ -105,13 +144,15 @@ def initMagic() {
                         actionSound();
                     }
                     return 3;
-                }
+                },
+                "type": SPELL_TYPE_EXPLORE
             },
             { 
                 "name": "View Map",
                 "onParty": self => {
                     gameShowMap();
-                } 
+                },
+                "type": SPELL_TYPE_EXPLORE
             },
             { 
                 "name": "Acid Cloud",
@@ -121,6 +162,7 @@ def initMagic() {
                     return playerAreaSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, 2 + pc.level / 2, SAVE_ACID);
                 },
                 "isCombat": true,
+                "type": SPELL_TYPE_ATTACK
             },
             { 
                 "name": "Flame Arrow", 
@@ -130,6 +172,7 @@ def initMagic() {
                     return playerSpellAttack([ "fireball", "fireball" ], [8 + level, 15 + level], pc.level, SAVE_FIRE);
                 },
                 "isCombat": true, 
+                "type": SPELL_TYPE_ATTACK
             },
         ],
         [
@@ -141,36 +184,40 @@ def initMagic() {
                     return playerAreaSpellAttack([ "fireball", "fireball" ], [10 + level, 16 + level], pc.level, 2 + pc.level / 2, SAVE_FIRE);
                 },
                 "isCombat": true,
+                "type": SPELL_TYPE_ATTACK
             },
             { 
-                "name": "Command Monster",
+                "name": "Frightening Visions",
                 "onLocation" : (self, x, y) => { 
-                    trace("casting at: " + x + "," + y);
-                    # todo
+                    setMonsterStateAt(self, x, y, STATE_SCARED);
+                    return 3;
                 },
                 "isCombat": true,
-                "save": SAVE_MIND,  
+                "save": SAVE_MIND,
+                "type": SPELL_TYPE_ATTACK
             },
-            { "name": "Free from Charm", "onPc": (self, pc) => setState(pc, STATE_CHARM, 0) },
-            { "name": "Bless Party", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_BLESS, 150)), },
+            { "name": "Disspell Fear", "onPc": (self, pc) => setState(pc, STATE_SCARED, 0), "type": SPELL_TYPE_AID },
+            { "name": "Bless Party", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_BLESS, 150)), "type": SPELL_TYPE_AID },
         ],
         [
             { 
                 "name": "Petrification",
                 "onLocation" : (self, x, y) => { 
-                    trace("casting at: " + x + "," + y);
-                    # todo
+                    setMonsterStateAt(self, x, y, STATE_PARALYZE);
+                    return 3;
                 },
                 "isCombat": true,
                 "save": SAVE_MIND, 
+                "type": SPELL_TYPE_ATTACK
             },
-            { "name": "Cure Paralysis", "onPc": (self, pc) => setState(pc, STATE_PARALYZE, 0), },
+            { "name": "Cure Paralysis", "onPc": (self, pc) => setState(pc, STATE_PARALYZE, 0), "type": SPELL_TYPE_AID },
             { 
                 "name": "Summon Demon",
                 "onLocation" : (self, x, y) => { 
                     trace("casting at: " + x + "," + y);
                 },
                 "isCombat": true, 
+                "type": SPELL_TYPE_ATTACK
             },
             { 
                 "name": "Lightning Strike",
@@ -180,11 +227,12 @@ def initMagic() {
                     return playerSpellAttack([ "zap2", "zap" ], [15 + level, 25 + level], pc.level, SAVE_ELECTRICITY);
                 },
                 "isCombat": true, 
+                "type": SPELL_TYPE_ATTACK
             },
-            { "name": "Invisibility", "onPc": (self, pc) => setState(pc, STATE_INVISIBLE, 150), },
+            { "name": "Invisibility", "onPc": (self, pc) => setState(pc, STATE_INVISIBLE, 150), "type": SPELL_TYPE_AID },
         ],
         [
-            { "name": "Resurrection", "onPc": (self, pc) => resurrect(pc), },
+            { "name": "Resurrection", "onPc": (self, pc) => resurrect(pc), "type": SPELL_TYPE_AID },
             { 
                 "name": "Earthquake", 
                 "isCombat": true, 
@@ -193,9 +241,10 @@ def initMagic() {
                     pc := player.party[0];
                     level := min(3, int(pc.level / 2));
                     return playerQuakeSpellAttack([ "zap2", "zap" ], [8 + level, 12 + level], pc.level);
-                } 
+                },
+                "type": SPELL_TYPE_ATTACK
             },
-            { "name": "Cure All Ailments", "onParty": self => array_foreach(player.party, (i, pc) => cureAilments(pc)), },
+            { "name": "Cure All Ailments", "onParty": self => array_foreach(player.party, (i, pc) => cureAilments(pc)), "type": SPELL_TYPE_AID },
         ],
     ];
 
@@ -215,4 +264,19 @@ def getFreeHandSlot(pc) {
         slot := SLOT_RIGHT_HAND;
     }
     return slot;
+}
+
+def setMonsterStateAt(spell, x, y, state) {
+    monster := getMonsterAt(x, y);
+    if(monster = null) {
+        gameMessage("Nothing happens.", COLOR_MID_GRAY);
+    } else {
+        savemod := getHitMod(monster, spell.save);
+        if(roll(0, 10) > savemod) {
+            monster.state[state] := 10;
+            gameMessage("The creature is now " + state + "!", COLOR_GREEN);
+        } else {
+            gameMessage("The magic is ineffective!", COLOR_MID_GRAY);
+        }
+    }
 }

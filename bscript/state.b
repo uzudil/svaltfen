@@ -5,7 +5,7 @@ const STATE_THIRST = "thirst";
 const STATE_POISON = "poisoned";
 const STATE_PARALYZE = "paralyzed";
 const STATE_CURSE = "cursed";
-const STATE_CHARM = "charmed";
+const STATE_SCARED = "scared";
 
 # the good
 const STATE_SHIELD = "shielded";
@@ -64,7 +64,7 @@ const STATES = [
         "getAttackMod": (this, pc) => -4, 
         "getToHitMod": (this, pc) => -3 
     }, 
-    { "name": STATE_CHARM, "color": COLOR_YELLOW, "default": 0, 
+    { "name": STATE_SCARED, "color": COLOR_YELLOW, "default": 0, 
         "step": (this, pcIndex) => agePcState(player.party[pcIndex], this) 
     }, 
     { "name": STATE_SHIELD, "color": COLOR_GREEN, "default": 0, 
@@ -140,6 +140,19 @@ def ageState(fxName) {
         drawView(player.x, player.y);
         updateVideo();
     }
+
+    # age monster state
+    array_foreach(array_filter(map.monster, m => m.hp > 0), (i, m) => {
+        trace(m.monsterTemplate.name + ":" + m.state);
+        array_foreach(keys(m.state), (t, state) => {
+            m.state[state] := m.state[state] - 1;
+        });
+        k := array_filter(keys(m.state), s => m.state[s] <= 0);
+        array_foreach(k, (i, kk) => {
+            del m.state[kk];
+            gameMessage(m.name + " is no longer " + kk + ".", COLOR_MID_GRAY);
+        });
+    });    
 }
 
 def agePcState(pc, state) {
