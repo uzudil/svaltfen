@@ -375,8 +375,10 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
                     drawImage(x, y, img["blood"], 0);
                 }
                 if(gameMode = COMBAT && combat.playerControl = false) {
-                    if(combat.round[combat.roundIndex].monster.id = e.id) {
-                        drawRect(x, y, x + TILE_W - 1, y + TILE_H - 1, COLOR_YELLOW);
+                    if(combat.round[combat.roundIndex].monster) {
+                        if(combat.round[combat.roundIndex].monster.id = e.id) {
+                            drawRect(x, y, x + TILE_W - 1, y + TILE_H - 1, COLOR_YELLOW);
+                        }
                     }
                 }
             }

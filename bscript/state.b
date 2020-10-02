@@ -142,17 +142,21 @@ def ageState(fxName) {
     }
 
     # age monster state
-    array_foreach(array_filter(map.monster, m => m.hp > 0), (i, m) => {
-        trace(m.monsterTemplate.name + ":" + m.state);
-        array_foreach(keys(m.state), (t, state) => {
-            m.state[state] := m.state[state] - 1;
-        });
-        k := array_filter(keys(m.state), s => m.state[s] <= 0);
-        array_foreach(k, (i, kk) => {
-            del m.state[kk];
-            gameMessage(m.name + " is no longer " + kk + ".", COLOR_MID_GRAY);
-        });
-    });    
+    if(len(map.monster) > 0) {
+        if(map.monster[0]["hp"] != null) {
+            array_foreach(array_filter(map.monster, m => m.hp > 0), (i, m) => {
+                trace(m.monsterTemplate.name + ":" + m.state);
+                array_foreach(keys(m.state), (t, state) => {
+                    m.state[state] := m.state[state] - 1;
+                });
+                k := array_filter(keys(m.state), s => m.state[s] <= 0);
+                array_foreach(k, (i, kk) => {
+                    del m.state[kk];
+                    gameMessage(m.name + " is no longer " + kk + ".", COLOR_MID_GRAY);
+                });
+            });    
+        }
+    }
 }
 
 def agePcState(pc, state) {

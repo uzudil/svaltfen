@@ -6,6 +6,8 @@ combat := {
     "playerControl": false,
 };
 
+const OUT_OF_COMBAT_DISTANCE = 16;
+
 # this is called infrequently from events
 def endCombat() {
     gameMode := MOVE;
@@ -48,6 +50,10 @@ def initCombatRound() {
         array_foreach(new_monsters, (i, nm) => {
             combat.monsters[len(combat.monsters)] := nm;
         });
+        # remove monsters who are now too far
+        array_remove(combat.monsters, m => closestDistanceToParty(m.pos[0], m.pos[1]) >= OUT_OF_COMBAT_DISTANCE);
+        # age states
+        calendarStep();
     }
     combat.round := [];
     combat.roundIndex := 0;
@@ -134,15 +140,28 @@ def runCombatTurn() {
         if(combatRound.pc.hp <= 0 || isPcInState(combatRound.pc, STATE_PARALYZE)) {
             combatTurnEnd();
         } else {
-            # trace("SWITCH to " + combatRound.pc.index);
-            player.partyIndex := combatRound.pc.index;
-            player.x := player.party[player.partyIndex].pos[0];
-            player.y := player.party[player.partyIndex].pos[1];
+            if(isPcInState(combatRound.pc, STATE_SCARED)) {
+                gameMessage(combatRound.pc.name + " runs away scared!", COLOR_YELLOW);
+                combat.playerControl := false;
+                range(0, 10, 1, i => {
+                    scaredMove(combatRound.pc, closestDistanceToMonsters, null);
+                    combatRound.ap := combatRound.ap - 1;    
+                    sleep(250);
+                    renderGame();
+                    updateVideo();
+                });
+                combatTurnEnd();
+            } else {
+                # trace("SWITCH to " + combatRound.pc.index);
+                player.partyIndex := combatRound.pc.index;
+                player.x := player.party[player.partyIndex].pos[0];
+                player.y := player.party[player.partyIndex].pos[1];
 
-            combat.playerControl := true;
-            gameMessage("It is your turn: " + combatRound.pc.name, COLOR_MID_GRAY);
-            renderGame();
-            updateVideo();
+                combat.playerControl := true;
+                gameMessage("It is your turn: " + combatRound.pc.name, COLOR_MID_GRAY);
+                renderGame();
+                updateVideo();
+            }
         }
     } else {
         monster := combatRound.monster;
@@ -157,7 +176,7 @@ def runCombatTurn() {
                 if(monster.state[STATE_SCARED] = null) {
                     apUsed := monsterCombatMove(monster);
                 } else {
-                    apUsed := monsterScaredMove(monster);
+                    apUsed := scaredMove(monster, closestDistanceToParty, monster);
                 }
 
                 combatRound.ap := combatRound.ap - apUsed;
@@ -171,14 +190,58 @@ def runCombatTurn() {
     }
 }
 
-def monsterScaredMove(monster) {
-    trace(monster.monsterTemplate.name + " is running away!");
+def closestDistanceToMonsters(mx, my) {
+    return array_reduce(map.monster, 100, (v, m) => min(v, distance(m.pos[0], m.pos[1], mx, my)));
+}
+
+def closestDistanceToParty(mx, my) {
+    return array_reduce(player.party, 100, (m, pc) => min(m, distance(pc.pos[0], pc.pos[1], mx, my)));
+}
+
+def scaredMove(posHolder, distFx, monster) {    
+    d := distFx(posHolder.pos[0], posHolder.pos[1]);
+    #if(monster != null) {
+    #    trace("monster scared: " + monster.monsterTemplate.name + " d=" + d);
+    #}
+    if(d < OUT_OF_COMBAT_DISTANCE) {
+
+        nx := posHolder.pos[0];
+        ny := posHolder.pos[1];
+
+        dx := -1;
+        while(dx <= 1) {
+            dy := -1;
+            while(dy <= 1) {
+                if(dx != 0 || dy != 0) {
+                    if(canMoveTo(monster, posHolder.pos[0] + dx, posHolder.pos[1] + dy)) {
+                        dd := distFx(posHolder.pos[0] + dx, posHolder.pos[1] + dy);
+                        #if(monster != null) {
+                        #    trace("dir=" + dx + "," + dy + " dd=" + dd);
+                        #}
+                        if(dd > d) {
+                            nx := posHolder.pos[0] + dx;
+                            ny := posHolder.pos[1] + dy;
+                            d := dd;                            
+                        }
+                    }
+                }
+                dy := dy + 1;
+            }
+            dx := dx + 1;
+        }
+
+        if(nx != posHolder.pos[0] || ny != posHolder.pos[1]) {
+            posHolder.pos[0] := nx;
+            posHolder.pos[1] := ny;
+            stepSound();
+        }
+    }
     return 1;
 }
 
 def monsterCombatMove(monster) {
     combatRound := combat.round[combat.roundIndex];
-    
+
     # target still valid?
     if(combatRound.target != null) {
         # target died
@@ -301,7 +364,11 @@ def canMoveTo(monster, mx, my) {
             blocked := npc != null;
         }
         if(blocked = false) {
-            m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.id != monster.id && p.hp > 0);
+            if(monster = null) {
+                m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.hp > 0);
+            } else {
+                m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.id != monster.id && p.hp > 0);
+            }
             blocked := m != null;
         }
         return blocked = false;

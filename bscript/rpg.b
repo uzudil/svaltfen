@@ -104,7 +104,7 @@ def resurrect(pc) {
 
 def cureAilments(pc) {
     if(setState(pc, STATE_POISON, 0) = false && setState(pc, STATE_PARALYZE, 0) = false && 
-        setState(pc, STATE_CURSE, 0) = false && setState(pc, STATE_CHARM, 0) = false) {
+        setState(pc, STATE_CURSE, 0) = false && setState(pc, STATE_SCARED, 0) = false) {
         gameMessage("Nothing happens for " + pc.name + ".", COLOR_MID_GRAY);
     } else {
         gameMessage(pc.name + " suddenly feels better!", COLOR_GREEN);
