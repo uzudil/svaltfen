@@ -13,7 +13,8 @@ def renderTitle() {
         if(savegameFound = null) {
             drawText(20, 185, COLOR_DARK_GRAY, COLOR_BLACK, "Press SPACE to start");
         } else {
-            drawText(20, 185, COLOR_DARK_GRAY, COLOR_BLACK, "Press SPACE to continue");
+            drawText(20, 175, COLOR_DARK_GRAY, COLOR_BLACK, "Press SPACE to continue");
+            drawText(20, 185, COLOR_DARK_GRAY, COLOR_BLACK, "Or, Esc to start over");
         }
     }
     if(titleMode = 1) {
@@ -37,14 +38,26 @@ def renderTitle() {
 }
 
 def titleInput() {
-    if(isKeyDown(KeyE)) {
-        while(isKeyDown(KeyE)) {
-        }
+    if(isKeyPress(KeyE)) {
         mode := "editor";
     }
-    if(isKeyDown(KeySpace)) {
-        while(isKeyDown(KeySpace)) {
+    startGame := false;
+    if(isKeyPress(KeyEscape)) {
+        setVideoMode(0);
+        print("This will erase your progress!");
+        yn := input("Are you sure? (Y/N) ");
+        setVideoMode(1);
+        if(yn = "Y" || yn = "y") {
+            erase("savegame.dat");
+            erase("*.mut");
+            startGame := true;
+            savegameFound := null;
         }
+    }
+    if(isKeyPress(KeySpace)) {
+        startGame := true;
+    }
+    if(startGame) {
         titleMode := titleMode + 1;
         if(savegameFound != null || titleMode > 1) {
             mode := "game";

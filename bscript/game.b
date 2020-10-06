@@ -146,6 +146,25 @@ def setMonsterEnabled(x, y, enabled) {
     }
 }
 
+def expandMonster(mon) {
+    mon["image"] := img[blocks[mon.block].img];
+    mon["start"] := [mon.pos[0], mon.pos[1]];
+    mon["id"] := "" + mon.pos[0] + "," + mon.pos[1];
+    mon["visible"] := false;
+    mon["monsterTemplate"] := array_find(MONSTERS, m => m.block = blocks[mon.block].img);
+
+    if(mapMutation.monster[mon.id] != null) {
+        mon["hp"] := mapMutation.monster[mon.id].hp;
+        mon["pos"] := mapMutation.monster[mon.id].pos;
+        mon["state"] := mapMutation.monster[mon.id]["state"];
+    } else {
+        mon["hp"] := mon.monsterTemplate.startHp;            
+    }
+    if(mon["state"] = null) {
+        mon["state"] := {};
+    }
+}
+
 def gameLoadMap(name) {
     loadMap(name);
     calendarStep();
@@ -169,24 +188,7 @@ def gameLoadMap(name) {
     }
 
     applyGameBlocks(name);
-    array_foreach(map.monster, (i, e) => {
-        e["image"] := img[blocks[e.block].img];
-        e["start"] := [e.pos[0], e.pos[1]];
-        e["id"] := "" + e.pos[0] + "," + e.pos[1];
-        e["visible"] := false;
-        e["monsterTemplate"] := array_find(MONSTERS, m => m.block = blocks[e.block].img);
-
-        if(mapMutation.monster[e.id] != null) {
-            e["hp"] := mapMutation.monster[e.id].hp;
-            e["pos"] := mapMutation.monster[e.id].pos;
-            e["state"] := mapMutation.monster[e.id]["state"];
-        } else {
-            e["hp"] := e.monsterTemplate.startHp;            
-        }
-        if(e["state"] = null) {
-            e["state"] := {};
-        }
-    });
+    array_foreach(map.monster, (i, e) => expandMonster(e));
 
     # filter out npcs no longer present
     map.npc := array_filter(map.npc, n => mapMutation.npcs[n.name] = null);
@@ -246,8 +248,8 @@ def renderGame() {
                 mx := player.x;
                 my := player.y;
             } else {
-                mx := combatRoundInfo.monster.pos[0];
-                my := combatRoundInfo.monster.pos[1];
+                mx := combatRoundInfo.creature.pos[0];
+                my := combatRoundInfo.creature.pos[1];
             }
         }
         array_foreach(map.monster, (i, m) => { m.visible := false; });
@@ -375,10 +377,8 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
                     drawImage(x, y, img["blood"], 0);
                 }
                 if(gameMode = COMBAT && combat.playerControl = false) {
-                    if(combat.round[combat.roundIndex].monster) {
-                        if(combat.round[combat.roundIndex].monster.id = e.id) {
-                            drawRect(x, y, x + TILE_W - 1, y + TILE_H - 1, COLOR_YELLOW);
-                        }
+                    if(combat.round[combat.roundIndex].id = e.id) {
+                        drawRect(x, y, x + TILE_W - 1, y + TILE_H - 1, COLOR_YELLOW);
                     }
                 }
             }
@@ -793,11 +793,13 @@ def setGameBlock(x, y, index) {
 
 def saveGame() {
     array_foreach(map.monster, (i, m) => {
-        mapMutation.monster[m.id] := {
-            "hp": m.hp,
-            "pos": m.pos,
-            "state": m.state,
-        };
+        if(m.state[STATE_POSSESSED] = null) {
+            mapMutation.monster[m.id] := {
+                "hp": m.hp,
+                "pos": m.pos,
+                "state": m.state,
+            };
+        }
     });
     rangeMonsters := [];
     array_foreach(player.party, (i, pc) => {
@@ -840,6 +842,16 @@ def switchPc() {
 
 
 def moveInput(apUsed) {
+
+    if(viewMode != null) {
+        viewModeBefore := viewMode;
+        listUiInput();
+        if(viewMode = null && viewModeBefore = MAGIC && rangeFinder = false) {
+            # a spell was cast
+            apUsed := apUsed + 5;
+        }
+    }
+
     ox := player.x;
     oy := player.y;
     if(viewMode = null) {
@@ -1029,6 +1041,8 @@ def moveInput(apUsed) {
 }
 
 def convoInput() {
+    listUiInput();
+
     if(viewMode = null) {
         index := null;
         if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
@@ -1114,10 +1128,6 @@ def gameInput() {
 
     if(gameMode = MOVE || (gameMode = COMBAT && combat.playerControl)) {
         moveInput(apUsed);
-    }
-
-    if(viewMode != null) {
-        listUiInput();
     }
 
     if(gameMode = CONVO) {
@@ -1305,10 +1315,10 @@ def castSpellPc(index, selection) {
 def castLocationSpell() {
     gameMessage("You cast " + spell.name + "!", COLOR_YELLOW);
     rangeFinder := false;
-    apUsed := spell.onLocation(player.x + rangeX - 5, player.y + rangeY - 5);
+    spell.onLocation(player.x + rangeX - 5, player.y + rangeY - 5);
     spell := null;
     incSpellCount();
-    return apUsed;
+    return 5;
 }
 
 def setMagicList() {
@@ -1597,4 +1607,187 @@ def gameShowMap() {
 
 def getMonsterAt(mx, my) {
     return array_find(map.monster, e => e.pos[0] = mx && e.pos[1] = my && e.hp > 0);
+}
+
+def animateQuake() {
+    bg := getImage(6, 6, 5 + TILE_W * 11, 5 + TILE_H * 11);
+    i := 0;
+    t := 0;
+    while(i < 15) {
+        if(getTicks() > t) {
+            t := getTicks() + 0.05;
+            fillRect(6, 6, 5 + TILE_W * 11 - 1, 5 + TILE_H * 11 - 1, COLOR_BLACK);
+            drawImage(5 + random() * 10 - 5, 5 + random() * 10 - 5, bg);
+            i := i + 1;
+        }
+        updateVideo();
+    }
+}
+
+def checkProjectile(srcX, srcY, dstX, dstY) {
+    # check that a projectile could reach the target
+    mx := dstX - srcX;
+    my := dstY - srcY;
+    amx := abs(mx);
+    amy := abs(my);
+    steps := max(amx, amy);
+    if(amx > amy) {
+        dx := mx / amx;
+        dy := my / amx;
+    } else {
+        dy := my / amy;
+        dx := mx / amy;
+    }
+
+    step := 0;
+    success := true;
+    while(success && step < steps) {
+            # move arrow
+            srcX := srcX + dx;
+            srcY := srcY + dy;
+            step := step + 1;
+
+            # did we hit a wall?
+            block := blocks[getBlock(round(srcX), round(srcY)).block];
+            success := block.light = false;
+    }
+    return success;
+}
+
+# assumes screen is centered on src
+def animateBlast(srcX, srcY, dstX, dstY, radius, projectileImg, attackFx) {
+    r := 0;
+    t := 0;
+    seen_ids := [];
+    while(r <= radius) {
+        if(getTicks() > t) {
+            t := getTicks() + 0.1;
+            xx := -1 * r;
+            while(xx < r) {
+                yy := -1 * r;
+                while(yy < r) {
+                    d := getDistance(0, 0, xx, yy);
+                    if(d < r) {
+                        drawImage(5 + (dstX - srcX + 5 + xx) * TILE_W, 5 + (dstY - srcY + 5 + yy) * TILE_H, projectileImg);
+                        m := array_find(map.monster, e => e.pos[0] = dstX + xx && e.pos[1] = dstY + yy && e.hp > 0);
+                        if(m != null) {
+                            if(array_find(seen_ids, id => m.id = id) = null) {
+                                attackFx(m);
+                                seen_ids[len(seen_ids)] := m.id;
+                            }
+                        }
+                    }
+                    yy := yy + 1;
+                }
+                xx := xx + 1;
+            }
+
+            r := r + 1;
+        }
+        updateVideo();
+    }
+}
+
+# assumes screen is centered on src
+def animateProjectile(srcX, srcY, dstX, dstY, arrowImages, checkWall) {
+    # animate arrow path
+    arrowX := TILE_W * 5;
+    arrowY := TILE_H * 5;
+    ex := (dstX - srcX + 5) * TILE_W;
+    ey := (dstY - srcY + 5) * TILE_H;
+    mx := ex - arrowX;
+    my := ey - arrowY;
+    amx := abs(mx);
+    amy := abs(my);
+    steps := max(amx, amy);
+    flipX := 0;
+    flipY := 0;
+    imgIndex := 0;
+    if(amx > amy) {
+        dx := mx / amx;
+        dy := my / amx;
+        if(dx > 0) {
+            flipX := 1;
+        }
+    } else {
+        imgIndex := 1;
+        dy := my / amy;
+        dx := mx / amy;
+        if(dy > 0) {
+            flipY := 1;
+        }
+    }
+
+    setSprite(ARROW_SPRITE, arrowImages);
+
+    step := 0;
+    success := true;
+    arrowFireSound();
+    t := 0;
+    speed := 2;
+    while(success && step < steps) {
+        if(getTicks() > t) {
+            t := getTicks() + 0.01;
+            drawSprite(arrowX + 5 + TILE_W/2, arrowY + 5 + TILE_H/2, ARROW_SPRITE, imgIndex, flipX, flipY);
+
+            # move arrow
+            arrowX := arrowX + dx * speed;
+            arrowY := arrowY + dy * speed;
+            step := step + speed;
+
+            # did we hit a wall?
+            if(checkWall) {
+                block := blocks[getBlock(round(arrowX / TILE_W) - 5 + srcX, round(arrowY / TILE_H) - 5 + srcY).block];
+                success := block.light = false;
+            }
+        }
+
+        updateVideo();
+    }
+    delSprite(ARROW_SPRITE);
+    return success;
+}
+
+def canMoveTo(id, mx, my, targetId) {
+    if(mx >= 0 && my >= 0 && mx < map.width && my < map.height) {
+        block := blocks[getBlock(mx, my).block];
+        blocked := block.blocking;
+        if(blocked = false) {
+            npc := array_find(map.npc, p => p.pos[0] = mx && p.pos[1] = my);
+            blocked := npc != null;
+        }
+        if(blocked = false) {
+            m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.id != id && p.id != targetId && p.hp > 0);
+            blocked := m != null;
+        }
+        return blocked = false;
+    }
+    return false;
+}
+
+def summonDemon(x, y) {
+    summonCreature(x, y, array_filter(MONSTERS, m => m.block = "demon" || m.block = "demona" || m.block = "demon2" ));
+}
+
+def summonMonster(x, y) {
+    summonCreature(x, y, array_filter(MONSTERS, m => m.level < 7 && m.level <= player.party[0].level));
+}
+
+def summonCreature(x, y, monsters) {
+    block := blocks[getBlock(x, y).block];
+    blocked := block.blocking;
+    if(blocked) {
+        gameMessage("Map location is blocked.", COLOR_MID_GRAY);
+    } else {
+        mt := choose(monsters);
+        if(mt = null) {
+            gameMessage("Nothing happens.", COLOR_MID_GRAY);
+        } else {
+            m := { "block": getBlockIndexByName(mt.block), "pos": [ x, y ] };
+            expandMonster(m);
+            m.state[STATE_POSSESSED] := 1000;
+            map.monster[len(map.monster)] := m;
+            gameMessage("A " + mt.name + " appears!", COLOR_GREEN);
+        }
+    }
 }

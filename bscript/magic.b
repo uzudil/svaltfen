@@ -25,7 +25,7 @@ def initMagic() {
                 "onLocation" : (self, x, y) => { 
                     pc := player.party[0];
                     level := min(3, int(pc.level / 2));
-                    return playerSpellAttack([ level + "arrow", level + "arrow2" ], [2 + level, 6 + level], pc.level, SAVE_MIND);
+                    playerSpellAttack([ level + "arrow", level + "arrow2" ], [2 + level, 6 + level], pc.level, SAVE_MIND);
                 },
                 "isCombat": true, 
                 "type": SPELL_TYPE_ATTACK
@@ -47,18 +47,12 @@ def initMagic() {
             },
             { 
                 "name": "Wall of Force",
-                "onLocation" : (self, x, y) => { 
-                    addBarrier(x, y);
-                    return 3;
-                },
+                "onLocation" : (self, x, y) => addBarrier(x, y),
                 "type": SPELL_TYPE_OTHER
             },
             { 
                 "name": "Destroy Barrier",
-                "onLocation" : (self, x, y) => { 
-                    delBarrier(x, y);
-                    return 3;
-                },
+                "onLocation" : (self, x, y) => delBarrier(x, y),
                 "type": SPELL_TYPE_OTHER
             },
         ],
@@ -81,7 +75,6 @@ def initMagic() {
                     if(gameSearchQuiet(x, y)) {
                         actionSound();
                     }
-                    return 3;
                 },
                 "type": SPELL_TYPE_EXPLORE
             },
@@ -90,7 +83,7 @@ def initMagic() {
                 "onLocation" : (self, x, y) => { 
                     pc := player.party[0];
                     level := min(4, int(pc.level / 2));
-                    return playerSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, SAVE_ACID);
+                    playerSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, SAVE_ACID);
                 },
                 "isCombat": true, 
                 "type": SPELL_TYPE_ATTACK
@@ -130,10 +123,7 @@ def initMagic() {
             { "name": "Protect All", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_SHIELD, 150)), "type": SPELL_TYPE_AID },
             { 
                 "name": "Summon Monster",
-                "onLocation" : (self, x, y) => { 
-                    trace("casting at: " + x + "," + y);
-                    # todo
-                },
+                "onLocation" : (self, x, y) => summonMonster(x, y),
                 "isCombat": true, 
                 "type": SPELL_TYPE_ATTACK
             },
@@ -143,7 +133,6 @@ def initMagic() {
                     if(gameUseDoor(x, y)) {
                         actionSound();
                     }
-                    return 3;
                 },
                 "type": SPELL_TYPE_EXPLORE
             },
@@ -159,7 +148,7 @@ def initMagic() {
                 "onLocation" : (self, x, y) => { 
                     pc := player.party[0];
                     level := min(4, int(pc.level / 2));
-                    return playerAreaSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, 2 + pc.level / 2, SAVE_ACID);
+                    playerAreaSpellAttack([ "acid", "acid" ], [6 + level, 10 + level], pc.level, 2 + pc.level / 2, SAVE_ACID);
                 },
                 "isCombat": true,
                 "type": SPELL_TYPE_ATTACK
@@ -169,7 +158,7 @@ def initMagic() {
                 "onLocation" : (self, x, y) => { 
                     pc := player.party[0];
                     level := min(4, int(pc.level / 2));
-                    return playerSpellAttack([ "fireball", "fireball" ], [8 + level, 15 + level], pc.level, SAVE_FIRE);
+                    playerSpellAttack([ "fireball", "fireball" ], [8 + level, 15 + level], pc.level, SAVE_FIRE);
                 },
                 "isCombat": true, 
                 "type": SPELL_TYPE_ATTACK
@@ -181,17 +170,14 @@ def initMagic() {
                 "onLocation" : (self, x, y) => { 
                     pc := player.party[0];
                     level := min(3, int(pc.level / 2));
-                    return playerAreaSpellAttack([ "fireball", "fireball" ], [10 + level, 16 + level], pc.level, 2 + pc.level / 2, SAVE_FIRE);
+                    playerAreaSpellAttack([ "fireball", "fireball" ], [10 + level, 16 + level], pc.level, 2 + pc.level / 2, SAVE_FIRE);
                 },
                 "isCombat": true,
                 "type": SPELL_TYPE_ATTACK
             },
             { 
                 "name": "Frightening Visions",
-                "onLocation" : (self, x, y) => { 
-                    setMonsterStateAt(self, x, y, STATE_SCARED);
-                    return 3;
-                },
+                "onLocation" : (self, x, y) => setMonsterStateAt(self, x, y, STATE_SCARED),
                 "isCombat": true,
                 "save": SAVE_MIND,
                 "type": SPELL_TYPE_ATTACK
@@ -202,10 +188,7 @@ def initMagic() {
         [
             { 
                 "name": "Petrification",
-                "onLocation" : (self, x, y) => { 
-                    setMonsterStateAt(self, x, y, STATE_PARALYZE);
-                    return 3;
-                },
+                "onLocation" : (self, x, y) => setMonsterStateAt(self, x, y, STATE_PARALYZE),
                 "isCombat": true,
                 "save": SAVE_MIND, 
                 "type": SPELL_TYPE_ATTACK
@@ -213,9 +196,7 @@ def initMagic() {
             { "name": "Cure Paralysis", "onPc": (self, pc) => setState(pc, STATE_PARALYZE, 0), "type": SPELL_TYPE_AID },
             { 
                 "name": "Summon Demon",
-                "onLocation" : (self, x, y) => { 
-                    trace("casting at: " + x + "," + y);
-                },
+                "onLocation" : (self, x, y) => summonDemon(x, y),
                 "isCombat": true, 
                 "type": SPELL_TYPE_ATTACK
             },
@@ -224,7 +205,7 @@ def initMagic() {
                 "onLocation" : (self, x, y) => { 
                     pc := player.party[0];
                     level := min(4, int(pc.level / 2));
-                    return playerSpellAttack([ "zap2", "zap" ], [15 + level, 25 + level], pc.level, SAVE_ELECTRICITY);
+                    playerSpellAttack([ "zap2", "zap" ], [15 + level, 25 + level], pc.level, SAVE_ELECTRICITY);
                 },
                 "isCombat": true, 
                 "type": SPELL_TYPE_ATTACK
@@ -240,7 +221,7 @@ def initMagic() {
                 "onLocation": (self, x, y) => {
                     pc := player.party[0];
                     level := min(3, int(pc.level / 2));
-                    return playerQuakeSpellAttack([ "zap2", "zap" ], [8 + level, 12 + level], pc.level);
+                    playerQuakeSpellAttack([ "zap2", "zap" ], [8 + level, 12 + level], pc.level);
                 },
                 "type": SPELL_TYPE_ATTACK
             },

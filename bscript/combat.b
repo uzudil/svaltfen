@@ -17,8 +17,9 @@ def startCombat() {
     if(gameMode = MOVE && mode != "death") {
         player.party[player.partyIndex].pos[0] := player.x;
         player.party[player.partyIndex].pos[1] := player.y;
+ 
         monsters := getLiveMonsters(map.monster);
-        if(len(monsters) > 0) {
+        if(len(array_filter(monsters, m => m.state[STATE_POSSESSED] = null)) > 0) {
             # position party
             array_foreach(player.party, (i, p) => {
                 if(i = 0) {
@@ -37,72 +38,128 @@ def startCombat() {
     }
 }
 
+def newCombatRoundMonster(m) {
+    round := {
+        "type": "monster",
+        "creature": m,
+        "ap": 10,
+        "initiative": m.monsterTemplate.speed,
+        "target": null,
+        "path": m.path,
+        "pathIndex": 0,
+        "name": m.monsterTemplate.name,
+        "id": m.id,
+        "isActive": self => self.creature.visible && self.creature.hp > 0,
+        "isInState": (self, state) => self.creature.state[state] != null,
+        "move": self => {
+            combat.playerControl := false;
+            renderGame();
+            updateVideo();
+            while(self.isActive() && self.ap > 0) {
+                self.ap := self.ap - monsterCombatMove();
+                sleep(250);
+                renderGame();
+                updateVideo();
+            }
+            combatTurnEnd();
+        }
+    };
+    # remove the original path after first use
+    m.path := []; 
+    return round;
+}
+
+def newCombatRoundPc(pc) {
+    return {
+        "type": "pc",
+        "creature": pc,
+        "ap": 10,
+        "initiative": pc.speed,
+        "name": pc.name,
+        "id": "pc" + pc.index,
+        "target": null,
+        "path": null,
+        "pathIndex": 0,
+        "isActive": self => self.creature.hp > 0,
+        "isInState": (self, state) => isPcInState(self.creature, state),
+        "move": self => {
+            player.partyIndex := self.creature.index;
+            player.x := player.party[player.partyIndex].pos[0];
+            player.y := player.party[player.partyIndex].pos[1];
+            combat.playerControl := true;
+            gameMessage("It is your turn: " + self.name, COLOR_MID_GRAY);
+            renderGame();
+            updateVideo();
+        }
+    };
+}
+
+def sortCombatRoundsByInitiative() {
+    # order by initiative (speed, really)
+    sort(combat.round, (a,b) => {
+        if(a.initiative < b.initiative) {
+            return 1;
+        } else {
+            return -1;
+        }
+    });
+}
+
 def initCombatRound() {
     if(combat.roundCount > 0) {
         # find any extra monsters
         new_monsters := getLiveMonsters(array_filter(map.monster, m => {
             return array_find_index(combat.monsters, cm => cm.id = m.id) = -1;
         }));
-        if(len(new_monsters) > 0) {
-            trace("Added " + len(new_monsters) + " new monsters to combat.");
-        }
         # add them
         array_foreach(new_monsters, (i, nm) => {
             combat.monsters[len(combat.monsters)] := nm;
         });
         # remove monsters who are now too far
         array_remove(combat.monsters, m => closestDistanceToParty(m.pos[0], m.pos[1]) >= OUT_OF_COMBAT_DISTANCE);
-        # age states
-        calendarStep();
     }
     combat.round := [];
     combat.roundIndex := 0;
     combat.roundCount := combat.roundCount + 1;
-    array_foreach(combat.monsters, (i, p) => { 
-        combat.round[len(combat.round)] := {
-            "type": "monster",
-            "monster": p,
-            "ap": 10,
-            "target": null,
-            "path": p.path,
-            "pathIndex": 0,
-            "name": p.monsterTemplate.name,
-        };
-        # remove the original path after first use
-        p.path := []; 
+    array_foreach(combat.monsters, (i, p) => {
+        combat.round[len(combat.round)] := newCombatRoundMonster(p);
     });
-    array_foreach(player.party, (i, p) => { 
-        combat.round[len(combat.round)] := {
-            "type": "pc",
-            "pc": p,
-            "ap": 10,
-            "name": p.name,
-        };
+    array_foreach(player.party, (i, p) => {
+        combat.round[len(combat.round)] := newCombatRoundPc(p);
     });
-    
-    # order by initiative (speed, really)
-    sort(combat.round, (a,b) => {
-        if(a.type = "monster") {
-            aini := a.monster.monsterTemplate.speed;
-        } else {
-            aini := a.pc.speed;
-        }
-        if(b.type = "monster") {
-            bini := b.monster.monsterTemplate.speed;
-        } else {
-            bini := b.pc.speed;
-        }
-        if(aini < bini) {
-            return 1;
-        } else {
-            return -1;
-        }
-    });
+    sortCombatRoundsByInitiative();    
 
-    #clearGameMessages();
+    # age states
+    if(len(combat.round) > combat.roundIndex) {
+        calendarStep();    
+    }
+
     gameMessage("Combat!", COLOR_RED);
-
     runCombatTurn();
+}
+
+def isMonsterLive(m) {
+    return m.visible && m.hp > 0 && m.state[STATE_PARALYZE] = null;
+}
+
+def getLiveMonsters(monsters) {
+    return array_filter(monsters, m => { 
+        if(isMonsterLive(m)) {
+            if(m.state[STATE_POSSESSED] != null) {
+                target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= 10 && abs(m.pos[1] - t.pos[1]) <= 10 && m.id != t.id && t.state[STATE_POSSESSED] = null);
+            } else {
+                target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= 10 && abs(m.pos[1] - t.pos[1]) <= 10 && m.id != t.id && t.state[STATE_POSSESSED] != null);
+                if(target = null) {
+                    target := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= 6 && abs(m.pos[1] - pc.pos[1]) <= 6);
+                }
+            }
+            if(target != null) {
+                m["path"] := findPath(m, target);
+                return len(m.path) > 0;
+            }
+        }
+        return false;
+    });
 }
 
 def checkCombatDone() {
@@ -118,9 +175,11 @@ def checkCombatDone() {
         }
         return true;
     }
-    live_monsters := array_filter(combat.monsters, m => m.visible && m.hp > 0 && m.state[STATE_PARALYZE] = null);
+    live_monsters := array_filter(combat.monsters, m => isMonsterLive(m) && m.state[STATE_POSSESSED] = null);
     if(len(live_monsters) = 0) {
         gameMessage("Victory!", COLOR_GREEN);
+        # remove controlled monsters?
+        # array_remove(map.monster, m => m.state[STATE_POSSESSED] != null);
         combatEndSound();
         gameMode := MOVE;
         player.partyIndex := array_find_index(player.party, p => p.hp > 0);
@@ -130,64 +189,34 @@ def checkCombatDone() {
 }
 
 def runCombatTurn() {
-
     if(checkCombatDone()) {
         return 1;
     }
 
     combatRound := combat.round[combat.roundIndex];
-    if(combatRound.type = "pc") {
-        if(combatRound.pc.hp <= 0 || isPcInState(combatRound.pc, STATE_PARALYZE)) {
-            combatTurnEnd();
-        } else {
-            if(isPcInState(combatRound.pc, STATE_SCARED)) {
-                gameMessage(combatRound.pc.name + " runs away scared!", COLOR_YELLOW);
-                combat.playerControl := false;
-                range(0, 10, 1, i => {
-                    scaredMove(combatRound.pc, closestDistanceToMonsters, null);
-                    combatRound.ap := combatRound.ap - 1;    
-                    sleep(250);
-                    renderGame();
-                    updateVideo();
-                });
-                combatTurnEnd();
-            } else {
-                # trace("SWITCH to " + combatRound.pc.index);
-                player.partyIndex := combatRound.pc.index;
-                player.x := player.party[player.partyIndex].pos[0];
-                player.y := player.party[player.partyIndex].pos[1];
-
-                combat.playerControl := true;
-                gameMessage("It is your turn: " + combatRound.pc.name, COLOR_MID_GRAY);
-                renderGame();
-                updateVideo();
-            }
-        }
+    if(combatRound.isActive() = false || combatRound.isInState(STATE_PARALYZE)) {
+        combatTurnEnd();
     } else {
-        monster := combatRound.monster;
-        if(monster.hp <= 0 || monster.state[STATE_PARALYZE] != null) {
-            combatTurnEnd();
+        if(combatRound.isInState(STATE_SCARED)) {
+            combatTurnScared();
         } else {
-            combat.playerControl := false;
-            renderGame();
-            updateVideo();
-            while(monster.visible && combatRound.ap > 0) {
-                
-                if(monster.state[STATE_SCARED] = null) {
-                    apUsed := monsterCombatMove(monster);
-                } else {
-                    apUsed := scaredMove(monster, closestDistanceToParty, monster);
-                }
-
-                combatRound.ap := combatRound.ap - apUsed;
-
-                sleep(250);
-                renderGame();
-                updateVideo();
-            }
-            combatTurnEnd();
+            combatRound.move();
         }
     }
+}
+
+def combatTurnScared() {
+    combatRound := combat.round[combat.roundIndex];
+    gameMessage(combatRound.name + " runs away scared!", COLOR_YELLOW);
+    combat.playerControl := false;
+    while(combatRound.creature.hp <= 0 && combatRound.ap > 0) {
+        scaredMove();
+        combatRound.ap := combatRound.ap - 1;    
+        sleep(250);
+        renderGame();
+        updateVideo();
+    }
+    combatTurnEnd();
 }
 
 def closestDistanceToMonsters(mx, my) {
@@ -198,29 +227,31 @@ def closestDistanceToParty(mx, my) {
     return array_reduce(player.party, 100, (m, pc) => min(m, distance(pc.pos[0], pc.pos[1], mx, my)));
 }
 
-def scaredMove(posHolder, distFx, monster) {    
-    d := distFx(posHolder.pos[0], posHolder.pos[1]);
-    #if(monster != null) {
-    #    trace("monster scared: " + monster.monsterTemplate.name + " d=" + d);
-    #}
+def scaredMove() {    
+    combatRound := combat.round[combat.roundIndex];
+    distFx := closestDistanceToMonsters;
+    if(combatRound.type = "monster") {
+        distFx := closestDistanceToParty;
+    }
+    d := distFx(combatRound.creature.pos[0], combatRound.creature.pos[1]);
     if(d < OUT_OF_COMBAT_DISTANCE) {
 
-        nx := posHolder.pos[0];
-        ny := posHolder.pos[1];
+        nx := combatRound.creature.pos[0];
+        ny := combatRound.creature.pos[1];
 
         dx := -1;
         while(dx <= 1) {
             dy := -1;
             while(dy <= 1) {
                 if(dx != 0 || dy != 0) {
-                    if(canMoveTo(monster, posHolder.pos[0] + dx, posHolder.pos[1] + dy)) {
-                        dd := distFx(posHolder.pos[0] + dx, posHolder.pos[1] + dy);
+                    if(canMoveTo(combatRound.creature.id, combatRound.creature.pos[0] + dx, combatRound.creature.pos[1] + dy, null)) {
+                        dd := distFx(combatRound.creature.pos[0] + dx, combatRound.creature.pos[1] + dy);
                         #if(monster != null) {
                         #    trace("dir=" + dx + "," + dy + " dd=" + dd);
                         #}
                         if(dd > d) {
-                            nx := posHolder.pos[0] + dx;
-                            ny := posHolder.pos[1] + dy;
+                            nx := combatRound.creature.pos[0] + dx;
+                            ny := combatRound.creature.pos[1] + dy;
                             d := dd;                            
                         }
                     }
@@ -230,16 +261,16 @@ def scaredMove(posHolder, distFx, monster) {
             dx := dx + 1;
         }
 
-        if(nx != posHolder.pos[0] || ny != posHolder.pos[1]) {
-            posHolder.pos[0] := nx;
-            posHolder.pos[1] := ny;
+        if(nx != combatRound.creature.pos[0] || ny != combatRound.creature.pos[1]) {
+            combatRound.creature.pos[0] := nx;
+            combatRound.creature.pos[1] := ny;
             stepSound();
         }
     }
     return 1;
 }
 
-def monsterCombatMove(monster) {
+def monsterCombatMove() {
     combatRound := combat.round[combat.roundIndex];
 
     # target still valid?
@@ -250,7 +281,7 @@ def monsterCombatMove(monster) {
             combatRound.pathIndex := len(combatRound.path);
         }
 
-        # if target moved: retarget
+        # if target moved: cancel planned path
         if(combatRound.target != null && len(combatRound.path) > 0) {
             lastNode := combatRound.path[len(combatRound.path) - 1];
             if(lastNode.x != combatRound.target.pos[0] || lastNode.y != combatRound.target.pos[1]) {
@@ -260,27 +291,49 @@ def monsterCombatMove(monster) {
     }
 
     apUsed := 1;
-    near_pc := array_find(player.party, pc => {
-        if(pc.hp <= 0) {
-            return false;
+    targetMonster := true;
+    if(combatRound.isInState(STATE_POSSESSED)) {
+        near_target := array_find(combat.monsters, m => {
+            if(m.hp <= 0 || m.id = combatRound.id || m.state[STATE_POSSESSED] != null) {
+                return false;
+            }
+            near := isMonsterNearTarget(m);
+            if(combatRound.creature.target != null) {
+                return m.id = combatRound.creature.target.id && near;
+            } else {
+                return near;
+            }
+        });
+    } else {
+        near_target := array_find(combat.monsters, m => {
+            if(m.hp <= 0 || m.id = combatRound.id || m.state[STATE_POSSESSED] = null) {
+                return false;
+            }
+            near := isMonsterNearTarget(m);
+            if(combatRound.creature.target != null) {
+                return m.id = combatRound.creature.target.id && near;
+            } else {
+                return near;
+            }
+        });
+        if(near_target = null) {
+            targetMonster := false;
+            near_target := array_find(player.party, pc => {
+                if(pc.hp <= 0) {
+                    return false;
+                }
+                near := isMonsterNearTarget(pc);
+                if(combatRound.creature.target != null) {
+                    return pc.name = combatRound.creature.target.name && near;
+                } else {
+                    return near;
+                }
+            });
         }
-        d := [
-            monster.pos[0] - pc.pos[0],
-            monster.pos[1] - pc.pos[1]
-        ];
-        near := abs(d[0]) <= monster.monsterTemplate.range && abs(d[1]) <= monster.monsterTemplate.range;
-        if(near && monster.monsterTemplate.range > 1) {
-            near := checkProjectile(monster.pos[0], monster.pos[1], pc.pos[0], pc.pos[1]);
-        }
-        if(monster.target != null) {
-            return pc.name = monster.target.name && near;
-        } else {
-            return near;
-        }
-    });
-    if(near_pc != null) {
-        attackMonster(near_pc);
-        apUsed := monster.monsterTemplate.attackAp;
+    }
+    if(near_target != null) {
+        attackMonster(near_target, targetMonster);
+        apUsed := combatRound.creature.monsterTemplate.attackAp;
     } else {
         if(combatRound.pathIndex < len(combatRound.path)) {
             # move along path
@@ -296,10 +349,17 @@ def monsterCombatMove(monster) {
             combatRound.path := [];
             try := 0;
             while(try < 3 && len(combatRound.path) = 0) {
-                combatRound.target := choose(array_filter(player.party, p => p.hp > 0));
+                if(combatRound.isInState(STATE_POSSESSED)) {
+                    combatRound.target := choose(array_filter(combat.monsters, m => m.hp > 0 && m.id != combatRound.id && m.state[STATE_POSSESSED] = null));
+                } else {
+                    combatRound.target := choose(array_filter(combat.monsters, m => m.hp > 0 && m.id != combatRound.id && m.state[STATE_POSSESSED] != null));
+                    if(combatRound.target = null) {
+                        combatRound.target := choose(array_filter(player.party, p => p.hp > 0));
+                    }
+                }
                 if(combatRound.target != null) {
                     #trace("new target: finding path target=" + combatRound.target.index + " from=" + monster.pos + " to=" + combatRound.target.pos);
-                    combatRound.path := findPath(monster, combatRound.target);
+                    combatRound.path := findPath(combatRound.creature, combatRound.target);
                     combatRound.pathIndex := 0;
                 }
                 try := try + 1;
@@ -312,6 +372,19 @@ def monsterCombatMove(monster) {
         }
     }
     return apUsed;
+}
+
+def isMonsterNearTarget(otherCreature) {
+    combatRound := combat.round[combat.roundIndex];
+    d := [
+        combatRound.creature.pos[0] - otherCreature.pos[0],
+        combatRound.creature.pos[1] - otherCreature.pos[1]
+    ];
+    near := abs(d[0]) <= combatRound.creature.monsterTemplate.range && abs(d[1]) <= combatRound.creature.monsterTemplate.range;
+    if(near && combatRound.creature.monsterTemplate.range > 1) {
+        near := checkProjectile(combatRound.creature.pos[0], combatRound.creature.pos[1], otherCreature.pos[0], otherCreature.pos[1]);
+    }
+    return near;
 }
 
 def combatTurnStep(d) {
@@ -327,7 +400,7 @@ def combatTurnStep(d) {
 def combatTurnEnd() {
     # any participants left?
     pc := array_filter(player.party, p => p.hp > 0);
-    live_monsters := array_filter(combat.monsters, m => m.visible && m.hp > 0);
+    live_monsters := array_filter(combat.monsters, m => isMonsterLive(m));
     if(len(pc) = 0 || len(live_monsters) = 0) {
         initCombatRound();
     } else {
@@ -342,50 +415,15 @@ def combatTurnEnd() {
     }
 }
 
-def getLiveMonsters(monsters) {
-    return array_filter(monsters, m => { 
-        if(m.visible && m.hp > 0 && m.state[STATE_PARALYZE] = null) {
-            pc := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= 6 && abs(m.pos[1] - pc.pos[1]) <= 6);
-            if(pc != null) {
-                m["path"] := findPath(m, pc);
-                return len(m.path) > 0;
-            }
-        }
-        return false;
-    });
-}
-
-def canMoveTo(monster, mx, my) {
-    if(mx >= 0 && my >= 0 && mx < map.width && my < map.height) {
-        block := blocks[getBlock(mx, my).block];
-        blocked := block.blocking;
-        if(blocked = false) {
-            npc := array_find(map.npc, p => p.pos[0] = mx && p.pos[1] = my);
-            blocked := npc != null;
-        }
-        if(blocked = false) {
-            if(monster = null) {
-                m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.hp > 0);
-            } else {
-                m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.id != monster.id && p.hp > 0);
-            }
-            blocked := m != null;
-        }
-        return blocked = false;
-    }
-    return false;
-}
-
 def moveMonster() {
     combatRound := combat.round[combat.roundIndex];
-    monster := combatRound.monster;
 
     moved := false;
     pathNode := combatRound.path[combatRound.pathIndex];
-    #trace("At " + monster.pos[0] + "," + monster.pos[1] + " trying: " + nx + "," + ny);
-    if(canMoveTo(monster, pathNode.x, pathNode.y)) {
-        monster.pos[0] := pathNode.x;
-        monster.pos[1] := pathNode.y;
+    #trace("At " + combatRound.creature.pos[0] + "," + combatRound.creature.pos[1] + " trying: " + pathNode.x + "," + pathNode.y);
+    if(canMoveTo(combatRound.creature.id, pathNode.x, pathNode.y, null)) {
+        combatRound.creature.pos[0] := pathNode.x;
+        combatRound.creature.pos[1] := pathNode.y;
         combatRound.pathIndex := combatRound.pathIndex + 1;
         moved := true;
         #trace("...yes");
@@ -394,26 +432,24 @@ def moveMonster() {
     }
 
     if(moved) {
-        #gameMessage(monster.monsterTemplate.name + " moves", COLOR_MID_GRAY);
         stepSound();
     } else {
-        gameMessage(monster.monsterTemplate.name + " waits", COLOR_MID_GRAY);        
+        gameMessage(combatRound.name + " waits", COLOR_MID_GRAY);        
     }
     return moved;
 }
 
-def attackMonster(targetPc) {
+def attackMonster(targetPc, targetMonster) {
     combatRound := combat.round[combat.roundIndex];
-    monster := combatRound.monster;
 
-    if(monster.monsterTemplate.range > 1) {
-        if(monster.monsterTemplate["rangeBlocks"] = null) {
+    if(combatRound.creature.monsterTemplate.range > 1) {
+        if(combatRound.creature.monsterTemplate["rangeBlocks"] = null) {
             projectile := [ img["arrow"], img["arrow2"] ];
         } else {
-            projectile := array_map(monster.monsterTemplate.rangeBlocks, p => img[p]);
+            projectile := array_map(combatRound.creature.monsterTemplate.rangeBlocks, p => img[p]);
         }
         success := animateProjectile(
-            monster.pos[0], monster.pos[1],
+            combatRound.creature.pos[0], combatRound.creature.pos[1],
             targetPc.pos[0], targetPc.pos[1],
             projectile,
             true
@@ -423,49 +459,78 @@ def attackMonster(targetPc) {
         }
     }
 
-    gameMessage(monster.monsterTemplate.name + " attacks " + targetPc.name + "!", COLOR_MID_GRAY);
-
     # roll to-hit
-    toHit := roll(0, 20) + monster.monsterTemplate.armor;
-    if(toHit <= targetPc.armor) {
-        gameMessage(monster.monsterTemplate.name + " misses.", COLOR_MID_GRAY);
-        combatMissSound();
-        return 1;
-    }
+    toHit := roll(0, 20) + combatRound.creature.monsterTemplate.armor;
 
-    # roll damage
-    dam := roll(monster.monsterTemplate.attack[0], monster.monsterTemplate.attack[1]);
-    if(dam > 0) {
-        takeDamage(targetPc, dam);
-        combatAttackSound();
-        setMapEffect(monster.pos[0], monster.pos[1], targetPc.pos, EFFECT_DAMAGE);
-        if(monster.monsterTemplate["onHit"] != null) {
-            monster.monsterTemplate.onHit(targetPc);
+    if(targetMonster) {
+        # possessed creature attacks another monster
+        monster := targetPc;
+        gameMessage(combatRound.name + " attacks " + monster.monsterTemplate.name + "!", COLOR_MID_GRAY);
+        
+        if(toHit <= monster.monsterTemplate.armor) {
+            gameMessage(combatRound.name + " misses.", COLOR_MID_GRAY);
+            combatMissSound();
+            return 1;
         }
-        if(targetPc.hp = 0) {
-            pc := array_filter(player.party, p => p.hp > 0);
-            if(len(pc) = 0) {
-                combatTurnEnd();
-            }
+
+        # roll damage
+        dam := roll(combatRound.creature.monsterTemplate.attack[0], combatRound.creature.monsterTemplate.attack[1]);
+
+        # who gets the experience points?
+        pc := null;
+        if(combatRound.isInState(STATE_POSSESSED)) {
+            pc := player.party[0];
         }
+
+        monsterTakeDamage(pc, monster, dam);
     } else {
-        gameMessage(monster.monsterTemplate.name + " misses.", COLOR_MID_GRAY);
+        # regular monster to pc attack        
+        gameMessage(combatRound.name + " attacks " + targetPc.name + "!", COLOR_MID_GRAY);
+
+        if(toHit <= targetPc.armor) {
+            gameMessage(combatRound.name + " misses.", COLOR_MID_GRAY);
+            combatMissSound();
+            return 1;
+        }
+
+        # roll damage
+        dam := roll(combatRound.creature.monsterTemplate.attack[0], combatRound.creature.monsterTemplate.attack[1]);
+        if(dam > 0) {
+            takeDamage(targetPc, dam);
+            combatAttackSound();
+            setMapEffect(combatRound.creature.pos[0], combatRound.creature.pos[1], targetPc.pos, EFFECT_DAMAGE);
+            if(combatRound.creature.monsterTemplate["onHit"] != null) {
+                combatRound.creature.monsterTemplate.onHit(targetPc);
+            }
+            if(targetPc.hp = 0) {
+                pc := array_filter(player.party, p => p.hp > 0);
+                if(len(pc) = 0) {
+                    combatTurnEnd();
+                }
+            }
+        } else {
+            gameMessage(combatRound.name + " misses.", COLOR_MID_GRAY);
+        }
     }
+}
+
+def findRangeMonster() {
+    return array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
 }
 
 def playerRangeAttack() {
     combatRound := combat.round[combat.roundIndex];
-    combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
+    combatRound.creature["rangeMonster"] := findRangeMonster();
     apUsed := 0;
-    if(combatRound.pc["rangeMonster"] != null) {
+    if(combatRound.creature["rangeMonster"] != null) {
         success := animateProjectile(
             player.x, player.y,
-            combatRound.pc.rangeMonster.pos[0] , combatRound.pc.rangeMonster.pos[1],
+            combatRound.creature.rangeMonster.pos[0] , combatRound.creature.rangeMonster.pos[1],
             [ img["arrow"], img["arrow2"] ],
             true
         );
         if(success) {
-            apUsed := playerAttacks(combatRound.pc.rangeMonster, true);
+            apUsed := playerAttacks(combatRound.creature.rangeMonster, true);
         } else {
             buzzer();
         }
@@ -474,28 +539,18 @@ def playerRangeAttack() {
     return apUsed;
 }
 
-def getHitMod(monster, save) {
-    if(save != null && monster.monsterTemplate["hit_mods"] != null) {
-        if(monster.monsterTemplate.hit_mods[save] != null) {
-            #trace(monster.monsterTemplate.name + " vs " + save + "=" + monster.monsterTemplate.hit_mods[save]);
-            return monster.monsterTemplate.hit_mods[save];
-        }
-    }
-    return 0;
-}
-
 def playerSpellAttack(projectile, damage, bonus, save) {
     combatRound := combat.round[combat.roundIndex];
-    combatRound.pc["rangeMonster"] := array_find(map.monster, e => e.pos[0] = player.x + rangeX - 5 && e.pos[1] = player.y + rangeY - 5 && e.hp > 0);
+    combatRound.creature["rangeMonster"] := findRangeMonster();
     apUsed := 0;
-    if(combatRound.pc["rangeMonster"] != null) {
+    if(combatRound.creature["rangeMonster"] != null) {
         animateProjectile(
             player.x, player.y,
-            combatRound.pc.rangeMonster.pos[0] , combatRound.pc.rangeMonster.pos[1],
+            combatRound.creature.rangeMonster.pos[0] , combatRound.creature.rangeMonster.pos[1],
             array_map(projectile, p => img[p]),
             false
         );
-        playerAttacksDam(combatRound.pc.rangeMonster, damage, bonus + getHitMod(combatRound.pc.rangeMonster, save));
+        playerAttacksDam(combatRound.creature.rangeMonster, damage, bonus + getHitMod(combatRound.creature.rangeMonster, save));
         apUsed := 3;
     }
     rangeFinder := false;
@@ -507,7 +562,7 @@ def playerAreaSpellAttack(projectile, damage, bonus, radius, save) {
     tx := player.x + rangeX - 5;
     ty := player.y + rangeY - 5;
     animateProjectile(player.x, player.y, tx, ty, array_map(projectile, p => img[p]), false);
-    monsters := animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus + getHitMod(m, save)));
+    animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus + getHitMod(m, save)));
     rangeFinder := false;
     return 3;
 }
@@ -517,18 +572,7 @@ def playerQuakeSpellAttack(projectile, damage, bonus) {
     tx := player.x + rangeX - 5;
     ty := player.y + rangeY - 5;
     animateProjectile(player.x, player.y, tx, ty, array_map(projectile, p => img[p]), false);
-    bg := getImage(6, 6, 5 + TILE_W * 11, 5 + TILE_H * 11);
-    i := 0;
-    t := 0;
-    while(i < 15) {
-        if(getTicks() > t) {
-            t := getTicks() + 0.05;
-            fillRect(6, 6, 5 + TILE_W * 11 - 1, 5 + TILE_H * 11 - 1, COLOR_BLACK);
-            drawImage(5 + random() * 10 - 5, 5 + random() * 10 - 5, bg);
-            i := i + 1;
-        }
-        updateVideo();
-    }
+    animateQuake();
     array_foreach(map.monster, (i, e) => {
         if(e.hp > 0 && e.pos[0] >= player.x - 6 && e.pos[0] < player.x + 6 && e.pos[1] >= player.y - 6 && e.pos[1] < player.y + 6) {
             playerAttacksDam(e, damage, bonus);
@@ -538,137 +582,13 @@ def playerQuakeSpellAttack(projectile, damage, bonus) {
     return 3;
 }
 
-def checkProjectile(srcX, srcY, dstX, dstY) {
-    # check that a projectile could reach the target
-    mx := dstX - srcX;
-    my := dstY - srcY;
-    amx := abs(mx);
-    amy := abs(my);
-    steps := max(amx, amy);
-    if(amx > amy) {
-        dx := mx / amx;
-        dy := my / amx;
-    } else {
-        dy := my / amy;
-        dx := mx / amy;
-    }
-
-    step := 0;
-    success := true;
-    while(success && step < steps) {
-            # move arrow
-            srcX := srcX + dx;
-            srcY := srcY + dy;
-            step := step + 1;
-
-            # did we hit a wall?
-            block := blocks[getBlock(round(srcX), round(srcY)).block];
-            success := block.light = false;
-    }
-    return success;
-}
-
-# assumes screen is centered on src
-def animateBlast(srcX, srcY, dstX, dstY, radius, projectileImg, attackFx) {
-    r := 0;
-    t := 0;
-    seen_ids := [];
-    while(r <= radius) {
-        if(getTicks() > t) {
-            t := getTicks() + 0.1;
-            xx := -1 * r;
-            while(xx < r) {
-                yy := -1 * r;
-                while(yy < r) {
-                    d := getDistance(0, 0, xx, yy);
-                    if(d < r) {
-                        drawImage(5 + (dstX - srcX + 5 + xx) * TILE_W, 5 + (dstY - srcY + 5 + yy) * TILE_H, projectileImg);
-                        m := array_find(map.monster, e => e.pos[0] = dstX + xx && e.pos[1] = dstY + yy && e.hp > 0);
-                        if(m != null) {
-                            if(array_find(seen_ids, id => m.id = id) = null) {
-                                attackFx(m);
-                                seen_ids[len(seen_ids)] := m.id;
-                            }
-                        }
-                    }
-                    yy := yy + 1;
-                }
-                xx := xx + 1;
-            }
-
-            r := r + 1;
-        }
-        updateVideo();
-    }
-}
-
-# assumes screen is centered on src
-def animateProjectile(srcX, srcY, dstX, dstY, arrowImages, checkWall) {
-    # animate arrow path
-    arrowX := TILE_W * 5;
-    arrowY := TILE_H * 5;
-    ex := (dstX - srcX + 5) * TILE_W;
-    ey := (dstY - srcY + 5) * TILE_H;
-    mx := ex - arrowX;
-    my := ey - arrowY;
-    amx := abs(mx);
-    amy := abs(my);
-    steps := max(amx, amy);
-    flipX := 0;
-    flipY := 0;
-    imgIndex := 0;
-    if(amx > amy) {
-        dx := mx / amx;
-        dy := my / amx;
-        if(dx > 0) {
-            flipX := 1;
-        }
-    } else {
-        imgIndex := 1;
-        dy := my / amy;
-        dx := mx / amy;
-        if(dy > 0) {
-            flipY := 1;
-        }
-    }
-
-    setSprite(ARROW_SPRITE, arrowImages);
-
-    step := 0;
-    success := true;
-    arrowFireSound();
-    t := 0;
-    speed := 2;
-    while(success && step < steps) {
-        if(getTicks() > t) {
-            t := getTicks() + 0.01;
-            drawSprite(arrowX + 5 + TILE_W/2, arrowY + 5 + TILE_H/2, ARROW_SPRITE, imgIndex, flipX, flipY);
-
-            # move arrow
-            arrowX := arrowX + dx * speed;
-            arrowY := arrowY + dy * speed;
-            step := step + speed;
-
-            # did we hit a wall?
-            if(checkWall) {
-                block := blocks[getBlock(round(arrowX / TILE_W) - 5 + srcX, round(arrowY / TILE_H) - 5 + srcY).block];
-                success := block.light = false;
-            }
-        }
-
-        updateVideo();
-    }
-    delSprite(ARROW_SPRITE);
-    return success;
-}
-
 def playerRangeTarget() {
     combatRound := combat.round[combat.roundIndex];
-    if(rangeFinder = false && combatRound.pc["ranged"] != null) {
+    if(rangeFinder = false && combatRound.creature["ranged"] != null) {
         rangeFinder := true;
-        if(combatRound.pc["rangeMonster"] != null) {
-            rangeX := combatRound.pc["rangeMonster"].pos[0] - player.x + 5;
-            rangeY := combatRound.pc["rangeMonster"].pos[1] - player.y + 5;
+        if(combatRound.creature["rangeMonster"] != null) {
+            rangeX := combatRound.creature["rangeMonster"].pos[0] - player.x + 5;
+            rangeY := combatRound.creature["rangeMonster"].pos[1] - player.y + 5;
             if(rangeX < 0 || rangeX >= 11 || rangeY < 0 || rangeY >= 11) {
                 rangeX := 5;
                 rangeY := 5;
@@ -677,7 +597,7 @@ def playerRangeTarget() {
             rangeX := 5;
             rangeY := 5;
         }
-        combatRound.pc["rangeMonster"] := null;
+        combatRound.creature["rangeMonster"] := null;
     } else {
         buzzer();
     }
@@ -686,21 +606,21 @@ def playerRangeTarget() {
 def playerAttacks(monster, rangedAttack) {
     combatRound := combat.round[combat.roundIndex];
     if(rangedAttack) {
-        attacks := [ combatRound.pc.ranged ];
+        attacks := [ combatRound.creature.ranged ];
     } else {
-        attacks := combatRound.pc.attack; 
+        attacks := combatRound.creature.attack; 
     }
     res := { "attackChanged": false };
     array_foreach(attacks, (i, attack) => {
-        gameMessage(combatRound.pc.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
+        gameMessage(combatRound.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
         if(playerAttacksDam(monster, attack.dam, attack.bonus) && attack.slot != null) {
-            if(decItemLife(combatRound.pc, attack.slot)) {
+            if(decItemLife(combatRound.creature, attack.slot)) {
                 res.attackChanged := true;
             }
         }
     });
     if(res.attackChanged) {
-        calculateArmor(combatRound.pc);
+        calculateArmor(combatRound.creature);
     }
     return 3;
 }
@@ -709,23 +629,32 @@ def playerAttacksDam(monster, damage, bonus) {
     combatRound := combat.round[combat.roundIndex];
 
     # roll to-hit
-    toHit := roll(0, 20) + getToHitBonus(combatRound.pc) + bonus;
+    toHit := roll(0, 20) + getToHitBonus(combatRound.creature) + bonus;
     if(toHit <= monster.monsterTemplate.armor) {
-        gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
+        gameMessage(combatRound.name + " misses.", COLOR_MID_GRAY);
         combatMissSound();
         return false;
     }
 
     # roll damage
     dam := roll(damage[0], damage[1]) + bonus;
+    monsterTakeDamage(combatRound.creature, monster, dam);
+
+    return true;
+}
+
+def monsterTakeDamage(pc, monster, dam) {
+    combatRound := combat.round[combat.roundIndex];
     if(dam > 0) {
         gameMessage(monster.monsterTemplate.name + " takes " + dam + " damage!", COLOR_RED);
         combatAttackSound();
         monster.hp := max(monster.hp - dam, 0);
-        setMapEffect(combatRound.pc.pos[0], combatRound.pc.pos[1], monster.pos, EFFECT_DAMAGE);
+        setMapEffect(combatRound.creature.pos[0], combatRound.creature.pos[1], monster.pos, EFFECT_DAMAGE);
         if(monster.hp = 0) {
-            exp := monster.monsterTemplate.level * 50;
-            gainExp(combatRound.pc, roll(int(exp * 0.7), exp));
+            if(pc != null) {
+                exp := monster.monsterTemplate.level * 50;
+                gainExp(pc, roll(int(exp * 0.7), exp));
+            }
             gameMessage(monster.monsterTemplate.name + " dies!", COLOR_RED);
             if(monster.monsterTemplate["onDeath"] != null) {
                 monster.monsterTemplate.onDeath();
@@ -759,13 +688,12 @@ def playerAttacksDam(monster, damage, bonus) {
             }
         }
     } else {
-        gameMessage(combatRound.pc.name + " misses.", COLOR_MID_GRAY);
+        gameMessage(combatRound.name + " misses.", COLOR_MID_GRAY);
     }
-    return true;
 }
 
 def findPath(monster, target) {
-    #trace("monster=" + monster + " target=" + target);
+    #trace("monster=" + monster.monsterTemplate.name);
     r := LIGHT_RADIUS * 2 - 1;
     info := {
         "grid": [],
@@ -784,7 +712,7 @@ def findPath(monster, target) {
                     info.grid[x] := [];                    
                 info.grid[x] := [];                    
             }
-            info.grid[x][y] := newGridNode(x, y, canMoveTo(monster, mapx, mapy) = false);
+            info.grid[x][y] := newGridNode(x, y, canMoveTo(monster.id, mapx, mapy, target["id"]) = false);
             if(mapx = monster.pos[0] && mapy = monster.pos[1]) {
                 info.start := info.grid[x][y];
             }
@@ -794,6 +722,7 @@ def findPath(monster, target) {
         }
     );
     if(info.start = null || info.end = null) {
+        #trace("fail: start=" + info.start + " end=" + info.end);
         return [];
     }
     #trace("Looking for path, from=" + info.start + " to=" + info.end);
@@ -806,7 +735,7 @@ def findPath(monster, target) {
             "y": e.y + dy,
         };
     });
-    #trace("Found path=" + array_map(combatRound.path, p => p.pos));
+    #trace("Found path!");
     #trace("path delta=" + combatRound.pathDx + "," + combatRound.pathDy);
     return path;
 }

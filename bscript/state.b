@@ -13,6 +13,9 @@ const STATE_BLESS = "blessed";
 const STATE_INVISIBLE = "invisible";
 const STATE_ALERT = "alert";
 
+# this one is only for monsters summoned by the player
+const STATE_POSSESSED = "possessed";
+
 const STATES = [
     { "name": STATE_HUNGER, "default": 100, "age": (this, pcIndex) => {
         pc := player.party[pcIndex];
@@ -119,7 +122,7 @@ def ageState(fxName) {
             if(pc["state"] = null) {
                 pc["state"] := [];
             }
-            trace(fxName + ":" + pc.name + " state=" + pc.state);
+            #trace(fxName + ":" + pc.name + " state=" + pc.state);
             array_foreach(STATES, (t, state) => {
                 if(len(pc.state) <= t) {
                     pc.state[t] := state.default;
@@ -145,7 +148,7 @@ def ageState(fxName) {
     if(len(map.monster) > 0) {
         if(map.monster[0]["hp"] != null) {
             array_foreach(array_filter(map.monster, m => m.hp > 0), (i, m) => {
-                trace(m.monsterTemplate.name + ":" + m.state);
+                #trace(m.monsterTemplate.name + ":" + m.state);
                 array_foreach(keys(m.state), (t, state) => {
                     m.state[state] := m.state[state] - 1;
                 });

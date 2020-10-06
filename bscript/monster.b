@@ -186,3 +186,13 @@ MONSTERS := [
         "hit_mods": { "fire": 2, "mind": -10, "electricity": 2, "acid": 2 },     
     },
 ];
+
+def getHitMod(monster, save) {
+    if(save != null && monster.monsterTemplate["hit_mods"] != null) {
+        if(monster.monsterTemplate.hit_mods[save] != null) {
+            #trace(monster.monsterTemplate.name + " vs " + save + "=" + monster.monsterTemplate.hit_mods[save]);
+            return monster.monsterTemplate.hit_mods[save];
+        }
+    }
+    return 0;
+}
