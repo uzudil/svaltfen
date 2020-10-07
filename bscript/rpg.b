@@ -28,6 +28,7 @@ def newChar(name, imgName, level) {
         "luck": roll(15, 20),
         "equipment": eq,
         "state": array_map(STATES, state => state.default),
+        "save": array_map(STATES, state => 0),
     };
     calculateArmor(pc);
     return pc;
@@ -114,8 +115,11 @@ def cureAilments(pc) {
 def setState(pc, state, value) {
     index := STATE_NAME_INDEX[state];
     oldValue := pc.state[index];
-    pc.state[index] := max(0, min(pc.state[index] + value, value));
-    calculateArmor(pc);
+    newValue := max(0, min(pc.state[index] + value, value));
+    if(newValue <= oldValue || random() * 20 >= pc.save[index]) {
+        pc.state[index] := newValue;
+        calculateArmor(pc);
+    }
     if(oldValue = 0 && pc.state[index] > 0) {
         gameMessage(pc.name + " is now " + state + "!", STATES[index].color);
         return true;
@@ -131,6 +135,7 @@ def resetStats(pc) {
     pc.state := [];
     array_foreach(STATES, (t, state) => {
         pc.state[t] := state.default;
+        pc.save[t] := 0;
     });
 }
 
@@ -233,6 +238,18 @@ def calculateTorchLight() {
 }
 
 def calculateArmor(pc) {
+    pc["save"] := array_map(STATES, state => 0);
+    array_foreach(SLOTS, (i, slot) => {
+        if(pc.equipment[slot] != null) {
+            item := ITEMS_BY_NAME[pc.equipment[slot].name];
+            array_foreach(STATES, (stateIndex, state) => {
+                if(item.save[state.name] != null) {
+                    pc.save[stateIndex] := pc.save[stateIndex] + item.save[state.name];
+                }
+            });
+        }
+    });
+
     armorBonus := max(0, pc.dex - 15) + max(0, pc.speed - 18) + getStateEffect(pc, "getArmorMod");
     invArmor := array_map(array_filter(SLOTS, slot => {
         if(pc.equipment[slot] != null) {
@@ -336,6 +353,9 @@ def gainSpells() {
             newSpells[len(newSpells)] := sp.name;
         });
         level := level + 1;
+    }
+    if(len(newSpells) > 0) {
+        gameMessage("You learn new magic spells!", COLOR_GREEN);
     }
     return newSpells;
 }

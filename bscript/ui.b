@@ -1,3 +1,5 @@
+const MESSAGE_Y = 81;
+
 listUi := {
     "list": [],
     "emptyMessage": "",
@@ -123,6 +125,7 @@ def drawTradeBuy() {
     drawListUi(10, 30);
     drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to buy item");
+    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Party coins: _1_$" + player.coins);
 }
 
 def drawTradeSell() {
@@ -130,16 +133,18 @@ def drawTradeSell() {
     drawListUi(10, 30);
     drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to sell item");
+    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Party coins: _1_$" + player.coins);
 }
 
 def drawCharSheet() {
     pc := player.party[player.partyIndex];
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, pc.name);
 
-    drawColoredText(10, 20, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level + " HP:" + pc.hp + "/" + (pc.startHp * pc.level));
-    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp + " Nxt:" + getNextLevelExp(pc));
-    drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
-    drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Attack:" + array_join(array_reduce(pc.attack, [], (a, p) => {
+    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level + " HP:" + pc.hp + "/" + (pc.startHp * pc.level));
+    drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp);
+    drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Next level:" + getNextLevelExp(pc));
+    drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
+    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Atk:" + array_join(array_reduce(pc.attack, [], (a, p) => {
         s := "" + p.dam[0] + "-" + p.dam[1];
         if(p.bonus > 0) {
             s := s + "+" + p.bonus;
@@ -152,20 +157,32 @@ def drawCharSheet() {
         if(pc.ranged.bonus > 0) {
             s := s + "+" + pc.ranged.bonus;
         }
-        drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
+        drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
     } else {
-        drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
+        drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
     }
-    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
+    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
     h := describeHunger(pc);
     t := describeThirst(pc);
-    drawColoredText(10, 90, h[1], COLOR_BLACK, "HUN:" + h[0]);
-    drawColoredText(10, 100, t[1], COLOR_BLACK, "THR:" + t[0]);
+    drawColoredText(10, 110, h[1], COLOR_BLACK, "HUN:" + h[0]);
+    drawColoredText(10, 120, t[1], COLOR_BLACK, "THR:" + t[0]);
+    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc, true));
+    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc, false));
 
-    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str + " DEX:" + pc.dex + " SPD:" + pc.speed);
-    drawColoredText(10, 120, COLOR_MID_GRAY, COLOR_BLACK, "INT:" + pc.int + " WIS:" + pc.wis + " CHR:" + pc.cha);
-    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, "LUK:" + pc.luck);
-    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc));
+    drawColoredText(170, 20, COLOR_LIGHT_GRAY, COLOR_BLACK, "Stats:");
+    drawColoredText(170, 30, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str);
+    drawColoredText(170, 40, COLOR_MID_GRAY, COLOR_BLACK, "DEX:" + pc.dex);
+    drawColoredText(170, 50, COLOR_MID_GRAY, COLOR_BLACK, "SPD:" + pc.speed);
+    drawColoredText(170, 60, COLOR_MID_GRAY, COLOR_BLACK, "INT:" + pc.int);
+    drawColoredText(170, 70, COLOR_MID_GRAY, COLOR_BLACK, "WIS:" + pc.wis);
+    drawColoredText(170, 80, COLOR_MID_GRAY, COLOR_BLACK, "CHR:" + pc.cha);
+    drawColoredText(170, 90, COLOR_MID_GRAY, COLOR_BLACK, "LUK:" + pc.luck);
+
+    drawColoredText(230, 20, COLOR_LIGHT_GRAY, COLOR_BLACK, "% Save vs:");
+    drawColoredText(230, 30, COLOR_MID_GRAY, COLOR_BLACK, "Poison:" + asPercent(pc.save[STATE_NAME_INDEX[STATE_POISON]]/20));
+    drawColoredText(230, 40, COLOR_MID_GRAY, COLOR_BLACK, "Paralz:" + asPercent(pc.save[STATE_NAME_INDEX[STATE_PARALYZE]]/20));
+    drawColoredText(230, 50, COLOR_MID_GRAY, COLOR_BLACK, "Curse :" + asPercent(pc.save[STATE_NAME_INDEX[STATE_CURSE]]/20));
+    drawColoredText(230, 60, COLOR_MID_GRAY, COLOR_BLACK, "Fear  :" + asPercent(pc.save[STATE_NAME_INDEX[STATE_SCARED]]/20));
 
     drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
@@ -235,9 +252,7 @@ def drawAPBar() {
         apColor);
 }
 
-def drawUI() {
-    clearVideo();
-
+def getUiColor() {
     color := COLOR_DARK_BLUE;
     if(gameMode = CONVO || gameMode = TRADE) {
         color := COLOR_TEAL;
@@ -245,30 +260,49 @@ def drawUI() {
     if(gameMode = COMBAT) {
         color := COLOR_RED;
     }
+    return color;
+}
 
-    drawRect(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, color);
+def isLargeUi() {
+    return viewMode = INVENTORY || viewMode = EQUIPMENT || viewMode = BUY || viewMode = SELL || viewMode = CHAR_SHEET;
+}
 
-    # pc-s
-    x := 10 + TILE_W * MAP_VIEW_W;
-    y := 5;
-    drawPcList(x, y, color);
+def drawUI() {
+    clearVideo();
+
+    color := getUiColor();
+    if(isLargeUi()) {
+        drawRect(4, 5, 315, 5 + TILE_H * MAP_VIEW_H, color);
+
+        x := 10 + TILE_W * MAP_VIEW_W;
+        y := MESSAGE_Y + 50;
+        drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color); 
+        drawGameMessages(x, MESSAGE_Y + 90);        
+    } else {
+        drawRect(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, color);
+
+        # pc-s
+        x := 10 + TILE_W * MAP_VIEW_W;
+        y := 5;
+        drawPcList(x, y, color);
+
+        # party info
+        y := 50;
+        drawRect(x, y, x + (320 - x - 5), MESSAGE_Y - 5, color); 
+        drawColoredText(x + 5, y + 5, COLOR_MID_GRAY, COLOR_BLACK, "Coins _1_$" + player.coins);
+        drawColoredText(x + 5, y + 15, COLOR_MID_GRAY, COLOR_BLACK, calendarString());
+
+        # messages
+        y := MESSAGE_Y;
+        drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color); 
+        drawGameMessages(x, MESSAGE_Y + 90);
+    }
 
     # show AP
     if(gameMode = COMBAT) {
         drawAPBar();
     }
 
-    # party info
-    y := 50;
-    message_y := 81;
-    drawRect(x, y, x + (320 - x - 5), message_y - 5, color); 
-    drawColoredText(x + 5, y + 5, COLOR_MID_GRAY, COLOR_BLACK, "Coins _1_$" + player.coins);
-    drawColoredText(x + 5, y + 15, COLOR_MID_GRAY, COLOR_BLACK, calendarString());
-
-    # messages
-    y := message_y;
-    drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color); 
-    drawGameMessages(x, message_y + 90);
 
     if(viewMode = HEAL) {
         drawHeal();

@@ -51,6 +51,8 @@ def newCombatRoundMonster(m) {
         "id": m.id,
         "isActive": self => self.creature.visible && self.creature.hp > 0,
         "isInState": (self, state) => self.creature.state[state] != null,
+        "initMove": self => {
+        },
         "move": self => {
             combat.playerControl := false;
             renderGame();
@@ -82,10 +84,12 @@ def newCombatRoundPc(pc) {
         "pathIndex": 0,
         "isActive": self => self.creature.hp > 0,
         "isInState": (self, state) => isPcInState(self.creature, state),
-        "move": self => {
+        "initMove": self => {
             player.partyIndex := self.creature.index;
             player.x := player.party[player.partyIndex].pos[0];
             player.y := player.party[player.partyIndex].pos[1];
+        },
+        "move": self => {
             combat.playerControl := true;
             gameMessage("It is your turn: " + self.name, COLOR_MID_GRAY);
             renderGame();
@@ -197,6 +201,7 @@ def runCombatTurn() {
     if(combatRound.isActive() = false || combatRound.isInState(STATE_PARALYZE)) {
         combatTurnEnd();
     } else {
+        combatRound.initMove();
         if(combatRound.isInState(STATE_SCARED)) {
             combatTurnScared();
         } else {
@@ -209,7 +214,7 @@ def combatTurnScared() {
     combatRound := combat.round[combat.roundIndex];
     gameMessage(combatRound.name + " runs away scared!", COLOR_YELLOW);
     combat.playerControl := false;
-    while(combatRound.creature.hp <= 0 && combatRound.ap > 0) {
+    while(combatRound.creature.hp > 0 && combatRound.ap > 0) {
         scaredMove();
         combatRound.ap := combatRound.ap - 1;    
         sleep(250);

@@ -3,6 +3,14 @@ const events_fenvel = {
         gameMessage("Arrived in Fenvel", COLOR_LIGHT_BLUE);
     },
     "onConvo": (self, n) => {
+        if(n.name = "Senna") {
+            return {
+                "": "Indeed it seems that $Varten was right. I sense in you an aptitude for $magic|_magic_.",
+                "Varten": "Varten of Ashnar is a brilliant but reclusive mage. Be sure to look him up if you're ever at the library there. I'm one of his few $disciples.",
+                "disciples": "Yes, for a long time magic was forbidden in Svaltfen. It's been only recently - and only to a select few - that Varten started teaching the $ancient ways again.",
+                "ancient": "As your experience with $magic|_magic_ progresses, come and see me again to learn new spells. Also, the spells you have learned will gain potency as your grasp of magic gets stronger.",
+            };
+        }
         if(n.name = "Carl") {
             return {
                 "": "Welcome to Carnegen $Keep|keep, stranger. How can I $help you?",

@@ -173,3 +173,7 @@ def range(start, end, step, fx) {
         i := i + step;
     }
 }
+
+def asPercent(n) {
+    return round(n * 100);
+}

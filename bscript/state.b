@@ -97,16 +97,22 @@ def initStates() {
     STATE_NAME_INDEX := array_reduce(STATES, {}, (d, s) => { d[s.name] := len(keys(d)); return d; });
 }
 
-def describeStates(pc) {
+def describeStates(pc, isGood) {
     if(pc.hp <= 0) {
-        return "Dead";
+        return "_2_Dead";
     } else {
         return array_reduce(STATES, "", (msg, st) => {
-            if(st.name != STATE_HUNGER && st.name != STATE_THIRST) {
+            goodState := st.color = COLOR_GREEN;
+            if(st.name != STATE_HUNGER && st.name != STATE_THIRST && goodState = isGood) {
                 if(pc.state[STATE_NAME_INDEX[st.name]] > 0) {
                     if(len(msg) > 0) {
-                        msg := msg + ",";
+                        msg := msg + " ";
                     }
+                    if(st.color = COLOR_GREEN) {
+                        msg := msg + "_5_";
+                    } else {
+                        msg := msg + "_7_";
+                    }  
                     msg := msg + st.name;
                 }
             }
@@ -121,6 +127,9 @@ def ageState(fxName) {
         if(pc.hp > 0) {
             if(pc["state"] = null) {
                 pc["state"] := [];
+            }
+            if(pc["save"] = null) {
+                pc["save"] := array_map(STATES, state => 0);
             }
             #trace(fxName + ":" + pc.name + " state=" + pc.state);
             array_foreach(STATES, (t, state) => {

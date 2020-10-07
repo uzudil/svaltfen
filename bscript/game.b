@@ -22,6 +22,8 @@ viewMode := null;
 invMode := null;
 invTypeList := [];
 
+magicMode := null;
+
 equipmentPc := null;
 equipmentSlot := null;
 equipmentSlotItems := [];
@@ -254,6 +256,7 @@ def renderGame() {
         }
         array_foreach(map.monster, (i, m) => { m.visible := false; });
         drawViewRadius(mx, my, LIGHT_RADIUS * 2 - 1);
+        drawRect(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, getUiColor());
         startCombat();
     }
 }
@@ -1105,14 +1108,18 @@ def gameInput() {
                 invMode := null;
                 initPartyInventoryList();
             } else {
-                if(viewMode = null && gameMode = COMBAT && combat.playerControl) {
-                    if(rangeFinder) {
-                        rangeFinder := false;
-                    } else {
-                        apUsed := 10;
+                if(viewMode = MAGIC && magicMode != null) {
+                    setMagicList();
+                } else {
+                    if(viewMode = null && gameMode = COMBAT && combat.playerControl) {
+                        if(rangeFinder) {
+                            rangeFinder := false;
+                        } else {
+                            apUsed := 10;
+                        }
                     }
+                    endConvo();
                 }
-                endConvo();
             }
         }        
     }
@@ -1322,10 +1329,12 @@ def castLocationSpell() {
 }
 
 def setMagicList() {
+    magicMode := null;
     setListUi(SPELL_TYPES, [ [ KeyEnter, setMagicListType ] ], "You have no spells yet.");
 }
 
 def setMagicListType(index, selection) {
+    magicMode := selection;
     setListUi(array_filter(player.magic, name => SPELLS_BY_NAME[name].type = selection), [ [ KeyEnter, castSpell ] ], "No spells of type " + selection);
 }
 
@@ -1586,7 +1595,15 @@ def gameShowMap() {
             if(x < 0 || y < 0 || x >= map.width || y >= map.height) {
                 color := COLOR_BLACK;
             } else {
-                color := blocks[getBlock(x, y).block].color;
+                bl := getBlock(x, y);
+                color := blocks[bl.block].color;
+                if(bl["light"] != null) {
+                    if(bl.light != 1) {
+                        color := COLOR_BLACK;
+                    }
+                } else {
+                    color := COLOR_BLACK;
+                }
             }
             px := (dx + 22) * (TILE_W / 4) + 5;
             py := (dy + 22) * (TILE_H / 4) + 5;

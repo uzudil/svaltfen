@@ -130,7 +130,7 @@ ITEMS_BY_TYPE := {};
 ITEMS_BY_NAME := {};
 ALL_ITEMS := [];
 
-def initItem(item, bonus) {
+def initItem(item, bonus, saveState, saveName) {
     d := copy_map(item);
     if(d["level"] = null) {
         d["level"] := 1;
@@ -142,7 +142,16 @@ def initItem(item, bonus) {
         d["price"] := d["price"] * (1 + bonus);
     }
     d["sellPrice"] := max(int(d.price * 0.75), 1); 
-    if(ITEMS_BY_TYPE[d.type] = null) {     
+
+    d["save"] := {};
+    if(saveState != null) {
+        d["save"][saveState] := bonus * 5;
+        d["name"] := d["name"] + " " + saveName;
+        d["level"] := d["level"] + bonus;
+        d["price"] := d["price"] * (1 + bonus);
+    }
+
+    if(ITEMS_BY_TYPE[d.type] = null) {
         ITEMS_BY_TYPE[d.type] := []; 
     } 
     ITEMS_BY_TYPE[d.type][len(ITEMS_BY_TYPE[d.type])] := d; 
@@ -151,12 +160,25 @@ def initItem(item, bonus) {
 }
 
 def initItems() {
+    saves := {};
+    saves[STATE_POISON] := "of Antivenom";
+    saves[STATE_PARALYZE] := "of Freedom";
+    saves[STATE_CURSE] := "of Blessing";
+    saves[STATE_SCARED] := "of the Mind";
+
     array_foreach(ITEMS, (index, item) => { 
-        initItem(item, 0);
+        initItem(item, 0, null, null);
+        # make magic armor/weapons
         if(item["bonus"] = null && (item.type = OBJECT_ARMOR || item.type = OBJECT_WEAPON)) {
             # create +1, +2 magic versions also
-            initItem(item, 1);
-            initItem(item, 2);
+            initItem(item, 1, null, null);
+            initItem(item, 2, null, null);
+
+            # versions with extra protection
+            array_foreach(keys(saves), (i, save) => {
+                initItem(item, 1, save, saves[save]);
+                initItem(item, 2, save, saves[save]);
+            });
         }
     });
 }

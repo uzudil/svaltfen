@@ -138,9 +138,7 @@ def initMagic() {
             },
             { 
                 "name": "View Map",
-                "onParty": self => {
-                    gameShowMap();
-                },
+                "onParty": self => gameShowMap(),
                 "type": SPELL_TYPE_EXPLORE
             },
             { 

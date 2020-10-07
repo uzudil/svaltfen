@@ -68,7 +68,11 @@ def drawGameMessages(x, y) {
         drawColoredText(x + 2, ty + 2, COLOR_YELLOW, COLOR_BLACK, "<<Press SPACE>>");
         ty := ty - 10;
     }
-    while(i >= 0) {
+    minIndex := 0;
+    if(isLargeUi()) {
+        minIndex := 5;
+    }
+    while(i >= minIndex) {
         drawColoredText(x + 2, ty + 2, player.messages[i][1], COLOR_BLACK, player.messages[i][0]);
         ty := ty - 10;
         i := i - 1;
