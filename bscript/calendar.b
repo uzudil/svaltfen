@@ -86,3 +86,15 @@ def calendarStep() {
         calendarLight();
     }
 }
+
+def advanceCalendar(hours, fx) {
+    cont := true;
+    while(cont && hours > 0) {
+        h := player.calendar.hour;
+        calendarStep();
+        cont := fx();
+        if(h != player.calendar.hour) {
+            hours := hours - 1;
+        }
+    }
+}

@@ -210,12 +210,25 @@ def drawMagic() {
     }
 }
 
+def drawCamp() {
+    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Camping");
+    drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "The party is about to");
+    drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "rest for 8 hours.");
+    drawImage(70, 60, img["fire"]);
+    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, "Eat, drink, tell");
+    drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "scary stories and");
+    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "sleep.");
+    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to camp");
+    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+}
+
 def drawPartyInventory() {
-    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Party Inventory");
+    drawColoredText(10, 10, COLOR_WHITE, COLOR_BLACK, "Party Inventory for _7_" + player.party[player.partyIndex].name);
     drawListUi(10, 30);
-    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to use item");
     drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "D to drop item");
-    drawText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Enter to use item");
+    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
 }
 
 def drawCharEquipment() {
@@ -328,6 +341,9 @@ def drawUI() {
     if(viewMode = MAGIC) {
         drawMagic();
     }
+    if(viewMode = CAMP) {
+        drawCamp();
+    }
 }
 
 def showGameHelp() {
@@ -343,6 +359,7 @@ def showGameHelp() {
     gameMessage("_1_R: ranged attack in combat", COLOR_MID_GRAY);
     gameMessage("_1_M: cast a magic spell", COLOR_MID_GRAY);
     gameMessage("_1_N: re-cast the last spell", COLOR_MID_GRAY);
+    gameMessage("_1_K: camp for 8 hours", COLOR_MID_GRAY);
     gameMessage("_1_Space: search/use door", COLOR_MID_GRAY);
     gameMessage("_1_Enter: use stairs/gate", COLOR_MID_GRAY);
     gameMessage("_1_Numbers: switch pc / option in conversation or trade", COLOR_MID_GRAY);

@@ -18,9 +18,11 @@ const SELL = 5;
 const ACCOMPLISHMENTS = 6;
 const HEAL = 7;
 const MAGIC = 8;
+const CAMP = 9;
 viewMode := null;
 invMode := null;
 invTypeList := [];
+camping := false;
 
 magicMode := null;
 
@@ -354,7 +356,11 @@ def gameDrawViewAt(x, y, mx, my, onScreen) {
         } else {
             # draw the player only
             if(mx = player.x && my = player.y) {
-                drawImage(x, y, player.party[player.partyIndex].image, 0);
+                if(camping) {
+                    drawImage(x, y, img["fire"], 0);
+                } else {
+                    drawImage(x, y, player.party[player.partyIndex].image, 0);
+                }
             }
         }
         if(rangeFinder) {
@@ -846,7 +852,7 @@ def switchPc() {
 
 def moveInput(apUsed) {
 
-    if(viewMode != null) {
+    if(viewMode != null && viewMode != CAMP) {
         viewModeBefore := viewMode;
         listUiInput();
         if(viewMode = null && viewModeBefore = MAGIC && rangeFinder = false) {
@@ -878,81 +884,98 @@ def moveInput(apUsed) {
                 }
             }
         }
-        if(isKeyPress(KeyT)) {
-            if(gameMode = COMBAT) {
-                gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
-                buzzer();
-            } else {                
-                gameConvo();
+        if(rangeFinder = false) {
+            if(isKeyPress(KeyT)) {
+                if(gameMode = COMBAT) {
+                    gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
+                    buzzer();
+                } else {                
+                    gameConvo();
+                }
             }
-        }
-        if(isKeyPress(KeySpace)) {
-            if(gameUseDoor(player.x, player.y) = null) {
-                if(gameSearch()) {
+            if(isKeyPress(KeySpace)) {
+                if(gameUseDoor(player.x, player.y) = null) {
+                    if(gameSearch()) {
+                        actionSound();
+                    } else {
+                        buzzer();
+                        gameMessage("You find nothing.", COLOR_MID_GRAY);
+                    }
+                } else {
                     actionSound();
-                } else {
-                    buzzer();
-                    gameMessage("You find nothing.", COLOR_MID_GRAY);
                 }
-            } else {
-                actionSound();
+                apUsed := apUsed + 1;
             }
-            apUsed := apUsed + 1;
-        }
-        if(isKeyPress(KeyR)) {
-            if(gameMode = COMBAT) {
-                playerRangeTarget();
-            } else {
-                gameMessage("Using ranged weapons is only allowed in combat.", COLOR_MID_GRAY);
-                buzzer();
-            }
-        }
-        if(isKeyPress(KeyM)) {
-            if(player.partyIndex = 0) {
-                if(canCastSpell()) {
-                    viewMode := MAGIC;
-                    setMagicList();
+            if(isKeyPress(KeyR)) {
+                if(gameMode = COMBAT) {
+                    playerRangeTarget();
                 } else {
-                    gameMessage("You may cast no more spells today.", COLOR_MID_GRAY);
+                    gameMessage("Using ranged weapons is only allowed in combat.", COLOR_MID_GRAY);
                     buzzer();
                 }
-            } else {
-                gameMessage("Only the Fregnar may use magic.", COLOR_MID_GRAY);
-                buzzer();
             }
-        }
-        if(isKeyPress(KeyN) && lastSpellName != null) {
-            if(player.partyIndex = 0) {
-                if(canCastSpell()) {
-                    castSpell(0, lastSpellName);
+            if(isKeyPress(KeyM)) {
+                if(player.partyIndex = 0) {
+                    if(canCastSpell()) {
+                        viewMode := MAGIC;
+                        setMagicList();
+                    } else {
+                        gameMessage("You may cast no more spells today.", COLOR_MID_GRAY);
+                        buzzer();
+                    }
                 } else {
-                    gameMessage("You may cast no more spells today.", COLOR_MID_GRAY);
+                    gameMessage("Only the Fregnar may use magic.", COLOR_MID_GRAY);
                     buzzer();
                 }
+            }
+            if(isKeyPress(KeyN) && lastSpellName != null) {
+                if(player.partyIndex = 0) {
+                    if(canCastSpell()) {
+                        castSpell(0, lastSpellName);
+                    } else {
+                        gameMessage("You may cast no more spells today.", COLOR_MID_GRAY);
+                        buzzer();
+                    }
+                } else {
+                    gameMessage("Only the Fregnar may use magic.", COLOR_MID_GRAY);
+                    buzzer();
+                }
+            }
+        }
+    }
+
+    if(rangeFinder = false) {
+        if(viewMode = CAMP && isKeyPress(KeyEnter)) {
+            gameCamp();
+        }
+
+        #if(isKeyPress(KeyW)) {
+        #    deathSound();
+        #}        
+        if(isKeyPress(KeyK) && gameMode = MOVE) {
+            if(isOutdoors()) {
+                viewMode := CAMP;
             } else {
-                gameMessage("Only the Fregnar may use magic.", COLOR_MID_GRAY);
+                gameMessage("You can only camp outdoors.", COLOR_MID_GRAY);
                 buzzer();
             }
         }        
-    }
-    #if(isKeyPress(KeyW)) {
-    #    deathSound();
-    #}        
-    if(isKeyPress(KeyC)) {
-        viewMode := CHAR_SHEET;
-    }        
-    if(isKeyPress(KeyE)) {
-        viewMode := EQUIPMENT;
-        setEquipmentList();
-    }
-    if(isKeyPress(KeyI)) {
-        invMode := null;
-        viewMode := INVENTORY;
-        initPartyInventoryList();
-    }
-    if(isKeyPress(KeyA)) {
-        viewMode := ACCOMPLISHMENTS;
-        initAccomplishmentsList();
+        if(isKeyPress(KeyC)) {
+            viewMode := CHAR_SHEET;
+        }        
+        if(isKeyPress(KeyE)) {
+            viewMode := EQUIPMENT;
+            setEquipmentList();
+        }
+        if(isKeyPress(KeyI)) {
+            invMode := null;
+            viewMode := INVENTORY;
+            initPartyInventoryList();
+        }
+        if(isKeyPress(KeyA)) {
+            viewMode := ACCOMPLISHMENTS;
+            initAccomplishmentsList();
+        }
     }
     if(viewMode = null) {
         if(rangeFinder) {
@@ -1807,4 +1830,50 @@ def summonCreature(x, y, monsters) {
             gameMessage("A " + mt.name + " appears!", COLOR_GREEN);
         }
     }
+}
+
+def gameCamp() {
+
+    # eat and drink
+    i := 0;
+    while(i < len(player.party)) {
+        pc := player.party[i];
+
+        index := array_find_index(player.inventory, invItem => ITEMS_BY_NAME[invItem.name].type = OBJECT_FOOD);
+        while(index > -1 && pc.state[STATE_NAME_INDEX[STATE_HUNGER]] < 50) {
+            item := ITEMS_BY_NAME[player.inventory[index].name];
+            del player.inventory[index];
+            gameMessage(pc.name + " uses " + item.name, COLOR_MID_GRAY);
+            item.use(pc);
+            index := array_find_index(player.inventory, invItem => ITEMS_BY_NAME[invItem.name].type = OBJECT_FOOD);
+        }
+
+        index := array_find_index(player.inventory, invItem => ITEMS_BY_NAME[invItem.name].type = OBJECT_DRINK);
+        while(index > -1 && pc.state[STATE_NAME_INDEX[STATE_THIRST]] < 50) {
+            item := ITEMS_BY_NAME[player.inventory[index].name];
+            del player.inventory[index];
+            gameMessage(pc.name + " uses " + item.name, COLOR_MID_GRAY);
+            item.use(pc);
+            index := array_find_index(player.inventory, invItem => ITEMS_BY_NAME[invItem.name].type = OBJECT_DRINK);
+        }
+
+        i := i + 1;
+    }
+
+    # advance the clock
+    viewMode := null;
+    camping := true;
+    advanceCalendar(8, () => {
+        renderGame();
+        updateVideo();
+        # stop camping if someone's hp is reduced (due to hunger, etc)k
+        cont := true;
+        if(player["hpBefore"] != null) {
+            cont := array_find(player.party, pc => pc.hp < player.hpBefore[pc.name]) = null;
+        }
+        player["hpBefore"] := array_reduce(player.party, {}, (d, pc) => { d[pc.name] := pc.hp; return d; });
+        return cont;
+    });
+    del player["hpBefore"];
+    camping := false;
 }
