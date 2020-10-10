@@ -360,11 +360,11 @@ def gainSpells() {
     return newSpells;
 }
 
-def incSpellCount() {
+def incSpellCount(level) {
     if(player["spellCount"] = null) {
-        player["spellCount"] := 1;
+        player["spellCount"] := level;
     } else {
-        player.spellCount := player.spellCount + 1;
+        player.spellCount := player.spellCount + level;
     }
     saveGame();
 }
@@ -378,7 +378,11 @@ def canCastSpell() {
     if(player["spellCount"] = null) {
         return true;
     } else {
-        maxLevel := array_reduce(player.party, 0, (level, pc) => max(level, pc.level));
-        return player.spellCount <= maxLevel * 3;
+        return player.spellCount <= getSpellPoints();
     }
+}
+
+def getSpellPoints() {
+    maxLevel := array_reduce(player.party, 0, (level, pc) => max(level, pc.level));
+    return maxLevel * 3;
 }

@@ -7,6 +7,9 @@ combat := {
 };
 
 const OUT_OF_COMBAT_DISTANCE = 16;
+const MONSTER_NOTICE_DISTANCE = 10;
+#const FIND_PATH_RADIUS = LIGHT_RADIUS * 2 - 1;
+const FIND_PATH_RADIUS = 16;
 
 # this is called infrequently from events
 def endCombat() {
@@ -150,9 +153,9 @@ def getLiveMonsters(monsters) {
     return array_filter(monsters, m => { 
         if(isMonsterLive(m)) {
             if(m.state[STATE_POSSESSED] != null) {
-                target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= 10 && abs(m.pos[1] - t.pos[1]) <= 10 && m.id != t.id && t.state[STATE_POSSESSED] = null);
+                target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= MONSTER_NOTICE_DISTANCE && abs(m.pos[1] - t.pos[1]) <= MONSTER_NOTICE_DISTANCE && m.id != t.id && t.state[STATE_POSSESSED] = null);
             } else {
-                target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= 10 && abs(m.pos[1] - t.pos[1]) <= 10 && m.id != t.id && t.state[STATE_POSSESSED] != null);
+                target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= MONSTER_NOTICE_DISTANCE && abs(m.pos[1] - t.pos[1]) <= MONSTER_NOTICE_DISTANCE && m.id != t.id && t.state[STATE_POSSESSED] != null);
                 if(target = null) {
                     target := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= 6 && abs(m.pos[1] - pc.pos[1]) <= 6);
                 }
@@ -699,7 +702,6 @@ def monsterTakeDamage(pc, monster, dam) {
 
 def findPath(monster, target) {
     #trace("monster=" + monster.monsterTemplate.name);
-    r := LIGHT_RADIUS * 2 - 1;
     info := {
         "grid": [],
         "start": null,
@@ -708,13 +710,9 @@ def findPath(monster, target) {
     traverseMapAround(
         monster.pos[0], 
         monster.pos[1], 
-        r, 
+        FIND_PATH_RADIUS, 
         (px, py, x, y, mapx, mapy, onScreen, mapBlock) => {
             if(len(info.grid) <= x) {
-                info.grid[x] := [];                    
-                    info.grid[x] := [];                    
-                info.grid[x] := [];                    
-                    info.grid[x] := [];                    
                 info.grid[x] := [];                    
             }
             info.grid[x][y] := newGridNode(x, y, canMoveTo(monster.id, mapx, mapy, target["id"]) = false);
@@ -731,7 +729,9 @@ def findPath(monster, target) {
         return [];
     }
     #trace("Looking for path, from=" + info.start + " to=" + info.end);
-    path := astarSearch(info.grid, info.start, info.end);   
+    #start := getTicks();
+    path := astarSearch(info.grid, info.start, info.end);
+    #trace("astar in " + (getTicks() - start));
     dx := monster.pos[0] - info.start.x;
     dy := monster.pos[1] - info.start.y;
     path := array_map(path, e => {

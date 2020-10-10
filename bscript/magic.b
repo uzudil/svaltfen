@@ -226,7 +226,9 @@ def initMagic() {
             { "name": "Cure All Ailments", "onParty": self => array_foreach(player.party, (i, pc) => cureAilments(pc)), "type": SPELL_TYPE_AID },
         ],
     ];
-
+    # set the spell level
+    array_foreach(SPELLS, (level, spells) => array_foreach(spells, (i, spell) => { spell["level"] := level + 1; }));
+    # map to name
     SPELLS_BY_NAME := array_reduce(SPELLS, {}, (d, level) => { array_foreach(level, (i, s) => { d[s.name] := s; }); return d; });
 }
 

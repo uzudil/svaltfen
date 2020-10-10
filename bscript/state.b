@@ -164,7 +164,7 @@ def ageState(fxName) {
                 k := array_filter(keys(m.state), s => m.state[s] <= 0);
                 array_foreach(k, (i, kk) => {
                     del m.state[kk];
-                    gameMessage(m.name + " is no longer " + kk + ".", COLOR_MID_GRAY);
+                    gameMessage(m.monsterTemplate.name + " is no longer " + kk + ".", COLOR_MID_GRAY);
                 });
             });    
         }

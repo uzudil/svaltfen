@@ -872,8 +872,8 @@ def moveInput(apUsed) {
                     if(rangeFinder) {
                         apUsed := apUsed + playerRangeAttack();
                     } else {
-                        gameMessage("Can't do that during combat.", COLOR_MID_GRAY);
-                        buzzer();
+                        endCombat();
+                        gameEnterMap();    
                     }
                 }
             } else {
@@ -1307,14 +1307,15 @@ def inventoryItemName(invItem) {
 }
 
 def castSpell(index, selection) {
-    lastSpellName := selection;
-    spell := SPELLS_BY_NAME[selection];
+    spellNameParts := split(selection, ":");
+    lastSpellName := spellNameParts[0];
+    spell := SPELLS_BY_NAME[spellNameParts[0]];
     if(spell["onParty"] != null) {
         gameMessage("You cast " + spell.name + "!", COLOR_YELLOW);
         spell.onParty();
-        spell := null;
         viewMode := null;
-        incSpellCount();
+        incSpellCount(spell.level);
+        spell := null;
     } else {
         if(spell["onPc"] != null) {
             setListUi(array_map(player.party, pc => pc.name), [ [ KeyEnter, castSpellPc ] ], "");    
@@ -1337,17 +1338,17 @@ def castSpell(index, selection) {
 def castSpellPc(index, selection) {
     gameMessage("You cast " + spell.name + " on " + player.party[index].name + "!", COLOR_YELLOW);
     spell.onPc(player.party[index]);
-    spell := null;
     viewMode := null;
-    incSpellCount();
+    incSpellCount(spell.level);
+    spell := null;
 }
 
 def castLocationSpell() {
     gameMessage("You cast " + spell.name + "!", COLOR_YELLOW);
     rangeFinder := false;
     spell.onLocation(player.x + rangeX - 5, player.y + rangeY - 5);
+    incSpellCount(spell.level);
     spell := null;
-    incSpellCount();
     return 5;
 }
 
@@ -1358,7 +1359,14 @@ def setMagicList() {
 
 def setMagicListType(index, selection) {
     magicMode := selection;
-    setListUi(array_filter(player.magic, name => SPELLS_BY_NAME[name].type = selection), [ [ KeyEnter, castSpell ] ], "No spells of type " + selection);
+    setListUi(
+        array_map(
+            array_filter(player.magic, name => SPELLS_BY_NAME[name].type = selection), 
+            name => name + ":" + SPELLS_BY_NAME[name].level
+        ), 
+        [ [ KeyEnter, castSpell ] ], 
+        "No spells of type " + selection
+    );
 }
 
 def setEquipmentList() {

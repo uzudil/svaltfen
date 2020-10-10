@@ -178,6 +178,22 @@ def drawCharSheet() {
     drawColoredText(170, 80, COLOR_MID_GRAY, COLOR_BLACK, "CHR:" + pc.cha);
     drawColoredText(170, 90, COLOR_MID_GRAY, COLOR_BLACK, "LUK:" + pc.luck);
 
+    if(pc.name = player.party[0].name) {
+        maxSpellCount := getSpellPoints();
+        spellCount := 0;
+        spellColor := COLOR_GREEN;
+        if(player["spellCount"] != null) {
+            spellCount := min(player.spellCount, maxSpellCount);
+        }
+        if(spellCount / maxSpellCount >= 0.5) {
+            spellColor := COLOR_YELLOW;
+        }
+        if(spellCount / maxSpellCount >= 0.8) {
+            spellColor := COLOR_RED;
+        }
+        drawColoredText(170, 110, spellColor, COLOR_BLACK, "Magic:" + spellCount + "/" + maxSpellCount);
+    }
+
     drawColoredText(230, 20, COLOR_LIGHT_GRAY, COLOR_BLACK, "% Save vs:");
     drawColoredText(230, 30, COLOR_MID_GRAY, COLOR_BLACK, "Poison:" + asPercent(pc.save[STATE_NAME_INDEX[STATE_POISON]]/20));
     drawColoredText(230, 40, COLOR_MID_GRAY, COLOR_BLACK, "Paralz:" + asPercent(pc.save[STATE_NAME_INDEX[STATE_PARALYZE]]/20));
