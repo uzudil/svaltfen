@@ -167,6 +167,7 @@ def expandMonster(mon) {
     if(mon["state"] = null) {
         mon["state"] := {};
     }
+    getBlock(mon.pos[0], mon.pos[1])["blocker"] := mon.id;
 }
 
 def gameLoadMap(name) {
@@ -206,6 +207,7 @@ def gameLoadMap(name) {
     array_foreach(map.npc, (i, e) => {
         e["image"] := img[blocks[e.block].img];
         e["start"] := [e.pos[0], e.pos[1]];
+        getBlock(e.pos[0], e.pos[1])["blocker"] := e.name;
 
         # init trade
         if(events[name] != null) {
@@ -442,18 +444,24 @@ def moveNpcs() {
                 r := events[mapName].getNpcRadius(e);
             }
 
+            mapBlock := getBlock(e.pos[0], e.pos[1]);
+            mapBlock["blocker"] := null;
             dx := choose([ 1, -1 ]);
             dy := choose([ 1, -1 ]);
             e.pos[0] := e.pos[0] + dx;
             e.pos[1] := e.pos[1] + dy;
-            block := blocks[getBlock(e.pos[0], e.pos[1]).block];
+            mapBlock := getBlock(e.pos[0], e.pos[1]);
+            mapBlock["blocker"] := e.name;
+            block := blocks[mapBlock.block];
             if(block.blocking || 
                 abs(e.pos[0] - e.start[0]) > r || 
                 abs(e.pos[1] - e.start[1]) > r || 
                 (e.pos[0] = player.x && e.pos[1] = player.y)
             ) {
+                mapBlock["blocker"] := null;
                 e.pos[0] := e.pos[0] - dx;
                 e.pos[1] := e.pos[1] - dy;
+                mapBlock["blocker"] := e.name;
             }
         }
     });
@@ -1026,8 +1034,10 @@ def moveInput(apUsed) {
                 # if stepping on an npc, swap places
                 n := array_find(map.npc, e => e.pos[0] = player.x && e.pos[1] = player.y);
                 if(n != null) {
+                    getBlock(n.pos[0], n.pos[1])["blocker"] := null;
                     n.pos[0] := ox;
                     n.pos[1] := oy;
+                    getBlock(n.pos[0], n.pos[1])["blocker"] := n.name;
                 }
 
                 if(gameMode = COMBAT) {
@@ -1798,15 +1808,11 @@ def animateProjectile(srcX, srcY, dstX, dstY, arrowImages, checkWall) {
 
 def canMoveTo(id, mx, my, targetId) {
     if(mx >= 0 && my >= 0 && mx < map.width && my < map.height) {
-        block := blocks[getBlock(mx, my).block];
+        mapBlock := getBlock(mx, my);
+        block := blocks[mapBlock.block];
         blocked := block.blocking;
-        if(blocked = false) {
-            npc := array_find(map.npc, p => p.pos[0] = mx && p.pos[1] = my);
-            blocked := npc != null;
-        }
-        if(blocked = false) {
-            m := array_find(map.monster, p => p.pos[0] = mx && p.pos[1] = my && p.id != id && p.id != targetId && p.hp > 0);
-            blocked := m != null;
+        if(blocked = false && mapBlock["blocker"] != null) {
+            blocked := mapBlock["blocker"] != id;
         }
         return blocked = false;
     }

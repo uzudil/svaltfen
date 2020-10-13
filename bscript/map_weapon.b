@@ -37,6 +37,11 @@ const events_weapon = {
         return TELEPORTERS;
     },
     "onConvo": (self, n) => {
+        if(n.name = "Aidan") {
+            return {
+                "": "I hope you don't mind but I traveled after you to this awful place. It's critical that your mission succeeds and the weapon is disabled. Anytime you need $healing|_heal_ just return to me!"
+            };
+        }
         if(n.name = "Xartum") {
             return {
                 "": "We sense you are other from the one named $Malleus. Are you also seeking the weapon $Ectalius?",

@@ -270,8 +270,14 @@ def scaredMove() {
         }
 
         if(nx != combatRound.creature.pos[0] || ny != combatRound.creature.pos[1]) {
+            if(combatRound.type = "monster") {
+                getBlock(combatRound.creature.pos[0], combatRound.creature.pos[1])["blocker"] := null;
+            }
             combatRound.creature.pos[0] := nx;
             combatRound.creature.pos[1] := ny;
+            if(combatRound.type = "monster") {
+                getBlock(combatRound.creature.pos[0], combatRound.creature.pos[1])["blocker"] := combatRound.id;
+            }
             stepSound();
         }
     }
@@ -430,8 +436,10 @@ def moveMonster() {
     pathNode := combatRound.path[combatRound.pathIndex];
     #trace("At " + combatRound.creature.pos[0] + "," + combatRound.creature.pos[1] + " trying: " + pathNode.x + "," + pathNode.y);
     if(canMoveTo(combatRound.creature.id, pathNode.x, pathNode.y, null)) {
+        getBlock(combatRound.creature.pos[0], combatRound.creature.pos[1])["blocker"] := null;
         combatRound.creature.pos[0] := pathNode.x;
         combatRound.creature.pos[1] := pathNode.y;
+        getBlock(combatRound.creature.pos[0], combatRound.creature.pos[1])["blocker"] := combatRound.creature.id;
         combatRound.pathIndex := combatRound.pathIndex + 1;
         moved := true;
         #trace("...yes");
@@ -664,6 +672,7 @@ def monsterTakeDamage(pc, monster, dam) {
                 gainExp(pc, roll(int(exp * 0.7), exp));
             }
             gameMessage(monster.monsterTemplate.name + " dies!", COLOR_RED);
+            getBlock(monster.pos[0], monster.pos[1])["blocker"] := null;
             if(monster.monsterTemplate["onDeath"] != null) {
                 monster.monsterTemplate.onDeath();
             }
