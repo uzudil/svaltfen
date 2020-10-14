@@ -355,6 +355,7 @@ def gainSpells() {
         level := level + 1;
     }
     if(len(newSpells) > 0) {
+        player.spellCount := 0;
         gameMessage("You learn new magic spells!", COLOR_GREEN);
     }
     return newSpells;

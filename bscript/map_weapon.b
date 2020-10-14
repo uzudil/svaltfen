@@ -8,7 +8,7 @@ const TELEPORTERS = [
 ];
 
 const ALIENS = [
-    [ 6, 27 ],
+    [ 3, 22 ],
     [ 4, 23 ],
     [ 6, 23 ],
     [ 8, 23 ],
@@ -26,11 +26,38 @@ const CTRLS = [
     [ 12, 11 ],
 ];
 
+def showSpecialTeleporterWeaponMap(showMessage) {
+    if(getGameState("weapon_switches") >= 5) {
+        if(showMessage) {
+            gameMessage("A tremor shakes the earth!", COLOR_YELLOW);
+        }
+        b := 112;
+    } else {
+        if(showMessage) {
+            gameMessage("Click.", COLOR_MID_GRAY);
+        }
+        b := 43;
+    }
+    setBlock(41, 41, b, 0);
+    setGameBlock(41, 41, b);
+}
+
 const events_weapon = {
     "onEnter": self => {
         if(mapMutation.npcs["Xartum"] = null) {
             array_foreach(ALIENS, (i, a) => setMonsterEnabled(a[0], a[1], false));
         }
+
+        # show the special teleporter
+        showSpecialTeleporterWeaponMap(false);
+
+        # put the bridge back
+        # this should be automatic, except setGameBlock saves w/o rotatation so it looks weird, and I don't feel like fixing that function...
+        if(getGameState("ectalius_off") = true) {
+            setBlock(11, 27, 76, 1);
+            setGameBlock(11, 27, 76);
+        }
+
         gameMessage("You emerge on a rocky plain with mountains on all sides. The air smells faintly of herbs you can't quite recognize.", COLOR_LIGHT_BLUE);
     },
     "onTeleport": self => {
@@ -58,6 +85,10 @@ const events_weapon = {
                 "folly": "Only through our help, by depending and submitting to us - saviours from space, can the lands of Svaltfen be saved. Especially after the $tragic fate of its Fregnar.",
                 "tragic": "We're sure you would understand the need for your deactivation, Fregnar. The truths are much more compelling with your untimely $demise...",
                 "demise": () => {
+                    # no retreat
+                    setBlock(11, 27, 0, 0);
+                    setGameBlock(11, 27, 0);
+
                     array_foreach(ALIENS, (i, a) => setMonsterEnabled(a[0], a[1], true));
                     gameMessage("Xartum becomes enraged!", COLOR_YELLOW);
                     removeNpc(n.name);
@@ -75,7 +106,7 @@ const events_weapon = {
     },
     "onMonsterKilled": (self, monster) => {
         #trace("monster killed=" + monster.monsterTemplate.name + " id=" + monster.id);
-        if(monster.monsterTemplate.name = "Xurtang Thrall" && monster.id = "6,27") {
+        if(monster.monsterTemplate.name = "Xurtang Thrall" && monster.id = "3,22") {
             gameMessage("You find a small key, shaped like a mess of tentacles.", COLOR_YELLOW);
             player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME["Swirl Key"]);
         }
@@ -98,6 +129,11 @@ const events_weapon = {
                     });
                     setBlock(10, 9, 65, 0);
                     setGameBlock(10, 9, 65);
+
+                    # put the bridge back
+                    setBlock(11, 27, 76, 1);
+                    setGameBlock(11, 27, 76);
+
                     setGameState("ectalius_off", true);
                     gameMessage("You throw the switch: a massive electric spike destroys the alien hardware and the switch itself.", COLOR_GREEN);
                 } else {
@@ -118,15 +154,8 @@ const events_weapon = {
                 v := v + d;
                 #trace("weapon_switches=" + v);
                 setGameState("weapon_switches", v);
-                if(v = 5) {
-                    gameMessage("A tremor shakes the earth!", COLOR_YELLOW);
-                    b := 112;
-                } else {
-                    gameMessage("Click.", COLOR_MID_GRAY);
-                    b := 43;
-                }
-                setBlock(41, 41, b, 0);
-                setGameBlock(41, 41, b);
+
+                showSpecialTeleporterWeaponMap(true);
             }
         }
         return false;

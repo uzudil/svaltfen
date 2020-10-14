@@ -145,8 +145,12 @@ def setMonsterEnabled(x, y, enabled) {
         del disabledMonsters[idx];
     } else {
         idx := array_find_index(map.monster, m => m.start[0] = x && m.start[1] = y);
-        disabledMonsters[len(disabledMonsters)] := map.monster[idx];
-        del map.monster[idx];
+        if(idx = -1) {
+            trace("Can't find monster at: " + x + "," + y);
+        } else {
+            disabledMonsters[len(disabledMonsters)] := map.monster[idx];        
+            del map.monster[idx];
+        }
     }
 }
 

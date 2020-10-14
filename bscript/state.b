@@ -99,7 +99,11 @@ def initStates() {
 
 def describeStates(pc, isGood) {
     if(pc.hp <= 0) {
-        return "_2_Dead";
+        if(isGood) {
+            return "";
+        } else {
+            return "_2_Dead";
+        }
     } else {
         return array_reduce(STATES, "", (msg, st) => {
             goodState := st.color = COLOR_GREEN;
