@@ -75,6 +75,8 @@ const ITEMS = [
     { "name": "Platemail", "level": 6, "price": 50, "type": OBJECT_ARMOR, "slot": SLOT_ARMOR, "ac": 7, },
     { "name": "Ring of Protection", "level": 5, "price": 75, "type": OBJECT_ARMOR, "slot": [ SLOT_RING1, SLOT_RING2 ], "ac": 1, },
 
+    { "name": "Gold crown", "level": 3, "price": 400, "type": OBJECT_ARMOR, "slot": SLOT_HEAD, "ac": 1, },
+
     { "name": "Traveling cape", "level": 2, "price": 8, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Forest cape", "level": 2, "price": 12, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 1, },
     { "name": "Cloud cape", "level": 3, "price": 22, "type": OBJECT_ARMOR, "slot": SLOT_CAPE, "ac": 2, },
@@ -95,6 +97,10 @@ const ITEMS = [
     { "name": "Greatsword", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 6, 9 ] },
     { "name": "Greatsaxe", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 10 ] },
 
+    { "name": "Demonsbane Sword", "level": 6, "price": 800, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 8 ], "bonus": 4, "bonusVs": "demon" },
+    { "name": "Axe of Undeath", "level": 6, "price": 800, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ], "bonus": 3, "bonusVs": "undead" },
+    { "name": "Lance of Aberrations", "level": 6, "price": 800, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 6 ], "bonus": 3, "bonusVs": "alien" },
+
     { "name": "Composite Bow", "level": 1, "price": 25, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 2, 4 ], "range": 6 },
     { "name": "Longbow", "level": 2, "price": 50, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 2, 5 ], "range": 6 },
     { "name": "Hunting bow", "level": 2, "price": 42, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 3, 5 ], "range": 6 },
@@ -105,6 +111,17 @@ const ITEMS = [
     { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "light": 3 },
     { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },
     { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES },
+    { "name": "Gold ring", "level": 1, "price": 200, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
+    { "name": "Diamond ring", "level": 3, "price": 500, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
+    { "name": "Emerald ring", "level": 2, "price": 450, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
+    { "name": "Topaz ring", "level": 2, "price": 300, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
+    { "name": "Ruby ring", "level": 2, "price": 450, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
+    { "name": "Large gemstone", "level": 3, "price": 500, "type": OBJECT_SUPPLIES },
+    { "name": "Small gemstone", "level": 1, "price": 200, "type": OBJECT_SUPPLIES },
+    { "name": "Ancient coins", "level": 1, "price": 400, "type": OBJECT_SUPPLIES },
+    { "name": "Gold chains", "level": 1, "price": 350, "type": OBJECT_SUPPLIES },
+    { "name": "Silver chains", "level": 1, "price": 250, "type": OBJECT_SUPPLIES },
+    { "name": "Ruby pin", "level": 1, "price": 150, "type": OBJECT_SUPPLIES },
 
     { "name": "Round potion", "level": 1, "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
     { "name": "Oval potion", "level": 1, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
@@ -123,6 +140,7 @@ const ITEMS = [
     { "name": "Cross key", "level": 1, "price": 2, "type": OBJECT_SPECIAL },
     { "name": "Tomes of Knowledge", "level": 1, "price": 1, "type": OBJECT_SPECIAL },
     { "name": "Swirl Key", "level": 1, "price": 1, "type": OBJECT_SPECIAL },
+
     { "name": "Ring of Light", "level": 1, "price": 2, "type": OBJECT_SPECIAL, "slot": [ SLOT_RING1, SLOT_RING2 ], "light": 3, "lightLife": -1 },    
 ];
 
@@ -137,7 +155,11 @@ def initItem(item, bonus, saveState, saveName) {
     }
     d["bonus"] := bonus;
     if(bonus > 0) {
-        d["name"] := "+" + bonus + " " + d["name"];
+        if(item["bonusVs"] != null) {
+            d["name"] := d["name"] + " (+" + bonus + " vs " + item["bonusVs"] + ")";
+        } else {
+            d["name"] := "+" + bonus + " " + d["name"];
+        }
         d["level"] := d["level"] + 2 * bonus;
         d["price"] := d["price"] * (1 + bonus);
     }
@@ -167,7 +189,11 @@ def initItems() {
     saves[STATE_SCARED] := "of the Mind";
 
     array_foreach(ITEMS, (index, item) => { 
-        initItem(item, 0, null, null);
+        bonus := item["bonus"];
+        if(bonus = null) {
+            bonus := 0;
+        }
+        initItem(item, bonus, null, null);
         # make magic armor/weapons
         if(item["bonus"] = null && (item.type = OBJECT_ARMOR || item.type = OBJECT_WEAPON)) {
             # create +1, +2 magic versions also

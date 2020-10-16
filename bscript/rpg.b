@@ -272,6 +272,7 @@ def calculateArmor(pc) {
             "dam": [dam[0] + attackBonus, dam[1] + attackBonus],
             "weapon": invItem.name,
             "bonus": realItem.bonus,
+            "bonusVs": realItem.bonusVs,
             "slot": slot,
         };
     });

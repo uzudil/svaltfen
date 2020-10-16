@@ -566,7 +566,7 @@ def playerSpellAttack(projectile, damage, bonus, save) {
             array_map(projectile, p => img[p]),
             false
         );
-        playerAttacksDam(combatRound.creature.rangeMonster, damage, bonus + getHitMod(combatRound.creature.rangeMonster, save));
+        playerAttacksDam(combatRound.creature.rangeMonster, damage, bonus + getHitMod(combatRound.creature.rangeMonster, save), null);
         apUsed := 3;
     }
     rangeFinder := false;
@@ -578,7 +578,7 @@ def playerAreaSpellAttack(projectile, damage, bonus, radius, save) {
     tx := player.x + rangeX - 5;
     ty := player.y + rangeY - 5;
     animateProjectile(player.x, player.y, tx, ty, array_map(projectile, p => img[p]), false);
-    animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus + getHitMod(m, save)));
+    animateBlast(player.x, player.y, tx, ty, radius, img[projectile[0]], m => playerAttacksDam(m, damage, bonus + getHitMod(m, save), null));
     rangeFinder := false;
     return 3;
 }
@@ -591,7 +591,7 @@ def playerQuakeSpellAttack(projectile, damage, bonus) {
     animateQuake();
     array_foreach(map.monster, (i, e) => {
         if(e.hp > 0 && e.pos[0] >= player.x - 6 && e.pos[0] < player.x + 6 && e.pos[1] >= player.y - 6 && e.pos[1] < player.y + 6) {
-            playerAttacksDam(e, damage, bonus);
+            playerAttacksDam(e, damage, bonus, null);
         }
     });
     rangeFinder := false;
@@ -629,7 +629,7 @@ def playerAttacks(monster, rangedAttack) {
     res := { "attackChanged": false };
     array_foreach(attacks, (i, attack) => {
         gameMessage(combatRound.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
-        if(playerAttacksDam(monster, attack.dam, attack.bonus) && attack.slot != null) {
+        if(playerAttacksDam(monster, attack.dam, attack.bonus, attack.bonusVs) && attack.slot != null) {
             if(decItemLife(combatRound.creature, attack.slot)) {
                 res.attackChanged := true;
             }
@@ -641,11 +641,17 @@ def playerAttacks(monster, rangedAttack) {
     return 3;
 }
 
-def playerAttacksDam(monster, damage, bonus) {
+def playerAttacksDam(monster, damage, bonus, bonusVs) {
     combatRound := combat.round[combat.roundIndex];
 
+    # restrict bonus to creature types
+    realBonus := bonus;
+    if(bonusVs != null && monster.monsterTemplate["type"] != bonusVs) {
+        realBonus := 0;
+    }
+    
     # roll to-hit
-    toHit := roll(0, 20) + getToHitBonus(combatRound.creature) + bonus;
+    toHit := roll(0, 20) + getToHitBonus(combatRound.creature) + realBonus;
     if(toHit <= monster.monsterTemplate.armor) {
         gameMessage(combatRound.name + " misses.", COLOR_MID_GRAY);
         combatMissSound();
@@ -653,7 +659,7 @@ def playerAttacksDam(monster, damage, bonus) {
     }
 
     # roll damage
-    dam := roll(damage[0], damage[1]) + bonus;
+    dam := roll(damage[0], damage[1]) + realBonus;
     monsterTakeDamage(combatRound.creature, monster, dam);
 
     return true;

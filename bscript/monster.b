@@ -11,10 +11,12 @@ MONSTERS := [
     },
     { "name": "Animated Skeleton", "block": "skeleton", 
         "attack": [2,4], "range": 1, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8, "hit_mods": { "fire": 5 }, 
+        "type": "undead",
     },
     { "name": "Skeleton Archer", "block": "skeletona", 
         "drops": [ "coins", "Composite Bow" ],    
         "attack": [1,3], "range": 6, "attackAp": 3, "armor": 4, "startHp": 16, "level": 2, "speed": 8, "hit_mods": { "fire": 5, "mind": -2 }, 
+        "type": "undead",
     },
     { "name": "Nixbeetle", "block": "beetle", 
         "onDeath": self => {
@@ -36,6 +38,7 @@ MONSTERS := [
     { "name": "Skeleton Warrior", "block": "skeleton2", 
         "drops": [ "Soldier's sword", "Small shield", "coins" ],
         "attack": [6,10], "range": 1, "attackAp": 3, "armor": 7, "startHp": 32, "level": 4, "speed": 8, "hit_mods": { "fire": 5 },   
+        "type": "undead",
     },
     { "name": "Specter", "block": "ghost", 
         "onHit": (self, pc) => {
@@ -49,6 +52,7 @@ MONSTERS := [
         }, 
         "drops": [ "coins" ],
         "attack": [1,2], "range": 1, "attackAp": 2, "armor": 16, "startHp": 15, "level": 5, "speed": 16, "hit_mods": { "mind": -5, "electricity": -5 },   
+        "type": "undead",
     },
     { "name": "Vegetal Warrior", "block": "vegwar", 
         "onHit": (self, pc) => {
@@ -110,11 +114,13 @@ MONSTERS := [
                 setState(pc, STATE_SCARED, 10);
             }
         }, 
+        "type": "demon",
     },
     { "name": "Demon Archer", "block": "demona", 
         "drops": [ "coins", "Longbow", "Oval potion" ],
         "attack": [2,5], "range": 6, "attackAp": 3, "armor": 11, "startHp": 52, "level": 7, "speed": 8,
         "hit_mods": { "fire": -5, "mind": -5 },     
+        "type": "demon",
     },
     { "name": "Cult Fanatic", "block": "cultist", 
         "drops": [ "coins", "Lance", "Oval potion" ],
@@ -135,6 +141,7 @@ MONSTERS := [
             }
         }, 
         "hit_mods": { "fire": -5, "mind": -5, "electricity": -5 },     
+        "type": "demon",
     },
     { "name": "Yggxurantes", "block": "dragon", 
         "drops": [ "coins" ],
@@ -170,10 +177,11 @@ MONSTERS := [
             }
         },  
         "hit_mods": { "fire": -5, "mind": -5, "electricity": -5, "acid": -5 },     
+        "type": "demon",
     },
     { "name": "Xurtang Thrall", "block": "alien1", 
         "drops": [ "coins", "Lance", "Oval potion" ],
-        "attack": [12,16], "range": 1, "attackAp": 2, "armor": 6, "startHp": 100, "level": 10, "speed": 8,
+        "attack": [12,16], "range": 6, "rangeBlocks": [ "acid", "acid" ], "attackAp": 2, "armor": 6, "startHp": 100, "level": 10, "speed": 8,
         "onHit": (self, pc) => {
             # there is a chance the character becomes poisoned
             if(random() >= 0.75) {
@@ -184,6 +192,7 @@ MONSTERS := [
             }
         },   
         "hit_mods": { "fire": 2, "mind": -10, "electricity": 2, "acid": 2 },     
+        "type": "alien",
     },
 ];
 

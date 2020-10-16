@@ -136,6 +136,17 @@ def drawTradeSell() {
     drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Party coins: _1_$" + player.coins);
 }
 
+def descAttack(p) {
+    s := "  " + p.dam[0] + "-" + p.dam[1];
+    if(p.bonus > 0) {
+        s := s + "+" + p.bonus;
+        if(p["bonusVs"] != null) {
+            s := s + " vs " + p.bonusVs;
+        }
+    }
+    return s;
+}
+
 def drawCharSheet() {
     pc := player.party[player.partyIndex];
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, pc.name);
@@ -144,30 +155,29 @@ def drawCharSheet() {
     drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp);
     drawColoredText(10, 50, COLOR_MID_GRAY, COLOR_BLACK, "Next level:" + getNextLevelExp(pc));
     drawColoredText(10, 60, COLOR_MID_GRAY, COLOR_BLACK, "Hit Bonus:" + getToHitBonus(pc));
-    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Atk:" + array_join(array_reduce(pc.attack, [], (a, p) => {
-        s := "" + p.dam[0] + "-" + p.dam[1];
-        if(p.bonus > 0) {
-            s := s + "+" + p.bonus;
-        }
-        a[len(a)] := s;
-        return a;
-    }), ","));
+    drawColoredText(10, 70, COLOR_MID_GRAY, COLOR_BLACK, "Attack:");
+    if(len(pc.attack) > 0) {
+        drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, descAttack(pc.attack[0]));
+    }
+    if(len(pc.attack) > 1) {
+        drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, descAttack(pc.attack[1]));
+    }    
     if(pc["ranged"] != null) {
         s := "" + pc.ranged.dam[0] + "-" + pc.ranged.dam[1];
         if(pc.ranged.bonus > 0) {
             s := s + "+" + pc.ranged.bonus;
         }
-        drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
+        drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "Ranged:" + s);
     } else {
-        drawColoredText(10, 80, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
+        drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "No ranged weapon.");
     }
-    drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
+    drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "Armor:" + pc.armor);
     h := describeHunger(pc);
     t := describeThirst(pc);
-    drawColoredText(10, 110, h[1], COLOR_BLACK, "HUN:" + h[0]);
-    drawColoredText(10, 120, t[1], COLOR_BLACK, "THR:" + t[0]);
-    drawColoredText(10, 130, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc, true));
-    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc, false));
+    drawColoredText(10, 120, h[1], COLOR_BLACK, "HUN:" + h[0]);
+    drawColoredText(10, 130, t[1], COLOR_BLACK, "THR:" + t[0]);
+    drawColoredText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc, true));
+    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, describeStates(pc, false));
 
     drawColoredText(170, 20, COLOR_LIGHT_GRAY, COLOR_BLACK, "Stats:");
     drawColoredText(170, 30, COLOR_MID_GRAY, COLOR_BLACK, "STR:" + pc.str);
