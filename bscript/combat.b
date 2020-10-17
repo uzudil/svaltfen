@@ -52,6 +52,7 @@ def newCombatRoundMonster(m) {
         "pathIndex": 0,
         "name": m.monsterTemplate.name,
         "id": m.id,
+        "wallBlocks": m.monsterTemplate.wallBlocks,
         "isActive": self => self.creature.visible && self.creature.hp > 0,
         "isInState": (self, state) => self.creature.state[state] != null,
         "initMove": self => {
@@ -82,6 +83,7 @@ def newCombatRoundPc(pc) {
         "initiative": pc.speed,
         "name": pc.name,
         "id": "pc" + pc.index,
+        "wallBlocks": true,
         "target": null,
         "path": null,
         "pathIndex": 0,
@@ -252,7 +254,7 @@ def scaredMove() {
             dy := -1;
             while(dy <= 1) {
                 if(dx != 0 || dy != 0) {
-                    if(canMoveTo(combatRound.creature.id, combatRound.creature.pos[0] + dx, combatRound.creature.pos[1] + dy, null)) {
+                    if(canMoveTo(combatRound.creature.id, combatRound.creature.pos[0] + dx, combatRound.creature.pos[1] + dy, null, combatRound.wallBlocks)) {
                         dd := distFx(combatRound.creature.pos[0] + dx, combatRound.creature.pos[1] + dy);
                         #if(monster != null) {
                         #    trace("dir=" + dx + "," + dy + " dd=" + dd);
@@ -435,7 +437,7 @@ def moveMonster() {
     moved := false;
     pathNode := combatRound.path[combatRound.pathIndex];
     #trace("At " + combatRound.creature.pos[0] + "," + combatRound.creature.pos[1] + " trying: " + pathNode.x + "," + pathNode.y);
-    if(canMoveTo(combatRound.creature.id, pathNode.x, pathNode.y, null)) {
+    if(canMoveTo(combatRound.creature.id, pathNode.x, pathNode.y, null, combatRound.wallBlocks)) {
         getBlock(combatRound.creature.pos[0], combatRound.creature.pos[1])["blocker"] := null;
         combatRound.creature.pos[0] := pathNode.x;
         combatRound.creature.pos[1] := pathNode.y;
@@ -629,10 +631,14 @@ def playerAttacks(monster, rangedAttack) {
     res := { "attackChanged": false };
     array_foreach(attacks, (i, attack) => {
         gameMessage(combatRound.name + " attacks " + monster.monsterTemplate.name + " with " + attack.weapon + "!", COLOR_MID_GRAY);
-        if(playerAttacksDam(monster, attack.dam, attack.bonus, attack.bonusVs) && attack.slot != null) {
-            if(decItemLife(combatRound.creature, attack.slot)) {
-                res.attackChanged := true;
+        if(monster.monsterTemplate.isWeaponEffective(ITEMS_BY_NAME[attack.weapon])) {
+            if(playerAttacksDam(monster, attack.dam, attack.bonus, attack.bonusVs) && attack.slot != null) {
+                if(decItemLife(combatRound.creature, attack.slot)) {
+                    res.attackChanged := true;
+                }
             }
+        } else {
+            gameMessage("The weapon is ineffective!", COLOR_YELLOW);
         }
     });
     if(res.attackChanged) {
@@ -730,7 +736,7 @@ def findPath(monster, target) {
             if(len(info.grid) <= x) {
                 info.grid[x] := [];                    
             }
-            info.grid[x][y] := newGridNode(x, y, canMoveTo(monster.id, mapx, mapy, target["id"]) = false);
+            info.grid[x][y] := newGridNode(x, y, canMoveTo(monster.id, mapx, mapy, target["id"], monster.monsterTemplate.wallBlocks) = false);
             if(mapx = monster.pos[0] && mapy = monster.pos[1]) {
                 info.start := info.grid[x][y];
             }

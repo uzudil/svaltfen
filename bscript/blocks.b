@@ -173,4 +173,6 @@ blocks := [
     { "img": "rosa" }, 
     { "img": "vbat" }, 
     { "img": "force", "blocking": true, "light": false },    
+    { "img": "bear2" }, 
+    { "img": "cave2", "color": COLOR_WHITE },    
 ];

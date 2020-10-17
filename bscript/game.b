@@ -1810,11 +1810,11 @@ def animateProjectile(srcX, srcY, dstX, dstY, arrowImages, checkWall) {
     return success;
 }
 
-def canMoveTo(id, mx, my, targetId) {
+def canMoveTo(id, mx, my, targetId, wallBlocks) {
     if(mx >= 0 && my >= 0 && mx < map.width && my < map.height) {
         mapBlock := getBlock(mx, my);
         block := blocks[mapBlock.block];
-        blocked := block.blocking;
+        blocked := block.blocking && wallBlocks;
         if(blocked = false && mapBlock["blocker"] != null) {
             blocked := mapBlock["blocker"] != id;
         }

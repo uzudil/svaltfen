@@ -11,6 +11,11 @@ const events_ashnar2 = {
             player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME["Brass key"]);
             return true;
         }
+        if(x = 25 && y = 54) {
+            gameMessage("You find a silver lance decorated with a swirl pattern.", COLOR_YELLOW);
+            player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME["Lance of Aberrations (+3 vs alien)"]);
+            return true;
+        }
         return false;
     },
     "onDoor": (self, x, y) => {

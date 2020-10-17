@@ -24,11 +24,21 @@ const events_xurcelt = {
                 "discovered": "I believe his goal is to attack the $Frehyen of the sky using some kind of $weapon. This weapon is here somewhere in Svaltfen - this is what I'm trying to discover.",
                 "weapon": () => {
                     if(getGameState("malleus_dead") = true) {
-                        return "Now with Malleus dead, the ancient weapon left behind by the aliens who once visited Svaltfen can fall into anyone's hands. Go and seek out the Sages of Ashnar and ask for their help. Only they will know what to do next.";
+                        return "Now with Malleus dead, the ancient weapon left behind by the aliens who once visited Svaltfen can fall into anyone's hands. I fear there is $more for you to do. You job is not yet done.";
+                        
                     } else {
                         return "Long ago, visitors arrived in Svaltfen from a fearsome reality. Though we could barely communicate, it was apparent that all they wanted was to $dominate. Their sky-pods left much arcane weaponry all around Svaltfen.";
                     }
                 }, 
+                "more": () => {
+                    if(getGameState("xurcelt_ring") = null) {
+                        player.inventory[len(player.inventory)] := itemInstance(ITEMS_BY_NAME["Ring of Light"]);
+                        gameMessage("Xurcelt hands you ring with a light colored stone.", COLOR_GREEN);
+                        return "Take this ring and may it aid you on your journey. Now go and seek out the Sages of Ashnar and ask for their help. Only they will know what to do next.";
+                    } else {
+                        return "Next, you should seek out the Sages of Ashnar and ask for their help. Only they will know what to do next.";
+                    }
+                },
                 "dominate": "$Malleus|one plans to $bargain the lands of Svaltfen in order to gain control of their technology. If this were to happen the balance of sky vs $Yrgalt would be lost and Malleus would rule over the ruins of what was once Svaltfen.",
                 "bargain": "The mayor of Van may already be such a creature? That is terrible news. $Something must be done about this right away.",
                 "Something": () => {

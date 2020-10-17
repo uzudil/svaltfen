@@ -133,6 +133,7 @@ def initMaps() {
     events["mine2"] := events_mine2;
     events["cave1"] := events_cave1;
     events["spire1"] := events_spire1;
+    events["bears"] := events_bears;
 }
 
 const OVERLAND_MAPS = [
@@ -142,7 +143,7 @@ const OUTDOOR_MAPS = [
     "almoc", "world1", "fenvel", "van", "world2", "xurcelt", "vamir", "tristen", "market", "ered"
 ];
 const DARK_MAPS = [
-    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon", "ashnar2", "mine1", "mine2", "cave1", "spire1"
+    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon", "ashnar2", "mine1", "mine2", "cave1", "spire1", "bears"
 ];
 
 def isOutdoors() {
