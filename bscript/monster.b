@@ -92,6 +92,21 @@ MONSTERS := [
         "attack": [2,5], "range": 6, "attackAp": 3, "armor": 10, "startHp": 48, "level": 6, "speed": 4, "hit_mods": { "acid": -5 }, "wallBlocks": true,   
         "isWeaponEffective": (self, item) => true,
     },    
+    { 
+        "name": "Werebear", "block": "bear3", 
+        "attack": [5,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 45, "level": 5, "speed": 6, 
+        "wallBlocks": true, "isWeaponEffective": (self, item) => true,
+        "isWeaponEffective": (self, item) => {
+            # magic weapons only
+            return item.bonus > 0;
+        },
+        "onHit": (self, pc) => {
+            # there is a chance the character becomes poisoned
+            if(random() >= 0.9) {
+                setState(pc, STATE_CURSE, 10);
+            }
+        }, 
+    },
     { "name": "Vampire Bat", "block": "vbat", 
         "attack": [5,10], "range": 1, "attackAp": 2, "armor": 0, "startHp": 60, "level": 6, "speed": 14,
         "drops": [ "coins" ],

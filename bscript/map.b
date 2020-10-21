@@ -1,9 +1,17 @@
 def newMap(name, w, h) {
     mapName := name;
     map := {
-        "blocks": [],
         "width": w,
         "height": h,
+    };
+    clearMap();
+}
+
+def clearMap() {
+    map := {
+        "blocks": [],
+        "width": map.width,
+        "height": map.height,
         "npc": [],
         "monster": [],
         "loot": [],
@@ -134,6 +142,8 @@ def initMaps() {
     events["cave1"] := events_cave1;
     events["spire1"] := events_spire1;
     events["bears"] := events_bears;
+    events["cave2"] := events_cave2;
+    events["norden"] := events_norden;
 }
 
 const OVERLAND_MAPS = [
@@ -143,7 +153,7 @@ const OUTDOOR_MAPS = [
     "almoc", "world1", "fenvel", "van", "world2", "xurcelt", "vamir", "tristen", "market", "ered"
 ];
 const DARK_MAPS = [
-    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon", "ashnar2", "mine1", "mine2", "cave1", "spire1", "bears"
+    "bonefell", "beetlecave", "untervalt", "Ardor", "under1", "weapon", "ashnar2", "mine1", "mine2", "cave1", "spire1", "bears", "cave2"
 ];
 
 def isOutdoors() {

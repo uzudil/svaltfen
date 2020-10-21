@@ -240,6 +240,11 @@ def handleEditorInput() {
         }
         addLink();
     }
+    if(isKeyDown(KeyC) && (isKeyDown(KeyLeftShift) || isKeyDown(KeyRightShift))) {
+        while(isKeyDown(KeyC)) {
+        }
+        clearMap();
+    }    
     if(isKeyDown(KeyC)) {
         while(isKeyDown(KeyC)) {
         }

@@ -116,6 +116,11 @@ def drawPcList(x, y, color) {
 def drawHeal() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Healing by " + convo.npc.name);
     drawListUi(10, 30);
+
+    pc := player.party[player.partyIndex];
+    drawImage(10, 120, pc.image);
+    drawText(35, 124, COLOR_WHITE, COLOR_BLACK, "Healing for " + pc.name);
+
     drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to buy service");
 }
@@ -149,7 +154,8 @@ def descAttack(p) {
 
 def drawCharSheet() {
     pc := player.party[player.partyIndex];
-    drawText(10, 10, COLOR_WHITE, COLOR_BLACK, pc.name);
+    drawImage(10, 10, pc.image);
+    drawText(35, 14, COLOR_WHITE, COLOR_BLACK, pc.name);
 
     drawColoredText(10, 30, COLOR_MID_GRAY, COLOR_BLACK, "Level:" + pc.level + " HP:" + pc.hp + "/" + (pc.startHp * pc.level));
     drawColoredText(10, 40, COLOR_MID_GRAY, COLOR_BLACK, "Exp:" + pc.exp);
@@ -249,7 +255,9 @@ def drawCamp() {
 }
 
 def drawPartyInventory() {
-    drawColoredText(10, 10, COLOR_WHITE, COLOR_BLACK, "Party Inventory for _7_" + player.party[player.partyIndex].name);
+    pc := player.party[player.partyIndex];
+    drawImage(10, 10, pc.image);
+    drawColoredText(35, 14, COLOR_WHITE, COLOR_BLACK, "Party Inventory for _7_" + pc.name);
     drawListUi(10, 30);
     drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to use item");
@@ -259,7 +267,8 @@ def drawPartyInventory() {
 
 def drawCharEquipment() {
     pc := player.party[player.partyIndex];
-    drawColoredText(10, 10, COLOR_WHITE, COLOR_BLACK, "Equipment of _7_" + pc.name);
+    drawImage(10, 10, pc.image);
+    drawColoredText(35, 14, COLOR_WHITE, COLOR_BLACK, "Equipment of _7_" + pc.name);
     drawListUi(10, 30);
     if(equipmentSlot = null) {
         drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
