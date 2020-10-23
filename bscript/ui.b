@@ -101,8 +101,7 @@ def drawColoredText(x, y, fg, bg, text) {
     }
 }
 
-def drawPcList(x, y, color) {
-    drawRect(x, y, x + (320 - x - 5), 45, color);
+def drawPcList(x, y) {
     array_foreach(player.party, (i, p) => {
         color := COLOR_MID_GRAY;
         if(i = player.partyIndex) {
@@ -286,22 +285,23 @@ def drawCharEquipment() {
 
 def drawAPBar() {
     if(combat.playerControl) {
-        apColor := COLOR_GREEN;
+        apColor := COLOR_YELLOW;
     } else {
-        apColor := COLOR_MID_GRAY;
+        apColor := COLOR_DARK_GRAY;
     }
     combatRound := combat.round[combat.roundIndex];
-    drawText(5, 10 + TILE_H * MAP_VIEW_H, apColor, COLOR_BLACK, "AP:");
+    drawText(7, 12 + TILE_H * MAP_VIEW_H, apColor, COLOR_MID_GRAY, "AP:");
     fillRect(
         30, 
-        12 + TILE_H * MAP_VIEW_H, 
+        14 + TILE_H * MAP_VIEW_H, 
         30 + max(0, (combatRound.ap/10))*(TILE_W * MAP_VIEW_W - 30), 
-        15 + TILE_H * MAP_VIEW_H, 
+        17 + TILE_H * MAP_VIEW_H, 
         apColor);
+    drawText(187, 12 + TILE_H * MAP_VIEW_H, apColor, COLOR_MID_GRAY, combatRound.name);
 }
 
 def getUiColor() {
-    color := COLOR_DARK_BLUE;
+    color := null;
     if(gameMode = CONVO || gameMode = TRADE) {
         color := COLOR_TEAL;
     }
@@ -315,40 +315,67 @@ def isLargeUi() {
     return viewMode = INVENTORY || viewMode = EQUIPMENT || viewMode = BUY || viewMode = SELL || viewMode = CHAR_SHEET;
 }
 
+def drawBezel(sx, sy, ex, ey, darkColor, lightColor, n) {
+    range(0, n, 1, i => {
+        drawLine(sx - i, sy - i, ex + i, sy - i, lightColor);
+        drawLine(sx - i, sy - i, sx - i, ey + i, lightColor);
+        drawLine(ex + i, sy - i, ex + i, ey + i, darkColor);
+        drawLine(sx - i, ey + i, ex + i, ey + i, darkColor);
+    });
+}
+
+def drawMapBorder() {
+    drawBezel(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 2);
+}
+
 def drawUI() {
     clearVideo();
+    fillRect(0, 0, 320, 5, COLOR_MID_GRAY);
+    fillRect(0, 183, 320, 200, COLOR_MID_GRAY);
+    fillRect(0, 0, 3, 200, COLOR_MID_GRAY);
+    fillRect(317, 0, 320, 200, COLOR_MID_GRAY);
 
-    color := getUiColor();
     if(isLargeUi()) {
-        drawRect(4, 5, 315, 5 + TILE_H * MAP_VIEW_H, color);
+        drawBezel(4, 5, 315, 5 + TILE_H * MAP_VIEW_H, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 2);
 
         x := 10 + TILE_W * MAP_VIEW_W;
         y := MESSAGE_Y + 50;
-        drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color); 
+        drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), COLOR_LIGHT_GRAY); 
         drawGameMessages(x, MESSAGE_Y + 90);        
     } else {
-        drawRect(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, color);
+        drawMapBorder();
+        fillRect(183, 0, 185, 200, COLOR_MID_GRAY);
 
         # pc-s
         x := 10 + TILE_W * MAP_VIEW_W;
         y := 5;
-        drawPcList(x, y, color);
+        drawBezel(x, y, x + (320 - x - 5), 45, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 2);
+        drawPcList(x, y);
+        fillRect(x - 2, 47, 320, 49, COLOR_MID_GRAY);
 
         # party info
         y := 50;
-        drawRect(x, y, x + (320 - x - 5), MESSAGE_Y - 5, color); 
+        drawBezel(x, y, x + (320 - x - 5), MESSAGE_Y - 5, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 2); 
         drawColoredText(x + 5, y + 5, COLOR_MID_GRAY, COLOR_BLACK, "Coins _1_$" + player.coins);
         drawColoredText(x + 5, y + 15, COLOR_MID_GRAY, COLOR_BLACK, calendarString());
+        fillRect(x - 2, 78, 320, 80, COLOR_MID_GRAY);
 
         # messages
         y := MESSAGE_Y;
-        drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color); 
+        drawBezel(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 2); 
+        color := getUiColor();
+        if(color != null) {
+            drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), color);
+        }
         drawGameMessages(x, MESSAGE_Y + 90);
     }
 
     # show AP
+    drawBezel(3, 10 + TILE_H * MAP_VIEW_H, 316, 197, COLOR_DARK_GRAY, COLOR_LIGHT_GRAY, 1);    
     if(gameMode = COMBAT) {
         drawAPBar();
+    } else {
+        #drawText(7, 12 + TILE_H * MAP_VIEW_H, COLOR_DARK_GRAY, COLOR_MID_GRAY, "You are " + realMapName + ".");
     }
 
 

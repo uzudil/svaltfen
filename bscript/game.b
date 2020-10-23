@@ -264,7 +264,7 @@ def renderGame() {
         }
         array_foreach(map.monster, (i, m) => { m.visible := false; });
         drawViewRadius(mx, my, LIGHT_RADIUS * 2 - 1);
-        drawRect(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, getUiColor());
+        drawMapBorder();
         startCombat();
     }
 }
