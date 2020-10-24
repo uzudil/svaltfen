@@ -10,8 +10,8 @@ def renderDeath() {
     fillRect(6, 51, 315, 160, COLOR_BLACK);
     drawText(40, 55, COLOR_LIGHT_GRAY, COLOR_BLACK, "The din of battle fades and you ");
     drawText(60, 65, COLOR_LIGHT_GRAY, COLOR_BLACK, "succumb to your wounds.");
-    drawText(60, 140, COLOR_LIGHT_GRAY, COLOR_BLACK, "Eons pass - you are now");
-    drawText(40, 150, COLOR_LIGHT_GRAY, COLOR_BLACK, "a part of the land of Svaltfen.");
+    drawText(60, 140, COLOR_LIGHT_GRAY, COLOR_BLACK, "Eons pass as your ossified");
+    drawText(24, 150, COLOR_LIGHT_GRAY, COLOR_BLACK, "remains become a part of Svaltfen.");
     drawImage(122, 92, img["cand"]);
     drawImage(152, 92, img["bones"]);
     drawImage(180, 92, img["cand"]);
