@@ -174,14 +174,7 @@ def getLiveMonsters(monsters) {
 def checkCombatDone() {
     pc := array_filter(player.party, p => p.hp > 0);
     if(len(pc) = 0) {
-        if(mode != "death") {
-            gameMode := MOVE;
-            player.partyIndex := 0;
-            mode := "death";
-            MODES[mode].render();
-            updateVideo();
-            deathSound();
-        }
+        startDeathMode();
         return true;
     }
     live_monsters := array_filter(combat.monsters, m => isMonsterLive(m) && m.state[STATE_POSSESSED] = null);
@@ -544,7 +537,7 @@ def playerRangeAttack() {
         success := animateProjectile(
             player.x, player.y,
             combatRound.creature.rangeMonster.pos[0] , combatRound.creature.rangeMonster.pos[1],
-            [ img["arrow"], img["arrow2"] ],
+            array_map(combatRound.creature.ranged.rangeBlocks, rb => img[rb]),
             true
         );
         if(success) {

@@ -1895,3 +1895,14 @@ def gameCamp() {
     del player["hpBefore"];
     camping := false;
 }
+
+def startDeathMode() {
+    if(mode != "death") {
+        gameMode := MOVE;
+        player.partyIndex := 0;
+        mode := "death";
+        MODES[mode].render();
+        updateVideo();
+        deathSound();
+    }
+}

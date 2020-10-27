@@ -69,7 +69,7 @@ def addNotes(ch, notesStr) {
         c := c + int(s[2]);
         i := i + 1;
     }
-    trace("channel=" + ch + " notes=" + c);
+    # trace("channel=" + ch + " notes=" + c);
 }
 
 def initTitle() {

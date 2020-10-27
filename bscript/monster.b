@@ -24,7 +24,7 @@ MONSTERS := [
     },
     { "name": "Nixbeetle", "block": "beetle", 
         "onDeath": self => {
-            if(getGameState("nixbeetle_quest") != null && getGameState("nixbeetle_trophy") = null) {
+            if(getGameState("nixbeetle_trophy") = null) {
                 setGameState("nixbeetle_trophy", true);
                 saveGame();
                 gameMessage("You take a bloody piece of the dead beetle's carapce with you.", COLOR_GREEN);

@@ -106,7 +106,7 @@ const ITEMS = [
     { "name": "Hunting bow", "level": 2, "price": 42, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 3, 5 ], "range": 6 },
     { "name": "Crossbow", "level": 3, "price": 75, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 2, 6 ], "range": 6 },
     { "name": "Heavy Crossbow", "level": 4, "price": 120, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 3, 6 ], "range": 6 },
-    { "name": "Throwing Knife", "level": 2, "price": 60, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 1, 2 ], "range": 3 },
+    { "name": "Throwing Knife", "level": 2, "price": 60, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 1, 2 ], "range": 3, "rangeBlocks": [ "knife", "knife2" ] },
 
     { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "light": 3 },
     { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },

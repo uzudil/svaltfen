@@ -1,3 +1,5 @@
+const DEFAULT_RANGEBLOCKS = [ "arrow", "arrow2" ];
+
 def newChar(name, imgName, level) {
     eq := {};
     array_foreach(SLOTS, (s, slot) => {
@@ -287,11 +289,16 @@ def calculateArmor(pc) {
 
     if(pc.equipment[SLOT_RANGED] != null) {
         item := ITEMS_BY_NAME[pc.equipment[SLOT_RANGED].name];
+        rangeBlocks := item["rangeBlocks"];
+        if(rangeBlocks = null) {
+            rangeBlocks := DEFAULT_RANGEBLOCKS;
+        }
         pc["ranged"] := {
             "dam": [ item.dam[0] + attackBonus, item.dam[1] + attackBonus ],
             "weapon": item.name,
             "bonus": item.bonus,
             "slot": SLOT_RANGED,
+            "rangeBlocks": rangeBlocks,
         };
     } else {
         pc["ranged"] := null;

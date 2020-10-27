@@ -22,7 +22,7 @@ const STATES = [
         value := agePcState(pc, this);
         if(value = 0) {
             gameMessage(pc.name + " is hungry!", COLOR_RED);
-            takeDamage(pc, 1);
+            pcTakeDamageAndSwitch(pc, 1);
             return true;
         } else {
             if(value < 5) {
@@ -37,7 +37,7 @@ const STATES = [
         value := agePcState(pc, this);
         if(value = 0) {
             gameMessage(pc.name + " is thirsty!", COLOR_RED);
-            takeDamage(pc, 1);
+            pcTakeDamageAndSwitch(pc, 1);
             return true;
         } else {
             if(value < 5) {
@@ -53,7 +53,7 @@ const STATES = [
         if(value > 0) {
             dam := roll(2, 4);
             gameMessage(pc.name + " takes " + dam + " points of poison damage!", COLOR_RED);
-            takeDamage(pc, dam);
+            pcTakeDamageAndSwitch(pc, dam);
             return true;
         }
         return false;
@@ -179,4 +179,16 @@ def agePcState(pc, state) {
     stateIndex := STATE_NAME_INDEX[state.name];
     setState(pc, state.name, pc.state[stateIndex] - 1);
     return pc.state[stateIndex];
+}
+
+def pcTakeDamageAndSwitch(pc, dam) {
+    takeDamage(pc, dam);
+    if(pc.hp <= 0) {
+        index := array_find_index(player.party, p => p.hp > 0);
+        if(index < 0) {
+            startDeathMode();
+        } else {
+            player.partyIndex := index;
+        }
+    }
 }
