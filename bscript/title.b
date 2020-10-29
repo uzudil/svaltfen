@@ -189,11 +189,8 @@ def titleInput() {
         mode := "editor";
     }
     startGame := false;
-    if(isKeyPress(KeyEscape)) {
-        setVideoMode(0);
-        print("This will erase your progress!");
-        yn := input("Are you sure? (Y/N) ");
-        setVideoMode(1);
+    if(isKeyPress(KeyEscape) && savegameFound != null) {
+        yn := drawInput(20, 20, 300, 60, "This will erase your progress!", "Are you sure? (y/n) ", 1);
         if(yn = "Y" || yn = "y") {
             erase("savegame.dat");
             erase("*.mut");
@@ -214,10 +211,12 @@ def titleInput() {
             loopSound(1, false);
         } else {
             if(titleMode = 1) {
-                setVideoMode(0);
-                print("By what name will you be known?");
-                playerName := input("Name: ");
-                setVideoMode(1);
+                s := drawInput(20, 20, 300, 60, "Choose a name for your hero.", "Name: ", 8);
+                if(len(s) > 0) {
+                    playerName := s;
+                } else {
+                    titleMode := 0;
+                }
             }
         }
     }

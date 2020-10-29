@@ -324,6 +324,46 @@ def drawBezel(sx, sy, ex, ey, darkColor, lightColor, n) {
     });
 }
 
+
+def drawInput(sx, sy, ex, ey, message, prompt, maxLength) { 
+    drawBezel(sx, sy, ex, ey, COLOR_DARK_GRAY, COLOR_LIGHT_GRAY, 3);
+    drawRect(sx - 3, sy - 3, ex + 3, ey + 3, COLOR_BLACK);
+    fillRect(sx, sy, ex, ey, COLOR_MID_GRAY);
+    drawBezel(sx + 6, sy + 6, ex - 6, ey - 6, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 3);
+    s := "";
+
+    fillRect(sx + 7, sy + 7, ex - 6, ey - 6, COLOR_BLACK);
+    drawText(sx + 12, sy + 12, COLOR_WHITE, COLOR_BLACK, message);
+    drawText(sx + 12, sy + 22, COLOR_WHITE, COLOR_BLACK, prompt + s + "_");
+    updateVideo();
+
+    while(true) {
+        char := textInput();
+        if(char = null) {
+            return s;
+        } else {
+            if(char = "backspace") {
+                if(len(s) > 0) {
+                    s := substr(s, 0, len(s) - 1);
+                }
+            } else {
+                if(char = "escape") {
+                    return "";
+                } else {
+                    if(len(s) < maxLength) {
+                        s := s + char;
+                        changed := true;
+                    }
+                }
+            }
+        }
+        fillRect(sx + 7, sy + 7, ex - 6, ey - 6, COLOR_BLACK);
+        drawText(sx + 12, sy + 12, COLOR_WHITE, COLOR_BLACK, message);
+        drawText(sx + 12, sy + 22, COLOR_WHITE, COLOR_BLACK, prompt + s + "_");
+        updateVideo();
+    }
+}
+
 def drawMapBorder() {
     drawBezel(4, 5, 5 + TILE_W * MAP_VIEW_W, 5 + TILE_H * MAP_VIEW_H, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 2);
 }

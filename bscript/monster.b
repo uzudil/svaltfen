@@ -77,10 +77,7 @@ MONSTERS := [
         "drops": [ "coins", "Lance", "Round potion" ],
         "attack": [5,9], "range": 1, "attackAp": 4, "armor": 12, "startHp": 42, "level": 6, "speed": 4, 
         "hit_mods": { "fire": 5, "acid": 5, "electricity": -5, }, "wallBlocks": true,   
-        "isWeaponEffective": (self, item) => {
-            # magic weapons only
-            return item.bonus > 0;
-        },
+        "isWeaponEffective": (self, item) => isMagicWeaponOrBareHands(item),
     },
     { "name": "Gnork", "block": "gnork", 
         "drops": [ "coins", "Warhammer", "Kite shield", "Oval potion" ],
@@ -95,11 +92,8 @@ MONSTERS := [
     { 
         "name": "Werebear", "block": "bear3", 
         "attack": [5,9], "range": 1, "attackAp": 3, "armor": 11, "startHp": 45, "level": 5, "speed": 6, 
-        "wallBlocks": true, "isWeaponEffective": (self, item) => true,
-        "isWeaponEffective": (self, item) => {
-            # magic weapons only
-            return item.bonus > 0;
-        },
+        "wallBlocks": true, 
+        "isWeaponEffective": (self, item) => isMagicWeaponOrBareHands(item),
         "onHit": (self, pc) => {
             # there is a chance the character becomes poisoned
             if(random() >= 0.9) {
@@ -116,10 +110,7 @@ MONSTERS := [
             }
         }, 
         "hit_mods": { "acid": 5, "electricity": 2 }, "wallBlocks": true,  
-        "isWeaponEffective": (self, item) => {
-            # magic weapons only
-            return item.bonus > 0;
-        },
+        "isWeaponEffective": (self, item) => isMagicWeaponOrBareHands(item),
     },
     { "name": "Green Mold", "block": "slime1", 
         "drops": [ "coins" ],
@@ -202,19 +193,13 @@ MONSTERS := [
             }
         },
         "hit_mods": { "fire": -10, "mind": -10, "electricity": -10, "acid": -10 },     
-        "isWeaponEffective": (self, item) => {
-            # magic weapons only
-            return item.bonus > 0;
-        },
+        "isWeaponEffective": (self, item) => isMagicWeaponOrBareHands(item),
     },
     { "name": "Malleus", "block": "malleus", 
         "drops": [ "coins", "Warhammer", "Oval potion", "Tomes of Knowledge" ],
         "attack": [10,15], "range": 1, "attackAp": 4, "armor": 13, "startHp": 100, "level": 9, "speed": 7, "wallBlocks": true,
         "hit_mods": { "fire": -10, "mind": -10, "electricity": -10, "acid": -10 },     
-        "isWeaponEffective": (self, item) => {
-            # magic weapons only
-            return item.bonus > 0;
-        },
+        "isWeaponEffective": (self, item) => isMagicWeaponOrBareHands(item),
     },
     { "name": "Demon Prince", "block": "demon3", 
         "drops": [ "coins", "Lance", "Oval potion" ],
@@ -230,10 +215,7 @@ MONSTERS := [
         },  
         "hit_mods": { "fire": -5, "mind": -5, "electricity": -5, "acid": -5 },     
         "type": "demon",
-        "isWeaponEffective": (self, item) => {
-            # magic weapons only
-            return item.bonus > 0;
-        },
+        "isWeaponEffective": (self, item) => isMagicWeaponOrBareHands(item),
     },
     { "name": "Xurtang Thrall", "block": "alien1", 
         "drops": [ "coins", "Lance", "Oval potion" ],
@@ -261,4 +243,13 @@ def getHitMod(monster, save) {
         }
     }
     return 0;
+}
+
+def isMagicWeaponOrBareHands(item) {
+    if(item = null) {
+        return true;
+    } else {
+        # magic weapons only
+        return item.bonus > 0;
+    }
 }

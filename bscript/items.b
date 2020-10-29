@@ -95,7 +95,7 @@ const ITEMS = [
     { "name": "Lance", "level": 3, "price": 15, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 5 ] },
     { "name": "Short Axe", "level": 3, "price": 16, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 2, 6 ] },
     { "name": "Greatsword", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 6, 9 ] },
-    { "name": "Greatsaxe", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 10 ] },
+    { "name": "Greataxe", "level": 5, "price": 42, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 10 ] },
 
     { "name": "Demonsbane Sword", "level": 6, "price": 800, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 4, 8 ], "bonus": 4, "bonusVs": "demon" },
     { "name": "Axe of Undeath", "level": 6, "price": 800, "type": OBJECT_WEAPON, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "dam": [ 5, 8 ], "bonus": 3, "bonusVs": "undead" },
@@ -207,6 +207,9 @@ def initItems() {
             });
         }
     });
+
+    # an earlier misspelling
+    ITEMS_BY_NAME["Greatsaxe"] := ITEMS_BY_NAME["Greataxe"];
 }
 
 def getRandomItem(types, level) {
