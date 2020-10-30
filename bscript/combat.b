@@ -140,7 +140,7 @@ def initCombatRound() {
 
     # age states
     if(len(combat.round) > combat.roundIndex) {
-        calendarStep();    
+        calendarStep(true);    
     }
 
     gameMessage("Combat!", COLOR_RED);

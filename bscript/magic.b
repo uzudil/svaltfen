@@ -16,7 +16,7 @@ def initMagic() {
     SPELLS := [
         [
             { "name": "Party rations", "onParty": self => createFood(5), "type": SPELL_TYPE_AID },
-            { "name": "Minor Healing", "onPc": (self, pc) => gainHp(pc, 10), "type": SPELL_TYPE_AID },
+            { "name": "Minor Healing", "onPc": (self, pc) => gainHp(pc, 10, true), "type": SPELL_TYPE_AID },
             { "name": "Protect Ally", "onPc": (self, pc) => setState(pc, STATE_SHIELD, 150), "type": SPELL_TYPE_AID },
         ],
         [
@@ -31,6 +31,7 @@ def initMagic() {
                 "type": SPELL_TYPE_ATTACK
             },
             { "name": "Cure Poison", "onPc": (self, pc) => setState(pc, STATE_POISON, 0), "type": SPELL_TYPE_AID },
+            { "name": "Phantom Lockpick", "onParty": self => openLock(), "type": SPELL_TYPE_EXPLORE, },
             { 
                 "name": "Cast Light",  
                 "onParty": self => {
@@ -58,7 +59,7 @@ def initMagic() {
         ],
         [
             { "name": "Party feast", "onParty": self => createFood(10), "type": SPELL_TYPE_AID },
-            { "name": "Full Healing", "onPc": (self, pc) => gainHp(pc, pc.level * pc.startHp), "type": SPELL_TYPE_AID },
+            { "name": "Full Healing", "onPc": (self, pc) => gainHp(pc, pc.level * pc.startHp, true), "type": SPELL_TYPE_AID },
             { 
                 "name": "Remember Location", 
                 "onParty": self => storeLocation(),
@@ -119,7 +120,7 @@ def initMagic() {
         ],
         [
             { "name": "Remove Curse", "onPc": (self, pc) => setState(pc, STATE_CURSE, 0), "type": SPELL_TYPE_AID },
-            { "name": "Heal All", "onParty": self => array_foreach(player.party, (i, pc) => gainHp(pc, pc.level * pc.startHp)), "type": SPELL_TYPE_AID },
+            { "name": "Heal All", "onParty": self => array_foreach(player.party, (i, pc) => gainHp(pc, pc.level * pc.startHp, true)), "type": SPELL_TYPE_AID },
             { "name": "Protect All", "onParty": self => array_foreach(player.party, (i, pc) => setState(pc, STATE_SHIELD, 150)), "type": SPELL_TYPE_AID },
             { 
                 "name": "Summon Monster",

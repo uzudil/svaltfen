@@ -50,7 +50,17 @@ def gainExp(pc, amount) {
     }
 }
 
-def gainHp(pc, amount) {
+def healParty() {
+    array_foreach(player.party, (i, pc) => {
+        if(getGameState("enhanced_heal") != null) {
+            gainHp(pc, 3, false);
+        } else {
+            gainHp(pc, 1, false);
+        }
+    });
+}
+
+def gainHp(pc, amount, messageOnNoop) {
     old := pc.hp;
     # dead characters can't heal
     if(pc.hp > 0) {    
@@ -59,7 +69,9 @@ def gainHp(pc, amount) {
     if(pc.hp > old) {
         gameMessage(pc.name + " gains " + (pc.hp - old) + " health points.", COLOR_GREEN);
     } else {
-        gameMessage("Nothing happens for " + pc.name + ".", COLOR_MID_GRAY);
+        if(messageOnNoop) {
+            gameMessage("Nothing happens for " + pc.name + ".", COLOR_MID_GRAY);
+        }
     }
 }
 
@@ -101,7 +113,7 @@ def drink(pc, amount) {
 def resurrect(pc) {
     gameMessage(pc.name + " returns to life!", COLOR_GREEN);
     pc.hp := 1; 
-    gainHp(pc, pc.level * pc.startHp); 
+    gainHp(pc, pc.level * pc.startHp, true); 
     resetStats(pc);
 }
 

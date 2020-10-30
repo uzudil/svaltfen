@@ -64,20 +64,27 @@ def calendarString() {
     return WEEK_DAYS[player.calendar.day % len(WEEK_DAYS)] + " " + hour + ":" + mins + ampm;
 }
 
-def calendarStep() {
+def calendarStep(runEffects) {
     calendarTic := calendarTic + 1;
     if(calendarTic > STATE_TICS) {
         calendarTic := 0;
-        ageState("step");
+        # drawing effects during map transition causes problems: this is a band-aid fix
+        if(runEffects) {
+            ageState("step");
+        }
     }
     player.calendar.step := player.calendar.step + getStepDelta();
     if(abs(player.calendar.step - player.calendar.stateStep) > STATE_STEPS) {
         player.calendar.stateStep := player.calendar.step;
-        ageState("age");
+        # drawing effects during map transition causes problems: this is a band-aid fix
+        if(runEffects) {
+            ageState("age");
+        }
     } 
     if(player.calendar.step >= STEPS_PER_HOUR) {
         player.calendar.step := 0;
         player.calendar.hour := player.calendar.hour + 1;
+        healParty();
         if(player.calendar.hour >= HOURS_PER_DAY) {
             player.calendar.hour := 0;
             player.calendar.day := player.calendar.day + 1;
@@ -91,7 +98,7 @@ def advanceCalendar(hours, fx) {
     cont := true;
     while(cont && hours > 0) {
         h := player.calendar.hour;
-        calendarStep();
+        calendarStep(true);
         cont := fx();
         if(h != player.calendar.hour) {
             hours := hours - 1;

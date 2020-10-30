@@ -24,10 +24,6 @@ def deathInput() {
         while(isKeyDown(KeySpace)) {
         }
         mode := "title";
-
-        # delete savegame may be too harsh...
-        #erase("savegame.dat");
-        #erase("*.mut");
     }
     if(mode != "death") {
         MODES[mode].init();

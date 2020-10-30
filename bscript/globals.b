@@ -22,6 +22,8 @@ minimap := [];
 
 const ARROW_SPRITE = 0;
 
+const APP_DIR = ".svaltfen";
+
 const MODES = {
     "title": {
         "init": self => initTitle(),

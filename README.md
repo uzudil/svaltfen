@@ -11,11 +11,11 @@ destroy humanity.
 
 <img src="images/shore.png">
 
-Explore the land of Svaltfen in your search for answers. During your journey you will find other heroes willing to risk their lives to aid your on your quest. Together with your (up to four) companions you will complete an epic adventure and learn the mysteries of a compelling story.
+Explore the land of Svaltfen in your search for answers. During your journey you will find other heroes willing to risk their lives to aid your on your quest. Together with your (up to three) companions you will complete an epic adventure and learn the mysteries of a compelling story.
 
 <img src="images/sunset.png">
 
-As you combat the curse, you will observe a full day/night cycle. You can choose to camp at night in the wilderness to rest, eat/drink and replenish your magical reserves.
+As you journey on your quest, you will observe a full day/night cycle. You can choose to camp at night in the wilderness to rest, eat/drink and replenish your magical reserves.
 
 <img src="images/explore.png">
 
@@ -24,5 +24,7 @@ Learn the history and explore the ruins of an ancient civilization while unravel
 <img src="images/combat.png">
 
 Sometimes you will have to fight and defend yourself against a variety of menacing fauna and mythical beasts, as you explore the darkened depths beneath the land of Svaltfen. During combat you may choose from various melee and ranged weapons, as well as from over 30 magical spells. The action is presented in old-school, turn based combat that values strategy over a fast reaction time.
+
+The <i>Curse of Svaltfen</i> is written in <a href="https://github.com/uzudil/benji4000/wiki/LanguageFeatures">bscript</a> and runs on the <a href="https://github.com/uzudil/benji4000">Benji4000</a> virtual machine.
 
 <span style="color: gray">Gabor Torok (c) MMXX</span>

@@ -74,7 +74,7 @@ def addNotes(ch, notesStr) {
 
 def initTitle() {
     titleMode := 0;
-    savegameFound := load("savegame.dat");
+    savegameFound := load("savegame.dat", APP_DIR);
 
     clearSound(0);
     clearSound(1);
@@ -192,8 +192,8 @@ def titleInput() {
     if(isKeyPress(KeyEscape) && savegameFound != null) {
         yn := drawInput(20, 20, 300, 60, "This will erase your progress!", "Are you sure? (y/n) ", 1);
         if(yn = "Y" || yn = "y") {
-            erase("savegame.dat");
-            erase("*.mut");
+            erase("savegame.dat", APP_DIR);
+            erase("*.mut", APP_DIR);
             startGame := true;
             savegameFound := null;
         }

@@ -109,8 +109,8 @@ const ITEMS = [
     { "name": "Throwing Knife", "level": 2, "price": 60, "type": OBJECT_WEAPON, "slot": SLOT_RANGED, "dam": [ 1, 2 ], "range": 3, "rangeBlocks": [ "knife", "knife2" ] },
 
     { "name": "Torch", "level": 1, "price": 2, "type": OBJECT_SUPPLIES, "slot": [ SLOT_LEFT_HAND, SLOT_RIGHT_HAND ], "light": 3 },
-    { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES },
-    { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES },
+    { "name": "Lockpick", "level": 1, "price": 3, "type": OBJECT_SUPPLIES, "use": (self, pc) => openLock() },
+    { "name": "Rope", "level": 1, "price": 4, "type": OBJECT_SUPPLIES, "use": (self, pc) => escapeCave() },
     { "name": "Gold ring", "level": 3, "price": 200, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
     { "name": "Diamond ring", "level": 4, "price": 500, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
     { "name": "Emerald ring", "level": 3, "price": 450, "type": OBJECT_SUPPLIES, "slot": [ SLOT_RING1, SLOT_RING2 ] },
@@ -123,8 +123,8 @@ const ITEMS = [
     { "name": "Silver chains", "level": 3, "price": 250, "type": OBJECT_SUPPLIES },
     { "name": "Ruby pin", "level": 2, "price": 50, "type": OBJECT_SUPPLIES },
 
-    { "name": "Round potion", "level": 1, "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10) },
-    { "name": "Oval potion", "level": 1, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35) },
+    { "name": "Round potion", "level": 1, "price": 3, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 10, true) },
+    { "name": "Oval potion", "level": 1, "price": 12, "type": OBJECT_POTION, "use": (self, pc) => gainHp(pc, 35, true) },
     { "name": "Hazy potion", "level": 1, "price": 6, "type": OBJECT_POTION, "use": (self, pc) => setState(pc, STATE_POISON, 0) },
     { "name": "Cloudy potion", "level": 1, "price": 8, "type": OBJECT_POTION, "use": (self, pc) => setState(pc, STATE_PARALYZE, 0) },
     { "name": "Mirror potion", "level": 1, "price": 10, "type": OBJECT_POTION, "use": (self, pc) => setState(pc, STATE_CURSE, 0) },

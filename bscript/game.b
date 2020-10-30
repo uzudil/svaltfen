@@ -53,9 +53,9 @@ mapMutation := null;
 disabledMonsters := [];
 
 const HEALING_LIST = [
-    { "name": "Minor healing", "price": 10, "action": (self, pc) => gainHp(pc, 10), },
-    { "name": "Major healing", "price": 32, "action": (self, pc) => gainHp(pc, 50), },
-    { "name": "Absolute healing", "price": 55, "action": (self, pc) => gainHp(pc, pc.level * pc.startHp), },
+    { "name": "Minor healing", "price": 10, "action": (self, pc) => gainHp(pc, 10, true), },
+    { "name": "Major healing", "price": 32, "action": (self, pc) => gainHp(pc, 50, true), },
+    { "name": "Absolute healing", "price": 55, "action": (self, pc) => gainHp(pc, pc.level * pc.startHp, true), },
     { "name": "Cure ailments", "price": 75, "action": (self, pc) => cureAilments(pc), },
     { "name": "Resurrection", "price": 128, "action": (self, pc) => resurrect(pc), },
 ];
@@ -68,7 +68,7 @@ def initGame() {
     initDistances();
     initMagic();
 
-    savegame := load("savegame.dat");
+    savegame := load("savegame.dat", APP_DIR);
     if(savegame = null) {
         player := {
             "x": 18,
@@ -176,11 +176,11 @@ def expandMonster(mon) {
 
 def gameLoadMap(name) {
     loadMap(name);
-    calendarStep();
+    calendarStep(false);
 
     disabledMonsters := [];
 
-    mapMutation := load(name + ".mut");
+    mapMutation := load(name + ".mut", APP_DIR);
     if(mapMutation = null) {
         mapMutation := {
             "blocks": {},
@@ -246,7 +246,7 @@ def renderGame() {
         if(rangeFinder = false) {
             if(gameMode = MOVE) {
                 moveNpcs();
-                calendarStep();
+                calendarStep(true);
             }
             ageEqipment();
         }
@@ -559,6 +559,22 @@ def gameEnterMap() {
     }
 }
 
+def escapeCave() {
+    if(isDarkMap()) {
+        if(gameMode = COMBAT) {
+            gameMessage("Rope can not be used during combat.", COLOR_MID_GRAY);
+            return false;
+        } else {
+            gameEnterMapByName(player["lastMap"], player["lastMapX"], player["lastMapY"]);
+            gameMessage("You use a rope and climb to safety.", COLOR_GREEN);
+            return true;
+        }
+    } else {
+        gameMessage("Rope can only be used underground.", COLOR_MID_GRAY);
+        return false;
+    }
+}
+
 def gameEnterMapByName(name, mx, my) {
     lastMap := mapName;
     lastMapX := player.x;
@@ -604,56 +620,71 @@ def aroundLocation(x, y, fx) {
 def gameUseDoor(mx, my) {
     return aroundLocation(mx, my, (x, y) => {
         block := blocks[getBlock(x, y).block];
-        if(block["nextState"] != null) {
-            if(events[mapName]["onDoor"] != null) {
-                if(events[mapName].onDoor(x, y)) {
-                    return true;
-                }
-            }
-            index := getBlockIndexByName(block.nextState);
-            setBlock(x, y, index, 0);
-            setGameBlock(x, y, index);
-            #gameMessage("Use a door.", COLOR_MID_GRAY);
-            return true;
-        } else {
+        if(block.img = "locked") {
+            gameMessage("This door is locked.", COLOR_MID_GRAY);
             return null;
+        } else {
+            if(block["nextState"] != null) {
+                if(events[mapName]["onDoor"] != null) {
+                    if(events[mapName].onDoor(x, y)) {
+                        return true;
+                    }
+                }
+                index := getBlockIndexByName(block.nextState);
+                setBlock(x, y, index, 0);
+                setGameBlock(x, y, index);
+                return true;
+            } else {
+                return null;
+            }
         }
     });
 }
 
-def gameSearchQuiet(mx, my) {
-    return aroundLocation(mx, my, (x, y) => {
-        space := getBlockIndexByName("space");
-        block := getBlock(x, y).block;
-        if(map.secrets["" + x + "," + y] = 1 && block != space) {
-            if(events[mapName]["onSecret"] != null) {
-                if(events[mapName].onSecret(x, y) = false) {
-                    return false;
-                }
-            }
-            setBlock(x, y, space, 0);
-            setGameBlock(x, y, space);
-            gameMessage("Found a secret door!", COLOR_MID_GRAY);
+def openLock() {
+    door := getBlockIndexByName("door1");
+    ret := aroundPlayer((x, y) => {
+        block := blocks[getBlock(x, y).block];
+        if(block.img = "locked") {
+            # todo: roll dice?
+            setBlock(x, y, door, 0);
+            setGameBlock(x, y, door);
+            gameMessage("You unlock the door!", COLOR_MID_GRAY);
             return true;
         }
         return null;
     });
+    if(ret = true) {
+        return ret;
+    }
+    gameMessage("There is no lock to unlock!", COLOR_MID_GRAY);
+    return false;
+}
+
+def isSecretDoor(x, y) {
+    space := getBlockIndexByName("space");
+    block := getBlock(x, y).block;
+    if(map.secrets["" + x + "," + y] = 1 && block != space) {
+        if(events[mapName]["onSecret"] != null) {
+            if(events[mapName].onSecret(x, y) = false) {
+                return false;
+            }
+        }
+        setBlock(x, y, space, 0);
+        setGameBlock(x, y, space);
+        gameMessage("Found a secret door!", COLOR_MID_GRAY);
+        return true;
+    }
+    return null;
+}
+
+def gameSearchQuiet(mx, my) {
+    return aroundLocation(mx, my, isSecretDoor);
 }
 
 def gameSearch() {
-    gameMessage("Searching...", COLOR_MID_GRAY);
     return aroundPlayer((x, y) => {
-        space := getBlockIndexByName("space");
-        block := getBlock(x, y).block;
-        if(map.secrets["" + x + "," + y] = 1 && block != space) {
-            if(events[mapName]["onSecret"] != null) {
-                if(events[mapName].onSecret(x, y) = false) {
-                    return false;
-                }
-            }
-            setBlock(x, y, space, 0);
-            setGameBlock(x, y, space);
-            gameMessage("Found a secret door!", COLOR_MID_GRAY);
+        if(isSecretDoor(x, y) = true) {
             return true;
         } else {
             lootIndex := array_find_index(map.loot, e => e.pos[0] = x && e.pos[1] = y);
@@ -827,11 +858,11 @@ def saveGame() {
         rangeMonsters[len(rangeMonsters)] := pc["rangeMonster"];
         pc["rangeMonster"] := null;
     });
-    save("savegame.dat", player);
+    save("savegame.dat", player, APP_DIR);
     array_foreach(player.party, (i, pc) => {
         pc["rangeMonster"] := rangeMonsters[i];
     });
-    save(mapName + ".mut", mapMutation);
+    save(mapName + ".mut", mapMutation, APP_DIR);
 }
 
 def endConvo() {
@@ -911,7 +942,6 @@ def moveInput(apUsed) {
                         actionSound();
                     } else {
                         buzzer();
-                        gameMessage("You find nothing.", COLOR_MID_GRAY);
                     }
                 } else {
                     actionSound();
@@ -1491,9 +1521,18 @@ def useItem(index, selection) {
     if(item["use"] != null) {
         pc := player.party[player.partyIndex];
         gameMessage(pc.name + " uses " + item.name, COLOR_MID_GRAY);
-        item.use(pc);
-        del player.inventory[invIndex];
-        initPartyInventoryType(invMode, "");
+        res := item.use(pc);
+        # use() can return null, true or false. 
+        # true or null - remove item
+        # null - close inventory screen
+        if(res != false) {
+            del player.inventory[invIndex];
+        }
+        if(res = true) {
+            endConvo();
+        } else {
+            initPartyInventoryType(invMode, "");
+        }
     } else {
         gameMessage("You cannot use that item.", COLOR_MID_GRAY);
     }
@@ -1569,7 +1608,7 @@ def initAccomplishmentsList() {
         list[len(list)] := "your injuries heal";
         list[len(list)] := "faster than normal.";
     }
-    setListUi(list, [], "No accomplishments so far");
+    setListUi(list, [], "No accomplishments");
 }
 
 def operateSwitch(x, y, switchX, switchY, dstX, dstY, dstClosed, dstOpen) {
