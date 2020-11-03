@@ -84,7 +84,7 @@ def calendarStep(runEffects) {
     if(player.calendar.step >= STEPS_PER_HOUR) {
         player.calendar.step := 0;
         player.calendar.hour := player.calendar.hour + 1;
-        healParty();
+        healPartyIfCamping();
         if(player.calendar.hour >= HOURS_PER_DAY) {
             player.calendar.hour := 0;
             player.calendar.day := player.calendar.day + 1;

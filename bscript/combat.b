@@ -157,10 +157,17 @@ def getLiveMonsters(monsters) {
             if(m.state[STATE_POSSESSED] != null) {
                 target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= MONSTER_NOTICE_DISTANCE && abs(m.pos[1] - t.pos[1]) <= MONSTER_NOTICE_DISTANCE && m.id != t.id && t.state[STATE_POSSESSED] = null);
             } else {
+                # try to target the possessed monster first,
                 target := array_find(map.monster, t => abs(m.pos[0] - t.pos[0]) <= MONSTER_NOTICE_DISTANCE && abs(m.pos[1] - t.pos[1]) <= MONSTER_NOTICE_DISTANCE && m.id != t.id && t.state[STATE_POSSESSED] != null);
-                if(target = null) {
-                    target := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= 6 && abs(m.pos[1] - pc.pos[1]) <= 6);
+                if(target != null) {
+                    path := findPath(m, target);
+                    if(len(path) > 0) {
+                        m["path"] := path;
+                        return true;
+                    }
                 }
+                # otherwise, target a pc
+                target := array_find(player.party, pc => abs(m.pos[0] - pc.pos[0]) <= MONSTER_NOTICE_DISTANCE && abs(m.pos[1] - pc.pos[1]) <= MONSTER_NOTICE_DISTANCE);
             }
             if(target != null) {
                 m["path"] := findPath(m, target);

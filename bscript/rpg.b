@@ -50,14 +50,16 @@ def gainExp(pc, amount) {
     }
 }
 
-def healParty() {
-    array_foreach(player.party, (i, pc) => {
-        if(getGameState("enhanced_heal") != null) {
-            gainHp(pc, 3, false);
-        } else {
-            gainHp(pc, 1, false);
-        }
-    });
+def healPartyIfCamping() {
+    if(camping) {
+        array_foreach(player.party, (i, pc) => {
+            if(getGameState("enhanced_heal") != null) {
+                gainHp(pc, 3, false);
+            } else {
+                gainHp(pc, 1, false);
+            }
+        });
+    }
 }
 
 def gainHp(pc, amount, messageOnNoop) {

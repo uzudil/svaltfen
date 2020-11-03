@@ -820,7 +820,14 @@ def showConvoText() {
             # add the punctuation
             result.words := result.words + substr(s, len(w[0]));
         } else {
-            result.words := result.words + s;
+            if(substr(s, 0, 6) = "_name_") {
+                result.words := result.words + player.party[0].name;
+                if(len(s) > 6) {
+                    result.words := result.words + substr(s, 6, len(s));
+                }
+            } else {
+                result.words := result.words + s;
+            }
         }
     });
     addGameMessage(" ", COLOR_MID_GRAY, true);
@@ -1855,7 +1862,7 @@ def canMoveTo(id, mx, my, targetId, wallBlocks) {
         block := blocks[mapBlock.block];
         blocked := block.blocking && wallBlocks;
         if(blocked = false && mapBlock["blocker"] != null) {
-            blocked := mapBlock["blocker"] != id;
+            blocked := mapBlock["blocker"] != id && mapBlock["blocker"] != targetId;
         }
         return blocked = false;
     }
