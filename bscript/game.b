@@ -47,6 +47,7 @@ convo := {
     "key": null,
     "answers": [],
     "saleItems": [],
+    "answerIndex": 0,
 };
 
 mapMutation := null;
@@ -832,8 +833,20 @@ def showConvoText() {
     });
     addGameMessage(" ", COLOR_MID_GRAY, true);
     addGameMessage(result.words, COLOR_MID_GRAY, true);
-    array_foreach(result.answers, (i, s) => addGameMessage("" + (i + 1) + ": " + s[0], COLOR_WHITE, true));
+    #array_foreach(result.answers, (i, s) => addGameMessage("" + (i + 1) + ": " + s[0], COLOR_WHITE, true));
     convo.answers := result.answers;
+    convo.answerIndex := 0;
+    drawConvoAnswers();
+}
+
+def drawConvoAnswers() {
+    array_foreach(convo.answers, (i, s) => {
+        color := COLOR_WHITE;
+        if(i = convo.answerIndex) {
+            color := COLOR_YELLOW;
+        }
+        replaceGameMessage("" + (i + 1) + ": " + s[0], color, true);
+    });
 }
 
 def setGameState(name, value) {
@@ -873,8 +886,10 @@ def saveGame() {
 }
 
 def endConvo() {
+    actionSound();
     clearViewMode();
     if(gameMode = CONVO) {
+        gameMessage("Bye.", COLOR_MID_GRAY);
         gameMode := MOVE;
     }
 }
@@ -1118,12 +1133,26 @@ def moveInput(apUsed) {
 }
 
 def convoInput() {
-    listUiInput();
+    if(viewMode != null) {
+        listUiInput();
+    }
 
     if(viewMode = null) {
         index := null;
-        if(isKeyDown(Key1) || isKeyDown(KeyEscape)) {
-            while(anyKeyDown()) {}
+        if(isKeyDown(KeyUp) && convo.answerIndex > 0) {
+            convo.answerIndex := convo.answerIndex - 1;
+            stepSound();
+            drawConvoAnswers();
+        }
+        if(isKeyDown(KeyDown) && convo.answerIndex < len(convo.answers) - 1) {
+            convo.answerIndex := convo.answerIndex + 1;
+            stepSound();
+            drawConvoAnswers();
+        }
+        if(isKeyPress(KeyEnter)) {
+            index := convo.answerIndex;
+        }
+        if(isKeyPress(Key1)) {
             index := 0;
         }
         if(isKeyPress(Key2)) {
@@ -1142,6 +1171,7 @@ def convoInput() {
             index := 5;
         }
         if(index != null) {
+            actionSound();
             if(index = 0) {
                 gameMode := MOVE;
                 clearViewMode();

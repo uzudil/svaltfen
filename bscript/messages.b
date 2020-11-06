@@ -60,6 +60,15 @@ def addGameMessage(message, color, isConvo) {
     }
 }
 
+def replaceGameMessage(message, color, isConvo) {
+    index := array_find_index(player.messages, s => s[0] = message);
+    if(index >= 0) {
+        player.messages[index][1] := color;
+    } else {
+        addGameMessage(message, color, isConvo);
+    }
+}
+
 def drawGameMessages(x, y) {
     ty := y;
     i := len(player.messages) - 1;
