@@ -1,5 +1,7 @@
 # The Curse of Svaltfen
 
+Download the <a href="/releases/latest">latest release</a>.
+
 <img src="images/title.png">
 
 Unravel the mysteries of a cursed land in this lost 8-bit rpg epic.
@@ -24,6 +26,8 @@ Learn the history and explore the ruins of an ancient civilization while unravel
 <img src="images/combat.png">
 
 Sometimes you will have to fight and defend yourself against a variety of menacing fauna and mythical beasts, as you explore the darkened depths beneath the land of Svaltfen. During combat you may choose from various melee and ranged weapons, as well as from over 30 magical spells. The action is presented in old-school, turn based combat that values strategy over a fast reaction time.
+
+Download the <a href="/releases/latest">latest release</a>.
 
 The <i>Curse of Svaltfen</i> is written in <a href="https://github.com/uzudil/benji4000/wiki/LanguageFeatures">bscript</a> and runs on the <a href="https://github.com/uzudil/benji4000">Benji4000</a> virtual machine.
 
