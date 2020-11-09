@@ -69,5 +69,5 @@ jobs:
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: svaltfen.win
-        path: svaltfen.EXE
+        name: svaltfen.win.zip
+        path: svaltfen.win.zip
