@@ -1,7 +1,0 @@
-- light ring quest (+ more special objects)
-- upper level at ashnar
-- another companion (woman)
-- states (hunger/thirst/poison)
-- projectiles
-- spells/magic
-- monster attack types
