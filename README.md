@@ -1,6 +1,6 @@
 # The Curse of Svaltfen
 
-Download the <a href="https://github.com/uzudil/svaltfen/releases/tag/1.0.0.rc3">latest release</a>.
+Download the <a href="https://github.com/uzudil/svaltfen/releases/latest">latest release</a>.
 
 <img src="images/title.png">
 
