@@ -219,14 +219,23 @@ MONSTERS := [
     },
     { "name": "Xurtang Thrall", "block": "alien1", 
         "drops": [ "coins", "Lance", "Oval potion" ],
-        "attack": [12,16], "range": 6, "rangeBlocks": [ "acid", "acid" ], "attackAp": 2, "armor": 6, "startHp": 100, "level": 10, "speed": 8, "wallBlocks": true,
+        "attack": [8,10], "range": 6, "rangeBlocks": [ "acid", "acid" ], "attackAp": 2, "armor": 6, "startHp": 100, "level": 10, "speed": 8, "wallBlocks": true,
+        "onHit": (self, pc) => {
+            if(random() >= 0.9) {
+                setState(pc, STATE_CURSE, 10);
+            }
+        },   
+        "hit_mods": { "fire": 2, "mind": -10, "electricity": 2, "acid": 2 },     
+        "type": "alien",
+        "isWeaponEffective": (self, item) => true,
+    },
+    { "name": "Xurtang Brood", "block": "alien2", 
+        "drops": [ "coins", "Lance", "Oval potion" ],
+        "attack": [12,16], "range": 1, "attackAp": 2, "armor": 6, "startHp": 100, "level": 10, "speed": 8, "wallBlocks": true,
         "onHit": (self, pc) => {
             # there is a chance the character becomes poisoned
             if(random() >= 0.9) {
                 setState(pc, STATE_PARALYZE, 10);
-            }
-            if(random() >= 0.9) {
-                setState(pc, STATE_CURSE, 10);
             }
         },   
         "hit_mods": { "fire": 2, "mind": -10, "electricity": 2, "acid": 2 },     

@@ -27,16 +27,18 @@ const CTRLS = [
 ];
 
 def showSpecialTeleporterWeaponMap(showMessage) {
-    if(getGameState("weapon_switches") >= 5) {
-        if(showMessage) {
-            gameMessage("A tremor shakes the earth!", COLOR_YELLOW);
+    b := 43;
+    if(getGameState("weapon_switches") != null) {
+        if(getGameState("weapon_switches") >= 5) {
+            if(showMessage) {
+                gameMessage("A tremor shakes the earth!", COLOR_YELLOW);
+            }
+            b := 112;
+        } else {
+            if(showMessage) {
+                gameMessage("Click.", COLOR_MID_GRAY);
+            }
         }
-        b := 112;
-    } else {
-        if(showMessage) {
-            gameMessage("Click.", COLOR_MID_GRAY);
-        }
-        b := 43;
     }
     setBlock(41, 41, b, 0);
     setGameBlock(41, 41, b);
@@ -75,9 +77,9 @@ const events_weapon = {
                 "Malleus": "Yes, like you, they came to us, threatening at first, then beguiling. Their rage at the sky-beings was useful to us at the time, though we no longer seem to be able to $locate them.",
                 "locate": "We sense all active forms, but Malleus is visible to us no more. Perhaps they have $deactivated?",
                 "deactivated": "Ah we see... that would explain their abscense. Their quest to control $Ectalius amused us.",
-                "Ectalius": "In the right hands, a mighty $weapon. Do you wish to $control|understanding Ectalius?",
-                "weapon": "$Malleus did not contain the understanding required to operate $Ectalius. Do you wish to acquire this $understanding?",
-                "understanding": "Know then that the weapon contains information. And information is the weapon. Eons ago we understood that only such a weapon can enthrall civilizations. The enthralled must willingly submit and only then is our job to control another successful. To this end we $built $Ectalius, the mighty weapon.",
+                "Ectalius": "In the right hands, a mighty $weapon. Do you wish to $control|mastery Ectalius?",
+                "weapon": "$Malleus did not contain the ken required to operate $Ectalius. Do you wish to acquire this $mastery?",
+                "mastery": "Know then that the weapon contains information. And information is the weapon. Eons ago we understood that only such a weapon can enthrall civilizations. The enthralled must willingly submit and only then is our job to control another successful. To this end we $built $Ectalius, the mighty weapon.",
                 "built": "Linked together through the deep reaches of space is $Ectalius. The writhing whorls of energy criss-cross the universe and connect the disparate units that make up the whole. Each conquered place contains a unit of the weapon. On each unit is written $truths which though known are not understood by the people there.",
                 "truths": "The truths contained in $Ectalius are always tailored to their space and mythos. Here, in what you call Svaltfen, the truth is about $you.",
                 "you": "Have you not wondered Fregnar what your role is in the shaping of this land? How is a resurrected hero of old to stop the battle between the Frehyen of sky and earth? The information in this unit of the weapon $Ectalius will set this truth $free.",

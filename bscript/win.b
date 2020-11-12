@@ -9,7 +9,7 @@ def renderWin() {
 
     drawBezel(5, 50, 315, 170, COLOR_LIGHT_GRAY, COLOR_DARK_GRAY, 3);
     fillRect(6, 51, 315, 170, COLOR_BLACK);
-    if(getGameState("game_win") != "sky") {
+    if(getGameState("game_win") = "sky") {
         drawText(20, 55, COLOR_WHITE, COLOR_BLACK, "You find yourself enveloped in");
         drawText(20, 65, COLOR_WHITE, COLOR_BLACK, "bright light.");
         drawImage(122, 92, img["oak"]);

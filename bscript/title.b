@@ -185,9 +185,9 @@ def renderTitle() {
 }
 
 def titleInput() {
-    #if(isKeyPress(KeyE)) {
-    #    mode := "editor";
-    #}
+    if(isKeyPress(KeyE)) {
+        mode := "editor";
+    }
     startGame := false;
     if(isKeyPress(KeyEscape) && savegameFound != null) {
         yn := drawInput(20, 20, 300, 60, "This will erase your progress!", "Are you sure? (y/n) ", 1);

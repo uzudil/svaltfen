@@ -149,7 +149,9 @@ def setMonsterEnabled(x, y, enabled) {
         if(idx = -1) {
             trace("Can't find monster at: " + x + "," + y);
         } else {
-            disabledMonsters[len(disabledMonsters)] := map.monster[idx];        
+            mapBlock := getBlock(map.monster[idx].pos[0], map.monster[idx].pos[1]);
+            mapBlock["blocker"] := null;
+            disabledMonsters[len(disabledMonsters)] := map.monster[idx];
             del map.monster[idx];
         }
     }
@@ -474,6 +476,8 @@ def moveNpcs() {
 
 def removeNpc(name) {
     npc := array_find(map.npc, n => n.name = name);
+    mapBlock := getBlock(npc.pos[0], npc.pos[1]);
+    mapBlock["blocker"] := null;
     npc.pos := [-1, -1];
     # mark them as removed
     mapMutation.npcs[name] := true;
@@ -1036,36 +1040,36 @@ def moveInput(apUsed) {
             viewMode := INVENTORY;
             initPartyInventoryList();
         }
-        if(isKeyPress(KeyA)) {
+        if(isKeyPress(KeyQ)) {
             viewMode := ACCOMPLISHMENTS;
             initAccomplishmentsList();
         }
     }
     if(viewMode = null) {
         if(rangeFinder) {
-            if(isKeyDown(KeyUp) && rangeY > 0) {
+            if(isUpMove() && rangeY > 0) {
                 rangeY := rangeY - 1;
             }
-            if(isKeyDown(KeyDown) && rangeY < 10) {
+            if(isDownMove() && rangeY < 10) {
                 rangeY := rangeY + 1;
             }
-            if(isKeyDown(KeyLeft) && rangeX > 0) {
+            if(isLeftMove() && rangeX > 0) {
                 rangeX := rangeX - 1;
             }
-            if(isKeyDown(KeyRight) && rangeX < 10) {
+            if(isRightMove() && rangeX < 10) {
                 rangeX := rangeX + 1;
             }
         } else {
-            if(isKeyDown(KeyUp)) {
+            if(isUpMove()) {
                 player.y := player.y - 1;
             }
-            if(isKeyDown(KeyDown)) {
+            if(isDownMove()) {
                 player.y := player.y + 1;
             }
-            if(isKeyDown(KeyLeft)) {
+            if(isLeftMove()) {
                 player.x := player.x - 1;
             }
-            if(isKeyDown(KeyRight)) {
+            if(isRightMove()) {
                 player.x := player.x + 1;
             }
 
@@ -1139,12 +1143,12 @@ def convoInput() {
 
     if(viewMode = null) {
         index := null;
-        if(isKeyDown(KeyUp) && convo.answerIndex > 0) {
+        if(isUpMove() && convo.answerIndex > 0) {
             convo.answerIndex := convo.answerIndex - 1;
             stepSound();
             drawConvoAnswers();
         }
-        if(isKeyDown(KeyDown) && convo.answerIndex < len(convo.answers) - 1) {
+        if(isDownMove() && convo.answerIndex < len(convo.answers) - 1) {
             convo.answerIndex := convo.answerIndex + 1;
             stepSound();
             drawConvoAnswers();
@@ -1462,7 +1466,7 @@ def setEquipmentList() {
         }
         return slot + ": " + name;
     });
-    setListUi(list, [ [ KeyEnter, donEquipment ], [ KeyD, doffEquipment ] ], "");
+    setListUi(list, [ [ KeyEnter, donEquipment ], [ KeyR, doffEquipment ] ], "");
 }
 
 def doffEquipment(index, selection) {
@@ -1596,7 +1600,7 @@ def initPartyInventoryType(index, selection) {
         return item.type = OBJECT_TYPES[invMode];
     }, list, invTypeList, null);
 
-    setListUi(list, [ [ KeyEnter, useItem ], [ KeyD, dropItem ] ], "No items of type " + OBJECT_TYPES[invMode]);    
+    setListUi(list, [ [ KeyEnter, useItem ], [ KeyR, dropItem ] ], "No items of type " + OBJECT_TYPES[invMode]);    
 }
 
 def initStackedItemList(itemFilterFx, names, indexes, nameSuffixFx) {

@@ -177,4 +177,5 @@ blocks := [
     { "img": "cave2", "color": COLOR_WHITE },    
     { "img": "bear3" }, 
     { "img": "locked", "blocking": true },
+    { "img": "alien2" },
 ];

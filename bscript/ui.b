@@ -21,7 +21,7 @@ def listUiInput() {
         return 1;
     }
 
-    if(isKeyDown(KeyDown) && listUi.index + listUi.page < len(listUi.list) - 1) {
+    if(isDownMove() && listUi.index + listUi.page < len(listUi.list) - 1) {
         listUi.index := listUi.index + 1;
         if(listUi.index >= 10) {
             listUi.index := 0;
@@ -29,7 +29,7 @@ def listUiInput() {
         }
         stepSound();
     }
-    if(isKeyDown(KeyUp) && listUi.index + listUi.page > 0) {
+    if(isUpMove() && listUi.index + listUi.page > 0) {
         listUi.index := listUi.index - 1;
         if(listUi.index < 0) {
             listUi.index := 9;
@@ -260,7 +260,7 @@ def drawPartyInventory() {
     drawListUi(10, 30);
     drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
     drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to use item");
-    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "D to drop item");
+    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "R to drop item");
     drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
 }
 
@@ -277,7 +277,7 @@ def drawCharEquipment() {
     drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
     drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter - equip");
     if(equipmentSlot = null) {
-        drawText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "D - remove");
+        drawText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "R - remove");
     } else {
         drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "For slot: _7_" + equipmentSlot);
     }
@@ -451,10 +451,10 @@ def drawUI() {
 def showGameHelp() {
     clearGameMessages();
     longMessage := true;
-    gameMessage("_1_Arrows: movement/attack", COLOR_MID_GRAY);
+    gameMessage("_1_Arrows or WASD: movement/attack", COLOR_MID_GRAY);
     gameMessage("_1_H: help", COLOR_MID_GRAY);
     gameMessage("_1_C: character sheet", COLOR_MID_GRAY);
-    gameMessage("_1_A: awards and skills", COLOR_MID_GRAY);
+    gameMessage("_1_Q: awards and skills", COLOR_MID_GRAY);
     gameMessage("_1_E: change equipment", COLOR_MID_GRAY);
     gameMessage("_1_I: party inventory", COLOR_MID_GRAY);
     gameMessage("_1_T: talk", COLOR_MID_GRAY);
