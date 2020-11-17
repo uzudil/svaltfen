@@ -2,21 +2,21 @@ const MESSAGES_WIDTH = 16;
 const MESSAGES_SIZE = 10;
 longMessage := false;
 
-def splitGameMessage(message) {
+def wordWrapMessage(message, width) {
     words := split(message, " ");
     t := 0;
     lines := [];
     line := "";
     while(t < len(words)) {
-        if(len(words[t]) >= MESSAGES_WIDTH) {
-            words[t] := substr(words[t], 0, MESSAGES_WIDTH - 1);
+        if(len(words[t]) >= width) {
+            words[t] := substr(words[t], 0, width - 1);
         }
         new := "";
         if(len(line) > 0) {
             new := new + " ";
         }
         new := new + words[t];
-        if(len(line + new) < MESSAGES_WIDTH) {
+        if(len(line + new) < width) {
             line := line + new;
             t := t + 1;
         } else {
@@ -28,6 +28,10 @@ def splitGameMessage(message) {
         lines[len(lines)] := line;
     }
     return lines;
+}
+
+def splitGameMessage(message) {
+    return wordWrapMessage(message, MESSAGES_WIDTH);
 }
 
 def pageGameMessages() {

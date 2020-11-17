@@ -53,6 +53,7 @@ def main() {
     setBackground(COLOR_BLACK);
 
     img := load("img.dat");
+    itemImg := load("items.dat");
     links := load("links");
     
     setColor(COLOR_TEAL, 24, 120, 24);

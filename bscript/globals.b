@@ -14,6 +14,7 @@ const TURN = 4;
 const MOUNTAIN = 5;
 
 img := null;
+itemImg := null;
 links := {};
 mapName := "world1";
 map := {};

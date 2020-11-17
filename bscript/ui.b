@@ -1,4 +1,8 @@
 const MESSAGE_Y = 81;
+const LIST_X = 10;
+const LIST_Y = 28;
+
+itemDetails := null;
 
 listUi := {
     "list": [],
@@ -6,14 +10,16 @@ listUi := {
     "page": 0,
     "index": 0,
     "onSelect": null,
+    "onHover": null,
 };
 
-def setListUi(list, onSelect, emptyMessage) {
+def setListUi(list, onSelect, onHover, emptyMessage) {
     listUi.list := list;
     listUi.onSelect := onSelect;
     listUi.page := 0;
     listUi.index := 0;
     listUi.emptyMessage := emptyMessage;
+    listUi.onHover := onHover;
 }
 
 def listUiInput() {
@@ -64,18 +70,21 @@ def drawListUi(x, y) {
             bg := COLOR_BLACK;
             if(i = listUi.index) {
                 fg := COLOR_YELLOW;
-                bg := COLOR_MID_GRAY;
+                bg := COLOR_BLACK;
+                if(listUi.onHover != null) {
+                    listUi.onHover(listUi.page + listUi.index, listUi.list[listUi.page + listUi.index]);
+                }
             }
             drawColoredText(x, y + i * 10, fg, bg, listUi.list[listUi.page + i]);
             i := i + 1;
         }
         if(listUi.page > 0) {
-            drawLine(x, y - 4, x + 2, y - 6, COLOR_GREEN);
-            drawLine(x + 2, y - 6, x + 4, y - 4, COLOR_GREEN);
+            drawLine(x, y - 2, x + 2, y - 4, COLOR_GREEN);
+            drawLine(x + 2, y - 4, x + 4, y - 2, COLOR_GREEN);
         }
         if(listUi.page + 10 < len(listUi.list)) {
-            drawLine(x, y + 102, x + 2, y + 104, COLOR_GREEN);
-            drawLine(x + 2, y + 104, x + 4, y + 102, COLOR_GREEN);
+            drawLine(x, y + 99, x + 2, y + 101, COLOR_GREEN);
+            drawLine(x + 2, y + 101, x + 4, y + 99, COLOR_GREEN);
         }
     }
 }
@@ -95,9 +104,20 @@ def drawColoredText(x, y, fg, bg, text) {
             word := parts[2];
             color := int(parts[1]);
         }
-        drawText(x + xx, y, color, COLOR_BLACK, word);
+        icon := null;
+        if(len(word) > 1) {
+            if(substr(word, 0, 1) = ">") {
+                icon := itemImg[substr(word, 1, len(word) - 1)];
+            }
+        }
+        if(icon = null) {
+            drawText(x + xx, y, color, bg, word);
+            xx := xx + len(word) * 8;
+        } else {
+            drawImage(x + xx, y - 1, icon);
+            xx := xx + 4;
+        }
         wi := wi + 1;
-        xx := xx + len(word) * 8;
     }
 }
 
@@ -114,30 +134,25 @@ def drawPcList(x, y) {
 
 def drawHeal() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Healing by " + convo.npc.name);
-    drawListUi(10, 30);
+    drawListUi(LIST_X, LIST_Y);
 
     pc := player.party[player.partyIndex];
     drawImage(10, 120, pc.image);
     drawText(35, 124, COLOR_WHITE, COLOR_BLACK, "Healing for " + pc.name);
 
-    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to buy service");
+    drawFooterText("Heal:ENTER Exit:Esc Coins: _1_$" + player.coins);    
 }
 
 def drawTradeBuy() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Inventory of " + convo.npc.name);
-    drawListUi(10, 30);
-    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to buy item");
-    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Party coins: _1_$" + player.coins);
+    drawListUi(LIST_X, LIST_Y);
+    drawFooterText("Buy:ENTER Exit:Esc Coins: _1_$" + player.coins);
 }
 
 def drawTradeSell() {
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Party Inventory");    
-    drawListUi(10, 30);
-    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter to sell item");
-    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "Party coins: _1_$" + player.coins);
+    drawListUi(LIST_X, LIST_Y);
+    drawFooterText("Sell:ENTER Exit:Esc Coins: _1_$" + player.coins);
 }
 
 def descAttack(p) {
@@ -215,14 +230,13 @@ def drawCharSheet() {
     drawColoredText(230, 50, COLOR_MID_GRAY, COLOR_BLACK, "Curse :" + asPercent(pc.save[STATE_NAME_INDEX[STATE_CURSE]]/20));
     drawColoredText(230, 60, COLOR_MID_GRAY, COLOR_BLACK, "Fear  :" + asPercent(pc.save[STATE_NAME_INDEX[STATE_SCARED]]/20));
 
-    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
+    drawFooterText("Pc:1-4 Exit:Esc");
 }
 
 def drawAccomplishments() {
     pc := player.party[player.partyIndex];
     drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Awards/Skills");
-    drawListUi(10, 30);
+    drawListUi(LIST_X, LIST_Y);
     drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
 }
 
@@ -230,15 +244,12 @@ def drawMagic() {
     pc := player.party[player.partyIndex];
     if(spell = null) {
         drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "Magic Spells");
-        drawListUi(10, 30);
-        drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to cast spell");
-        drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+        drawListUi(LIST_X, LIST_Y);
     } else {
         drawText(10, 10, COLOR_WHITE, COLOR_BLACK, "PC to cast spell on");
-        drawListUi(10, 30);
-        drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to cast spell");
-        drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+        drawListUi(LIST_X, LIST_Y);
     }
+    drawFooterText("Cast:ENTER Exit:Esc");
 }
 
 def drawCamp() {
@@ -249,38 +260,31 @@ def drawCamp() {
     drawColoredText(10, 90, COLOR_MID_GRAY, COLOR_BLACK, "Eat, drink, tell");
     drawColoredText(10, 100, COLOR_MID_GRAY, COLOR_BLACK, "scary stories and");
     drawColoredText(10, 110, COLOR_MID_GRAY, COLOR_BLACK, "sleep.");
-    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to camp");
-    drawColoredText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+    drawFooterText("Camp:ENTER Exit:Esc");
 }
 
 def drawPartyInventory() {
     pc := player.party[player.partyIndex];
     drawImage(10, 10, pc.image);
     drawColoredText(35, 14, COLOR_WHITE, COLOR_BLACK, "Party Inventory for _7_" + pc.name);
-    drawListUi(10, 30);
-    drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
-    drawText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "Enter to use item");
-    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "R to drop item");
-    drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
+    drawListUi(LIST_X, LIST_Y);
+    drawFooterText("Use:ENTER Drop:R Pc:1-4 Exit:Esc");
+}
+
+def drawFooterText(message) {
+    drawColoredText(7, 12 + TILE_H * MAP_VIEW_H, COLOR_DARK_GRAY, COLOR_MID_GRAY, message);
 }
 
 def drawCharEquipment() {
     pc := player.party[player.partyIndex];
     drawImage(10, 10, pc.image);
     drawColoredText(35, 14, COLOR_WHITE, COLOR_BLACK, "Equipment of _7_" + pc.name);
-    drawListUi(10, 30);
+    drawListUi(LIST_X, LIST_Y);
     if(equipmentSlot = null) {
-        drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return to game");
+        drawFooterText("Equip:ENTER Remove:R Pc:1-4 Exit:Esc");
     } else {
-        drawText(10, 140, COLOR_MID_GRAY, COLOR_BLACK, "Esc to return");
-    }
-    drawColoredText(10, 150, COLOR_MID_GRAY, COLOR_BLACK, "1-4 to see other pc");
-    drawText(10, 160, COLOR_MID_GRAY, COLOR_BLACK, "Enter - equip");
-    if(equipmentSlot = null) {
-        drawText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "R - remove");
-    } else {
-        drawColoredText(10, 170, COLOR_MID_GRAY, COLOR_BLACK, "For slot: _7_" + equipmentSlot);
-    }
+        drawFooterText("Equip:ENTER Exit:Esc For: _7_" + equipmentSlot);
+    }    
 }
 
 def drawAPBar() {
@@ -313,6 +317,10 @@ def getUiColor() {
 
 def isLargeUi() {
     return viewMode = INVENTORY || viewMode = EQUIPMENT || viewMode = BUY || viewMode = SELL || viewMode = CHAR_SHEET;
+}
+
+def isItemInfoUi() {
+    return viewMode = INVENTORY || viewMode = EQUIPMENT || viewMode = BUY || viewMode = SELL;
 }
 
 def drawBezel(sx, sy, ex, ey, darkColor, lightColor, n) {
@@ -381,7 +389,7 @@ def drawUI() {
         x := 10 + TILE_W * MAP_VIEW_W;
         y := MESSAGE_Y + 50;
         drawRect(x, y, x + (320 - x - 5), y + ((5 + TILE_H * MAP_VIEW_H) - y), COLOR_LIGHT_GRAY); 
-        drawGameMessages(x, MESSAGE_Y + 90);        
+        drawGameMessages(x, MESSAGE_Y + 90);
     } else {
         drawMapBorder();
         fillRect(183, 0, 185, 200, COLOR_MID_GRAY);
@@ -445,6 +453,16 @@ def drawUI() {
     }
     if(viewMode = CAMP) {
         drawCamp();
+    }
+
+    if(isLargeUi() && isItemInfoUi()) {
+        drawRect(0, y, x, y, COLOR_LIGHT_GRAY); 
+        if(itemDetails != null) {
+            array_foreach(
+                wordWrapMessage(describeItem(itemDetails.name), 23), 
+                (i, s) => drawColoredText(7, y + 2 + (i * 10), COLOR_MID_GRAY, COLOR_BLACK, s)
+            );
+        }
     }
 }
 

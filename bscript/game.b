@@ -1252,12 +1252,12 @@ def gameInput() {
 
 def initBuyList() {
     list := array_map(mapMutation.traders[convo.npc.name], item => item.name + " " + "$" + ITEMS_BY_NAME[item.name].price);
-    setListUi(list, [ [ KeyEnter, buyItem ] ], "There is nothing to buy");
+    setListUi(list, [ [ KeyEnter, buyItem ] ], hoverBuyItem, "There is nothing to buy");
 }
 
 def initHealList() {
     list := array_map(HEALING_LIST, item => item.name + " " + "$" + item.price);
-    setListUi(list, [ [ KeyEnter, healPc ] ], "");
+    setListUi(list, [ [ KeyEnter, healPc ] ], null, "");
 }
 
 def healPc(index, selection) {
@@ -1269,6 +1269,13 @@ def healPc(index, selection) {
         saveGame();
     } else {
         gameMessage("You don't have enough money to buy that.", COLOR_RED);
+    }
+}
+
+def hoverBuyItem(listUi, index, selection) {
+    inv := mapMutation.traders[convo.npc.name];
+    if(index < len(inv)) {
+        itemDetails := ITEMS_BY_NAME[inv[index].name];
     }
 }
 
@@ -1301,7 +1308,12 @@ def initSellList() {
             return array_find(trade, t => t = item.type) != null;
         }, names, convo.saleItems, item => " $" + item.sellPrice);
     }
-    setListUi(names, [ [ KeyEnter, sellItem ] ], "You have nothing to sell");
+    setListUi(names, [ [ KeyEnter, sellItem ] ], hoverSellItem, "You have nothing to sell");
+}
+
+def hoverSellItem(listUi, index, selection) {
+    invIndex := convo.saleItems[index][0];
+    itemDetails := ITEMS_BY_NAME[player.inventory[invIndex].name];
 }
 
 def sellItem(index, selection) {
@@ -1378,7 +1390,12 @@ def ageEqipment() {
 }
 
 def inventoryItemName(invItem) {
-    name := invItem.name;
+    item := ITEMS_BY_NAME[invItem.name];
+    name := "";
+    if(item["img"] != null) {
+        name := ">" + item.img + " ";
+    }
+    name := name + invItem.name;
     if(invItem.life < 4) {
         name := name + "*";
     } else {
@@ -1403,7 +1420,7 @@ def castSpell(index, selection) {
         spell := null;
     } else {
         if(spell["onPc"] != null) {
-            setListUi(array_map(player.party, pc => pc.name), [ [ KeyEnter, castSpellPc ] ], "");    
+            setListUi(array_map(player.party, pc => pc.name), [ [ KeyEnter, castSpellPc ] ], null, "");    
         } else {
             if(spell["onLocation"] != null) {
                 viewMode := null;
@@ -1439,7 +1456,7 @@ def castLocationSpell() {
 
 def setMagicList() {
     magicMode := null;
-    setListUi(SPELL_TYPES, [ [ KeyEnter, setMagicListType ] ], "You have no spells yet.");
+    setListUi(SPELL_TYPES, [ [ KeyEnter, setMagicListType ] ], null, "You have no spells yet.");
 }
 
 def setMagicListType(index, selection) {
@@ -1449,7 +1466,8 @@ def setMagicListType(index, selection) {
             array_filter(player.magic, name => SPELLS_BY_NAME[name].type = selection), 
             name => name + ":" + SPELLS_BY_NAME[name].level
         ), 
-        [ [ KeyEnter, castSpell ] ], 
+        [ [ KeyEnter, castSpell ] ],
+        null, 
         "No spells of type " + selection
     );
 }
@@ -1466,7 +1484,17 @@ def setEquipmentList() {
         }
         return slot + ": " + name;
     });
-    setListUi(list, [ [ KeyEnter, donEquipment ], [ KeyR, doffEquipment ] ], "");
+    setListUi(list, [ [ KeyEnter, donEquipment ], [ KeyR, doffEquipment ] ], hoverEquipment, "");
+}
+
+def hoverEquipment(listUi, index, selection) {
+    pc := player.party[player.partyIndex];
+    slot := SLOTS[index];
+    if(pc.equipment[slot] != null) {
+        itemDetails := pc.equipment[slot];
+    } else {
+        itemDetails := null;
+    }
 }
 
 def doffEquipment(index, selection) {
@@ -1500,7 +1528,12 @@ def donEquipment(index, selection) {
         }
     }, names, equipmentSlotItems, null);
 
-    setListUi(names, [ [ KeyEnter, donItem ] ], "No items for _7_" + equipmentSlot);
+    setListUi(names, [ [ KeyEnter, donItem ] ], hoverDonEquipment, "No items for _7_" + equipmentSlot);
+}
+
+def hoverDonEquipment(listUi, index, selection) {
+    inventoryIndex := equipmentSlotItems[index][0];
+    itemDetails := player.inventory[inventoryIndex];
 }
 
 def pcDonItem(pc, inventoryIndex, slot) {
@@ -1600,7 +1633,13 @@ def initPartyInventoryType(index, selection) {
         return item.type = OBJECT_TYPES[invMode];
     }, list, invTypeList, null);
 
-    setListUi(list, [ [ KeyEnter, useItem ], [ KeyR, dropItem ] ], "No items of type " + OBJECT_TYPES[invMode]);    
+    setListUi(list, [ [ KeyEnter, useItem ], [ KeyR, dropItem ] ], hoverInventory, "No items of type " + OBJECT_TYPES[invMode]);    
+}
+
+def hoverInventory(listUi, index, sel) {
+    invIndex := invTypeList[index][0];
+    invItem := player.inventory[invIndex];
+    itemDetails := ITEMS_BY_NAME[invItem.name];
 }
 
 def initStackedItemList(itemFilterFx, names, indexes, nameSuffixFx) {
@@ -1633,7 +1672,7 @@ def initStackedItemList(itemFilterFx, names, indexes, nameSuffixFx) {
 }
 
 def initPartyInventoryList() {
-    setListUi(OBJECT_TYPES, [ [ KeyEnter, initPartyInventoryType ] ], "");
+    setListUi(OBJECT_TYPES, [ [ KeyEnter, initPartyInventoryType ] ], null, "");
 }
 
 def initAccomplishmentsList() {
@@ -1649,7 +1688,7 @@ def initAccomplishmentsList() {
         list[len(list)] := "your injuries heal";
         list[len(list)] := "faster than normal.";
     }
-    setListUi(list, [], "No accomplishments");
+    setListUi(list, [], null, "No accomplishments");
 }
 
 def operateSwitch(x, y, switchX, switchY, dstX, dstY, dstClosed, dstOpen) {
