@@ -1251,7 +1251,7 @@ def gameInput() {
 }
 
 def initBuyList() {
-    list := array_map(mapMutation.traders[convo.npc.name], item => item.name + " " + "$" + ITEMS_BY_NAME[item.name].price);
+    list := array_map(mapMutation.traders[convo.npc.name], item => itemNameAndImage(item.name) + " " + "$" + ITEMS_BY_NAME[item.name].price);
     setListUi(list, [ [ KeyEnter, buyItem ] ], hoverBuyItem, "There is nothing to buy");
 }
 
@@ -1389,13 +1389,17 @@ def ageEqipment() {
     });
 }
 
-def inventoryItemName(invItem) {
-    item := ITEMS_BY_NAME[invItem.name];
+def itemNameAndImage(itemName) {
+    item := ITEMS_BY_NAME[itemName];
     name := "";
     if(item["img"] != null) {
         name := ">" + item.img + " ";
     }
-    name := name + invItem.name;
+    return name + itemName;
+}
+
+def inventoryItemName(invItem) {
+    name := itemNameAndImage(invItem.name);
     if(invItem.life < 4) {
         name := name + "*";
     } else {
@@ -1478,11 +1482,11 @@ def setEquipmentList() {
     pc := player.party[player.partyIndex];
     list := array_map(SLOTS, slot => {
         if(pc.equipment[slot] = null) {
-            name := "";
+            name := " " + slot + ": -empty-";
         } else {
             name := inventoryItemName(pc.equipment[slot]);
         }
-        return slot + ": " + name;
+        return name;
     });
     setListUi(list, [ [ KeyEnter, donEquipment ], [ KeyR, doffEquipment ] ], hoverEquipment, "");
 }

@@ -420,10 +420,8 @@ def drawUI() {
 
     # show AP
     drawBezel(3, 10 + TILE_H * MAP_VIEW_H, 316, 197, COLOR_DARK_GRAY, COLOR_LIGHT_GRAY, 1);    
-    if(gameMode = COMBAT) {
+    if(gameMode = COMBAT && viewMode = null) {
         drawAPBar();
-    } else {
-        #drawText(7, 12 + TILE_H * MAP_VIEW_H, COLOR_DARK_GRAY, COLOR_MID_GRAY, "You are " + realMapName + ".");
     }
 
 
@@ -456,7 +454,7 @@ def drawUI() {
     }
 
     if(isLargeUi() && isItemInfoUi()) {
-        drawRect(0, y, x, y, COLOR_LIGHT_GRAY); 
+        drawRect(5, y, x, y, COLOR_LIGHT_GRAY); 
         if(itemDetails != null) {
             array_foreach(
                 wordWrapMessage(describeItem(itemDetails.name), 23), 
