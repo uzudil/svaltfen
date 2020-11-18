@@ -2,6 +2,8 @@
 
 Download the <a href="https://github.com/uzudil/svaltfen/releases/latest">latest release</a>.
 
+Also on itch.io: https://uzudil.itch.io/the-curse-of-svaltfen
+
 <img src="images/title.png">
 
 Unravel the mysteries of a cursed land in this lost 8-bit rpg epic.
