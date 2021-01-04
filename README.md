@@ -1,6 +1,10 @@
 # The Curse of Svaltfen
 
-Download the <a href="https://github.com/uzudil/svaltfen/releases/latest">latest release</a>.
+Download the <a href="https://github.com/uzudil/svaltfen/releases/latest">latest release</a>.  Or install via homebrew for MacOS:
+```
+brew tap zenmatic/svaltfen https://github.com/zenmatic/homebrew-svaltfen.git
+brew install svaltfen
+```
 
 Also on itch.io: https://uzudil.itch.io/the-curse-of-svaltfen
 
